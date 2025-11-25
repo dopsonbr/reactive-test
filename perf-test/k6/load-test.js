@@ -28,8 +28,9 @@ export default function() {
     'x-sessionid': request.metadata.sessionId,
   };
 
+  const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
   const response = http.get(
-    `http://localhost:8080/products/${request.sku}`,
+    `${BASE_URL}/products/${request.sku}`,
     { headers }
   );
 

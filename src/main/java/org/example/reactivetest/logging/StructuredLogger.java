@@ -2,6 +2,8 @@ package org.example.reactivetest.logging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import org.example.reactivetest.context.ContextKeys;
 import org.example.reactivetest.context.RequestMetadata;
 import org.slf4j.Logger;
@@ -32,7 +34,17 @@ public class StructuredLogger {
 
     private void log(ContextView ctx, String loggerName, Object data) {
         RequestMetadata metadata = ctx.getOrDefault(ContextKeys.METADATA, null);
-        LogEntry entry = new LogEntry("info", loggerName, metadata, data);
+
+        // Extract trace context from current OTEL span
+        String traceId = null;
+        String spanId = null;
+        SpanContext spanContext = Span.current().getSpanContext();
+        if (spanContext.isValid()) {
+            traceId = spanContext.getTraceId();
+            spanId = spanContext.getSpanId();
+        }
+
+        LogEntry entry = new LogEntry("info", loggerName, traceId, spanId, metadata, data);
 
         try {
             String json = objectMapper.writeValueAsString(entry);

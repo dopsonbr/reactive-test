@@ -2,10 +2,19 @@
 <configuration>
     <property name="LOG_FILE" value="${LOG_FILE:-logs/application.log}"/>
 
-    <!-- Console appender for development -->
+    <!-- Console appender for development (includes trace context from OTEL agent MDC) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - traceId=%X{trace_id} spanId=%X{span_id} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- JSON console appender for Docker/container environments (raw JSON to stdout) -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <pattern>%msg%n</pattern>
+            </layout>
         </encoder>
     </appender>
 
@@ -25,16 +34,17 @@
         </encoder>
     </appender>
 
-    <!-- App loggers write raw JSON, so use pattern that just outputs message -->
+    <!-- App loggers write raw JSON to both file and stdout -->
     <logger name="org.example.reactivetest" level="DEBUG" additivity="false">
         <appender-ref ref="FILE"/>
-        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="CONSOLE_JSON"/>
     </logger>
 
     <!-- Suppress noisy framework logs -->
     <logger name="org.springframework" level="WARN"/>
     <logger name="io.netty" level="WARN"/>
     <logger name="reactor" level="WARN"/>
+    <logger name="io.opentelemetry" level="WARN"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

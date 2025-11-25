@@ -164,9 +164,89 @@ External service URLs configured in `application.properties`:
 - Price service base URL
 - Inventory service base URL
 
+## Docker Compose (Recommended)
+
+The easiest way to run the application with full observability is using Docker Compose.
+
+### Prerequisites
+- Docker and Docker Compose
+- Java 21 (for building the JAR)
+
+### Quick Start
+
+```bash
+# Build the application JAR
+./gradlew bootJar
+
+# Start the observability stack
+cd docker
+docker compose up -d
+
+# Wait for services to be healthy
+docker compose ps
+
+# Run load test (10k requests)
+docker compose --profile test up k6
+
+# Stop everything
+docker compose --profile test down -v
+```
+
+### Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| reactive-test | 8080 | Spring Boot application |
+| wiremock | 8081 | Mock external services |
+| grafana | 3000 | Dashboards (admin/admin) |
+| prometheus | 9090 | Metrics |
+| loki | 3100 | Logs |
+| tempo | 3200 | Traces |
+
+### Grafana Dashboards
+
+Access Grafana at http://localhost:3000 (admin/admin):
+
+- **Reactive Test Application** - Custom dashboard with request rate, latency, errors, and logs
+- **Spring Boot Observability** - Community dashboard with detailed Spring Boot metrics
+
+### Observability Features
+
+1. **Logs → Traces**: Click trace ID in Loki to jump to Tempo trace
+2. **Traces → Logs**: View related logs for any trace in Tempo
+3. **Metrics → Traces**: Exemplars link Prometheus metrics to traces
+4. **Structured JSON Logs**: All logs include `traceId` and `spanId` for correlation
+
+### Log Format
+
+```json
+{
+  "level": "info",
+  "logger": "productscontroller",
+  "traceId": "abc123...",
+  "spanId": "def456...",
+  "metadata": {
+    "storeNumber": 1234,
+    "orderNumber": "uuid",
+    "userId": "user123",
+    "sessionId": "session-uuid"
+  },
+  "data": { "type": "request|response|message", ... }
+}
+```
+
 ## Testing
 
-### Performance Test
+### Performance Test (Docker)
+
+```bash
+cd docker
+docker compose --profile test up k6
+```
+
+This runs 10k requests across 50 virtual users, with metrics sent to Prometheus.
+
+### Performance Test (Local)
 - **Goal:** 10k requests, validate metadata correlation across all logs
 - **Runner:** k6 (standalone script)
 - **Mock server:** WireMock standalone (responses 15-75ms latency)

@@ -1,0 +1,33 @@
+# Build outputs (keep build/libs for pre-built JAR)
+build/*
+!build/libs/
+.gradle/
+bin/
+out/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Git
+.git/
+.gitignore
+
+# Docker (avoid recursive copy)
+docker/
+
+# Test outputs and data
+logs/
+perf-test/output/
+perf-test/data/
+perf-test/node_modules/
+
+# Documentation
+*.md
+LICENSE
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -21,6 +21,16 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // JSON logging
+    implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+
+    // Context propagation (Reactor Context <-> MDC)
+    implementation 'io.micrometer:context-propagation'
+
+    // Jackson for JSON serialization in custom logger
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'

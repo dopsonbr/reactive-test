@@ -1,0 +1,13 @@
+{
+  "name": "reactive-test-perf",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node src/index.js",
+    "generate": "node src/generate-input.js",
+    "validate": "node src/validate-logs.js"
+  },
+  "dependencies": {
+    "uuid": "^11.0.0"
+  }
+}

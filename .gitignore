@@ -35,3 +35,12 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Application logs ###
+logs/
+
+### Performance test ###
+perf-test/node_modules/
+perf-test/data/
+perf-test/output/
+perf-test/wiremock/*.jar

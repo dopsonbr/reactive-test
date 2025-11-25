@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/inventory"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "availableQuantity": 100
+    },
+    "delayDistribution": {
+      "type": "uniform",
+      "lower": 15,
+      "upper": 75
+    }
+  }
+}

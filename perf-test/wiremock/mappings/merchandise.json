@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/merchandise/.*"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "description": "Test Product Description"
+    },
+    "delayDistribution": {
+      "type": "uniform",
+      "lower": 15,
+      "upper": 75
+    }
+  }
+}

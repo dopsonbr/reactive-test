@@ -4,6 +4,17 @@ import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// Expected loggers and their minimum counts per request
+const EXPECTED_LOGGERS = {
+  'productscontroller': { request: 1, response: 1 },
+  'productservice': { message: 1 },  // At least start message
+  'merchandiserepository': { request: 1, response: 1 },
+  'pricerepository': { request: 1, response: 1 },
+  'inventoryrepository': { request: 1, response: 1 }
+};
+
+const MIN_LOG_COUNT = 10; // Minimum logs per request
+
 export function validateLogs(logFile, inputFile) {
   console.log('Loading test input...');
   const testInput = JSON.parse(readFileSync(inputFile, 'utf-8'));
@@ -50,6 +61,8 @@ export function validateLogs(logFile, inputFile) {
   let passedRequests = 0;
   let missingRequests = 0;
   let crossContaminationCount = 0;
+  let incompleteLogCount = 0;
+  let missingLoggerCount = 0;
 
   for (const [orderNumber, expected] of expectedByOrderNumber) {
     const logs = logsByOrderNumber.get(orderNumber);
@@ -64,8 +77,46 @@ export function validateLogs(logFile, inputFile) {
       continue;
     }
 
-    // Check each log entry has matching metadata
     let requestPassed = true;
+
+    // Check minimum log count
+    if (logs.length < MIN_LOG_COUNT) {
+      incompleteLogCount++;
+      requestPassed = false;
+      failures.push({
+        orderNumber,
+        error: `Incomplete logs: expected at least ${MIN_LOG_COUNT}, got ${logs.length}`,
+        logCount: logs.length
+      });
+    }
+
+    // Check all expected loggers are present
+    const loggerCounts = {};
+    for (const { entry } of logs) {
+      const logger = entry.logger;
+      const type = entry.data?.type || 'message';
+      const key = `${logger}:${type}`;
+      loggerCounts[key] = (loggerCounts[key] || 0) + 1;
+    }
+
+    for (const [logger, types] of Object.entries(EXPECTED_LOGGERS)) {
+      for (const [type, minCount] of Object.entries(types)) {
+        const key = `${logger}:${type}`;
+        const actualCount = loggerCounts[key] || 0;
+        if (actualCount < minCount) {
+          missingLoggerCount++;
+          requestPassed = false;
+          failures.push({
+            orderNumber,
+            error: `Missing logger: ${logger} ${type}`,
+            expected: minCount,
+            actual: actualCount
+          });
+        }
+      }
+    }
+
+    // Check each log entry has matching metadata (cross-contamination check)
     for (const { index, entry } of logs) {
       const actual = entry.metadata;
 
@@ -108,6 +159,8 @@ export function validateLogs(logFile, inputFile) {
       failedRequests: expectedByOrderNumber.size - passedRequests - missingRequests,
       missingRequests,
       crossContaminationCount,
+      incompleteLogCount,
+      missingLoggerCount,
       unexpectedOrderNumbers: unexpectedOrderNumbers.length,
       parseErrors: parseErrors.length
     },
@@ -130,11 +183,15 @@ export function validateLogs(logFile, inputFile) {
   console.log(`Failed requests:       ${results.summary.failedRequests}`);
   console.log(`Missing requests:      ${results.summary.missingRequests}`);
   console.log(`Cross-contamination:   ${results.summary.crossContaminationCount}`);
+  console.log(`Incomplete logs:       ${results.summary.incompleteLogCount}`);
+  console.log(`Missing loggers:       ${results.summary.missingLoggerCount}`);
   console.log(`Results written to:    ${resultsPath}`);
 
   const success = results.summary.failedRequests === 0 &&
                   results.summary.missingRequests === 0 &&
-                  results.summary.crossContaminationCount === 0;
+                  results.summary.crossContaminationCount === 0 &&
+                  results.summary.incompleteLogCount === 0 &&
+                  results.summary.missingLoggerCount === 0;
 
   console.log(`\nOverall: ${success ? 'PASS ✓' : 'FAIL ✗'}`);
 

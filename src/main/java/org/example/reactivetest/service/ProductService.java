@@ -10,6 +10,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class ProductService {
+    private static final String LOGGER_NAME = "productservice";
+
     private final MerchandiseRepository merchandiseRepository;
     private final PriceRepository priceRepository;
     private final InventoryRepository inventoryRepository;
@@ -29,7 +31,7 @@ public class ProductService {
 
     public Mono<Product> getProduct(long sku) {
         return Mono.deferContextual(ctx -> {
-            structuredLogger.logMessage(ctx, "productservice", "Starting product fetch for sku: " + sku);
+            structuredLogger.logMessage(ctx, LOGGER_NAME, "Starting product fetch for sku: " + sku);
 
             return Mono.zip(
                 merchandiseRepository.getDescription(sku),
@@ -43,7 +45,7 @@ public class ProductService {
                 tuple.getT3().availableQuantity()
             ))
             .doOnSuccess(product ->
-                structuredLogger.logMessage(ctx, "productservice", "Product fetch complete for sku: " + sku)
+                structuredLogger.logMessage(ctx, LOGGER_NAME, "Product fetch complete for sku: " + sku)
             );
         });
     }

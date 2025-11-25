@@ -1,0 +1,25 @@
+# Docker profile - only overrides from base application.yml
+
+# External service URLs (Docker network)
+services:
+  merchandise:
+    base-url: http://wiremock:8080
+  price:
+    base-url: http://wiremock:8080
+  inventory:
+    base-url: http://wiremock:8080
+
+# Logging path for container
+logging:
+  file:
+    name: /app/logs/application.log
+
+# Additional management settings for Docker
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true

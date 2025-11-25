@@ -178,6 +178,59 @@ services:
     networks:
       - observability
 
+  # === Chaos/Resilience Testing ===
+  k6-resilience:
+    image: grafana/k6:0.55.0
+    container_name: k6-resilience
+    volumes:
+      - ../perf-test/k6:/scripts:ro
+      - ../perf-test/data:/data:ro
+      - k6-output:/output
+    environment:
+      - K6_OUT=experimental-prometheus-rw
+      - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
+      - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
+      - BASE_URL=http://reactive-test:8080
+      - WIREMOCK_URL=http://wiremock:8080
+    command: run /scripts/resilience-test.js
+    depends_on:
+      reactive-test:
+        condition: service_healthy
+      prometheus:
+        condition: service_healthy
+      wiremock:
+        condition: service_healthy
+    profiles:
+      - chaos
+    networks:
+      - observability
+
+  k6-circuit-breaker:
+    image: grafana/k6:0.55.0
+    container_name: k6-circuit-breaker
+    volumes:
+      - ../perf-test/k6:/scripts:ro
+      - ../perf-test/data:/data:ro
+      - k6-output:/output
+    environment:
+      - K6_OUT=experimental-prometheus-rw
+      - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
+      - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
+      - BASE_URL=http://reactive-test:8080
+      - WIREMOCK_URL=http://wiremock:8080
+    command: run /scripts/circuit-breaker-test.js
+    depends_on:
+      reactive-test:
+        condition: service_healthy
+      prometheus:
+        condition: service_healthy
+      wiremock:
+        condition: service_healthy
+    profiles:
+      - chaos
+    networks:
+      - observability
+
 volumes:
   tempo-data:
   loki-data:

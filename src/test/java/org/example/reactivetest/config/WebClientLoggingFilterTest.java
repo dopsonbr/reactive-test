@@ -98,7 +98,7 @@ class WebClientLoggingFilterTest {
             "/test", "localhost:8081", "/test", "GET", null
         );
         var logEntry = new org.example.reactivetest.logging.LogEntry(
-            "info", "testlogger", metadata, requestData
+            "info", "testlogger", "trace-123", "span-456", metadata, requestData
         );
 
         // When/Then - should not throw

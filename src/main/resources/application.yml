@@ -1,0 +1,104 @@
+spring:
+  application:
+    name: reactive-test
+
+# External service URLs (WireMock in test)
+services:
+  merchandise:
+    base-url: http://localhost:8081
+  price:
+    base-url: http://localhost:8081
+  inventory:
+    base-url: http://localhost:8081
+
+# Logging
+logging:
+  file:
+    name: logs/application.log
+
+# Actuator & Management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,circuitbreakers,retries
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+# Resilience4j Configuration
+resilience4j:
+  # Circuit Breaker
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+    instances:
+      merchandise:
+        base-config: default
+      price:
+        base-config: default
+      inventory:
+        base-config: default
+
+  # Retry
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 100ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientResponseException$ServiceUnavailable
+          - org.springframework.web.reactive.function.client.WebClientResponseException$GatewayTimeout
+        ignore-exceptions:
+          - org.springframework.web.reactive.function.client.WebClientResponseException$BadRequest
+          - org.springframework.web.reactive.function.client.WebClientResponseException$NotFound
+    instances:
+      merchandise:
+        base-config: default
+      price:
+        base-config: default
+      inventory:
+        base-config: default
+
+  # Timeout
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 2s
+        cancel-running-future: true
+    instances:
+      merchandise:
+        base-config: default
+      price:
+        base-config: default
+      inventory:
+        base-config: default
+
+  # Bulkhead (concurrency limiting)
+  bulkhead:
+    configs:
+      default:
+        max-concurrent-calls: 25
+        max-wait-duration: 0s
+    instances:
+      merchandise:
+        base-config: default
+      price:
+        base-config: default
+      inventory:
+        base-config: default

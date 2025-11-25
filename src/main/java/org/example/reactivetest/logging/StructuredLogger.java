@@ -29,10 +29,37 @@ public class StructuredLogger {
     }
 
     public void logMessage(ContextView ctx, String loggerName, String message) {
-        log(ctx, loggerName, new MessageLogData(message));
+        log(ctx, loggerName, "info", new MessageLogData(message));
+    }
+
+    public void logError(ContextView ctx, String loggerName, ErrorLogData data) {
+        log(ctx, loggerName, "error", data);
+    }
+
+    public void logError(ContextView ctx, String loggerName, String service, Throwable error) {
+        ErrorLogData data = new ErrorLogData(
+            service,
+            error.getClass().getSimpleName(),
+            error.getMessage()
+        );
+        log(ctx, loggerName, "error", data);
+    }
+
+    public void logError(ContextView ctx, String loggerName, String service, Throwable error, String circuitBreakerState) {
+        ErrorLogData data = new ErrorLogData(
+            service,
+            error.getClass().getSimpleName(),
+            error.getMessage(),
+            circuitBreakerState
+        );
+        log(ctx, loggerName, "error", data);
     }
 
     private void log(ContextView ctx, String loggerName, Object data) {
+        log(ctx, loggerName, "info", data);
+    }
+
+    private void log(ContextView ctx, String loggerName, String level, Object data) {
         RequestMetadata metadata = ctx.getOrDefault(ContextKeys.METADATA, null);
 
         // Extract trace context from current OTEL span
@@ -44,11 +71,15 @@ public class StructuredLogger {
             spanId = spanContext.getSpanId();
         }
 
-        LogEntry entry = new LogEntry("info", loggerName, traceId, spanId, metadata, data);
+        LogEntry entry = new LogEntry(level, loggerName, traceId, spanId, metadata, data);
 
         try {
             String json = objectMapper.writeValueAsString(entry);
-            log.info(json);
+            if ("error".equals(level)) {
+                log.error(json);
+            } else {
+                log.info(json);
+            }
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize log entry", e);
         }

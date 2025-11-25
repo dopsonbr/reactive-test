@@ -34,6 +34,14 @@ dependencies {
     // OpenTelemetry API for trace context access (agent provides implementation)
     implementation 'io.opentelemetry:opentelemetry-api:1.44.1'
 
+    // Resilience4j with Spring Boot 3 and Reactor
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.2.0'
+    implementation 'io.github.resilience4j:resilience4j-reactor:2.2.0'
+    implementation 'io.github.resilience4j:resilience4j-micrometer:2.2.0'
+
+    // AOP for annotations
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'

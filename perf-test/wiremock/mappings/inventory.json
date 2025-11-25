@@ -1,20 +1,112 @@
 {
-  "request": {
-    "method": "POST",
-    "urlPath": "/inventory"
-  },
-  "response": {
-    "status": 200,
-    "headers": {
-      "Content-Type": "application/json"
+  "mappings": [
+    {
+      "name": "inventory-success",
+      "priority": 10,
+      "scenarioName": "inventory-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "POST",
+        "urlPath": "/inventory"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "availableQuantity": 100
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
     },
-    "jsonBody": {
-      "availableQuantity": 100
+    {
+      "name": "inventory-500",
+      "priority": 5,
+      "scenarioName": "inventory-chaos",
+      "requiredScenarioState": "error-500",
+      "request": {
+        "method": "POST",
+        "urlPath": "/inventory"
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Internal Server Error",
+          "message": "Inventory database error"
+        }
+      }
     },
-    "delayDistribution": {
-      "type": "uniform",
-      "lower": 15,
-      "upper": 75
+    {
+      "name": "inventory-503",
+      "priority": 5,
+      "scenarioName": "inventory-chaos",
+      "requiredScenarioState": "error-503",
+      "request": {
+        "method": "POST",
+        "urlPath": "/inventory"
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Service Unavailable",
+          "message": "Inventory service is temporarily unavailable"
+        }
+      }
+    },
+    {
+      "name": "inventory-timeout",
+      "priority": 5,
+      "scenarioName": "inventory-chaos",
+      "requiredScenarioState": "timeout",
+      "request": {
+        "method": "POST",
+        "urlPath": "/inventory"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "availableQuantity": 100
+        },
+        "fixedDelayMilliseconds": 10000
+      }
+    },
+    {
+      "name": "inventory-slow",
+      "priority": 5,
+      "scenarioName": "inventory-chaos",
+      "requiredScenarioState": "slow",
+      "request": {
+        "method": "POST",
+        "urlPath": "/inventory"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "availableQuantity": 100
+        },
+        "delayDistribution": {
+          "type": "uniform",
+          "lower": 1500,
+          "upper": 2500
+        }
+      }
     }
-  }
+  ]
 }

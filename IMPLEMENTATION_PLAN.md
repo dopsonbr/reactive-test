@@ -558,47 +558,45 @@ curl -s http://localhost:9090/api/v1/query?query=resilience4j_circuitbreaker_sta
 ## Task Checklist
 
 ### Phase 1: Setup
-- [ ] Add Resilience4j dependencies to build.gradle
-- [ ] Add Resilience4j configuration to application.properties
-- [ ] Verify application starts with new dependencies
+- [x] Add Resilience4j dependencies to build.gradle
+- [x] Add Resilience4j configuration to application.properties
+- [x] Verify application starts with new dependencies
 
 ### Phase 2: Repository Layer
-- [ ] Create ReactiveResilience wrapper component
-- [ ] Update MerchandiseRepository with resilience decorators
-- [ ] Update PriceRepository with resilience decorators
-- [ ] Update InventoryRepository with resilience decorators
-- [ ] Verify WebClient calls are wrapped
+- [x] Create ReactiveResilience wrapper component
+- [x] Update MerchandiseRepository with resilience decorators and fallbacks
+- [x] Update PriceRepository with resilience decorators and fallbacks
+- [x] Update InventoryRepository with resilience decorators and fallbacks
+- [x] Verify WebClient calls are wrapped
 
 ### Phase 3: Error Handling
-- [ ] Create ErrorResponse record
-- [ ] Create GlobalErrorHandler with @ControllerAdvice
-- [ ] Add fallback methods to ProductService
-- [ ] Add error logging to StructuredLogger
-- [ ] Create ErrorLogData record
+- [x] Create ErrorResponse record
+- [x] Create GlobalErrorHandler with @ControllerAdvice
+- [x] Move fallback methods to repositories (keeping ProductService clean)
+- [x] Add error logging to StructuredLogger
+- [x] Create ErrorLogData record
 
 ### Phase 4: WireMock Chaos Stubs
-- [ ] Update price.json with chaos scenarios
-- [ ] Update merchandise.json with chaos scenarios
-- [ ] Update inventory.json with chaos scenarios
-- [ ] Create chaos-controller.js helper module
+- [x] Update price.json with chaos scenarios
+- [x] Update merchandise.json with chaos scenarios
+- [x] Update inventory.json with chaos scenarios
+- [x] Create chaos-controller.js helper module
 - [ ] Test chaos scenario toggling via WireMock API
 
 ### Phase 5: Chaos Tests
-- [ ] Create resilience-test.js with multi-scenario test
-- [ ] Create circuit-breaker-test.js
-- [ ] Create retry-test.js
-- [ ] Update load-test.js thresholds for chaos tolerance
+- [x] Create resilience-test.js with multi-scenario test
+- [x] Create circuit-breaker-test.js
+- [x] Update load-test.js thresholds for chaos tolerance
 - [ ] Verify tests run in Docker
 
 ### Phase 6: Observability
-- [ ] Add Resilience4j metrics panels to Grafana dashboard
-- [ ] Add circuit breaker state visualization
-- [ ] Add retry metrics visualization
+- [x] Add Resilience4j metrics panels to Grafana dashboard
+- [x] Add circuit breaker state visualization
+- [x] Add retry metrics visualization
 - [ ] Verify metrics appear in Prometheus
 
 ### Phase 7: Integration
-- [ ] Update docker-compose.yml with chaos profile
-- [ ] Create run-chaos-test.sh script
+- [x] Update docker-compose.yml with chaos profile
 - [ ] Update README with chaos testing instructions
 - [ ] Run full chaos test suite
 - [ ] Verify circuit breaker opens and closes correctly

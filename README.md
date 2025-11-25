@@ -259,6 +259,111 @@ This runs 10k requests across 50 virtual users, with metrics sent to Prometheus.
 4. Inspect logs for metadata correlation
 5. Shutdown services
 
+## Resilience & Chaos Testing
+
+The application includes Resilience4j for fault tolerance and chaos testing capabilities.
+
+### Resilience4j Features
+
+Each external service call (price, merchandise, inventory) is protected with:
+
+| Pattern | Configuration | Purpose |
+|---------|--------------|---------|
+| Circuit Breaker | 50% failure threshold, 10s open duration | Fail fast when service is down |
+| Retry | 3 attempts, exponential backoff | Handle transient failures |
+| Timeout | 2 seconds | Prevent hanging requests |
+| Bulkhead | 25 concurrent calls | Limit resource consumption |
+
+### Fallback Behavior
+
+When a service fails, the application returns degraded responses:
+
+| Service | Fallback Value |
+|---------|---------------|
+| Price | `"0.00"` |
+| Merchandise | `"Description unavailable"` |
+| Inventory | `0` |
+
+### Chaos Testing (Docker)
+
+Run multi-phase chaos tests that inject failures and verify resilience:
+
+```bash
+cd docker
+
+# Start the stack
+docker compose up -d
+
+# Run resilience test (baseline → errors → timeouts → full chaos → recovery)
+docker compose --profile chaos up k6-resilience
+
+# Run circuit breaker specific test
+docker compose --profile chaos run k6-circuit-breaker
+
+# Stop everything
+docker compose --profile chaos down -v
+```
+
+### Chaos Test Phases
+
+The `resilience-test.js` runs through these phases:
+
+| Phase | Duration | Scenario |
+|-------|----------|----------|
+| Baseline | 30s | All services healthy |
+| Price Errors | 30s | Price service returns 500s |
+| Merchandise Timeout | 30s | Merchandise service times out |
+| Inventory 503 | 30s | Inventory returns 503 (retryable) |
+| Full Chaos | 30s | All services degraded |
+| Recovery | 30s | Services restored to healthy |
+
+### WireMock Chaos Scenarios
+
+Toggle chaos scenarios via WireMock API:
+
+```bash
+# Enable 500 errors on price service
+curl -X PUT http://localhost:8081/__admin/scenarios/price-chaos/state \
+  -H "Content-Type: application/json" \
+  -d '{"state": "error-500"}'
+
+# Enable timeout on merchandise service
+curl -X PUT http://localhost:8081/__admin/scenarios/merchandise-chaos/state \
+  -H "Content-Type: application/json" \
+  -d '{"state": "timeout"}'
+
+# Reset to normal
+curl -X PUT http://localhost:8081/__admin/scenarios/price-chaos/state \
+  -H "Content-Type: application/json" \
+  -d '{"state": "Started"}'
+```
+
+Available chaos states: `Started` (normal), `error-500`, `error-503`, `timeout`, `slow`
+
+### Resilience Metrics in Grafana
+
+The Grafana dashboard includes Resilience4j panels:
+
+- **Circuit Breaker State** - Shows CLOSED (green), HALF_OPEN (yellow), or OPEN (red)
+- **Failure Rate** - Percentage of failed calls per service
+- **Retry Calls** - Successful with/without retry, failed after retries
+- **Timeout Calls** - Successful vs timed out requests
+
+### Actuator Endpoints
+
+Resilience4j metrics are exposed via Spring Actuator:
+
+```bash
+# Circuit breaker status
+curl http://localhost:8080/actuator/circuitbreakers
+
+# Health with circuit breaker details
+curl http://localhost:8080/actuator/health
+
+# Prometheus metrics
+curl http://localhost:8080/actuator/prometheus | grep resilience4j
+```
+
 ## Implementation Plan
 
 1. Create ProductController with inbound logging filter

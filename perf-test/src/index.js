@@ -50,20 +50,12 @@ async function startWireMock() {
   console.log('\n=== Starting WireMock ===');
   const startTime = Date.now();
 
-  const jarPath = join(perfTestRoot, config.wiremock.jarPath);
-  const mappingsDir = join(perfTestRoot, 'wiremock', 'mappings');
-
-  if (!existsSync(jarPath)) {
-    console.error(`WireMock JAR not found at ${jarPath}`);
-    console.error('Download from: https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/3.9.1/wiremock-standalone-3.9.1.jar');
-    process.exit(1);
-  }
-
-  wiremockProcess = spawn('java', [
-    '-jar', jarPath,
+  wiremockProcess = spawn('npx', [
+    'wiremock',
     '--port', String(config.wiremock.port),
     '--root-dir', join(perfTestRoot, 'wiremock')
   ], {
+    cwd: perfTestRoot,
     stdio: ['ignore', 'pipe', 'pipe']
   });
 

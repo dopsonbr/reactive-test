@@ -5,8 +5,7 @@
     "maxDuration": "10m"
   },
   "wiremock": {
-    "port": 8081,
-    "jarPath": "./wiremock/wiremock-standalone.jar"
+    "port": 8081
   },
   "app": {
     "port": 8080,

@@ -5,9 +5,11 @@
   "scripts": {
     "test": "node src/index.js",
     "generate": "node src/generate-input.js",
-    "validate": "node src/validate-logs.js"
+    "validate": "node src/validate-logs.js",
+    "wiremock": "wiremock --port 8081 --root-dir wiremock"
   },
   "dependencies": {
-    "uuid": "^11.0.0"
+    "uuid": "^11.0.0",
+    "wiremock": "^3.9.0"
   }
 }

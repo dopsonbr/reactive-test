@@ -43,4 +43,3 @@ logs/
 perf-test/node_modules/
 perf-test/data/
 perf-test/output/
-perf-test/wiremock/*.jar

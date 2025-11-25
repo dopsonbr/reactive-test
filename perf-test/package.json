@@ -11,5 +11,8 @@
   "dependencies": {
     "uuid": "^11.0.0",
     "wiremock": "^3.9.0"
+  },
+  "devDependencies": {
+    "@types/k6": "^1.4.0"
   }
 }

@@ -49,8 +49,7 @@ public class WebClientLoggingFilter {
     }
 
     private Object extractBody(ClientRequest request) {
-        // Body extraction from ClientRequest is complex; for now return empty
-        // The actual payload is logged at the repository level if needed
-        return new Object() {};
+        // Body extraction from ClientRequest is complex; return null for now
+        return null;
     }
 }

@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check } from 'k6';
 import { SharedArray } from 'k6/data';
+import exec from 'k6/execution';
 
 const testData = new SharedArray('requests', function() {
   return JSON.parse(open('../data/test-input.json')).requests;
@@ -15,7 +16,9 @@ export const options = {
 };
 
 export default function() {
-  const request = testData[__ITER % testData.length];
+  // Use global iteration counter, not per-VU __ITER
+  const globalIter = exec.scenario.iterationInTest;
+  const request = testData[globalIter % testData.length];
 
   const headers = {
     'Content-Type': 'application/json',

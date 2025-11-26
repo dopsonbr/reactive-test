@@ -106,6 +106,27 @@ public class GlobalErrorHandler {
         return ResponseEntity.status(status).body(response);
     }
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidationError(
+            ValidationException ex,
+            ServerWebExchange exchange) {
+        String traceId = getTraceId();
+        String path = exchange.getRequest().getPath().value();
+
+        log.warn("Validation error for path {}: {}", path, ex.getMessage());
+
+        ErrorResponse response = ErrorResponse.of(
+            "Bad Request",
+            "Request validation failed",
+            path,
+            HttpStatus.BAD_REQUEST.value(),
+            traceId,
+            ex.toDetailsMap()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericError(
             Exception ex,

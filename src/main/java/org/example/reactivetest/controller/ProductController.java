@@ -7,6 +7,7 @@ import org.example.reactivetest.logging.RequestLogData;
 import org.example.reactivetest.logging.ResponseLogData;
 import org.example.reactivetest.logging.StructuredLogger;
 import org.example.reactivetest.service.ProductService;
+import org.example.reactivetest.validation.RequestValidator;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -18,10 +19,13 @@ public class ProductController {
 
     private final ProductService productService;
     private final StructuredLogger structuredLogger;
+    private final RequestValidator requestValidator;
 
-    public ProductController(ProductService productService, StructuredLogger structuredLogger) {
+    public ProductController(ProductService productService, StructuredLogger structuredLogger,
+                             RequestValidator requestValidator) {
         this.productService = productService;
         this.structuredLogger = structuredLogger;
+        this.requestValidator = requestValidator;
     }
 
     @GetMapping("/{sku}")
@@ -35,29 +39,30 @@ public class ProductController {
     ) {
         RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return Mono.deferContextual(ctx -> {
-            // Log inbound request
-            RequestLogData requestData = new RequestLogData(
-                "/products/{sku}",
-                request.getURI().getPath(),
-                request.getMethod().name(),
-                null
-            );
-            structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
+        return requestValidator.validateProductRequest(sku, storeNumber, orderNumber, userId, sessionId)
+            .then(Mono.deferContextual(ctx -> {
+                // Log inbound request
+                RequestLogData requestData = new RequestLogData(
+                    "/products/{sku}",
+                    request.getURI().getPath(),
+                    request.getMethod().name(),
+                    null
+                );
+                structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
 
-            return productService.getProduct(sku)
-                .doOnSuccess(product -> {
-                    // Log outbound response
-                    ResponseLogData responseData = new ResponseLogData(
-                        "/products/{sku}",
-                        request.getURI().getPath(),
-                        request.getMethod().name(),
-                        200,
-                        product
-                    );
-                    structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
-                });
-        })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+                return productService.getProduct(sku)
+                    .doOnSuccess(product -> {
+                        // Log outbound response
+                        ResponseLogData responseData = new ResponseLogData(
+                            "/products/{sku}",
+                            request.getURI().getPath(),
+                            request.getMethod().name(),
+                            200,
+                            product
+                        );
+                        structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
+                    });
+            }))
+            .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
     }
 }

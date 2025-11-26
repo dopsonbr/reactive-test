@@ -1,5 +1,8 @@
 package org.example.reactivetest.repository.merchandise;
 
+import org.example.reactivetest.cache.CacheKeyGenerator;
+import org.example.reactivetest.cache.ReactiveCacheService;
+import org.example.reactivetest.config.CacheProperties;
 import org.example.reactivetest.logging.StructuredLogger;
 import org.example.reactivetest.resilience.ReactiveResilience;
 import org.springframework.stereotype.Repository;
@@ -15,24 +18,44 @@ public class MerchandiseRepository {
     private final WebClient merchandiseWebClient;
     private final ReactiveResilience resilience;
     private final StructuredLogger structuredLogger;
+    private final ReactiveCacheService cacheService;
+    private final CacheProperties cacheProperties;
 
     public MerchandiseRepository(
             WebClient merchandiseWebClient,
             ReactiveResilience resilience,
-            StructuredLogger structuredLogger) {
+            StructuredLogger structuredLogger,
+            ReactiveCacheService cacheService,
+            CacheProperties cacheProperties) {
         this.merchandiseWebClient = merchandiseWebClient;
         this.resilience = resilience;
         this.structuredLogger = structuredLogger;
+        this.cacheService = cacheService;
+        this.cacheProperties = cacheProperties;
     }
 
     public Mono<MerchandiseResponse> getDescription(long sku) {
+        String cacheKey = CacheKeyGenerator.merchandiseKey(sku);
+
+        // Cache-Aside Pattern: Check cache first
+        return cacheService.get(cacheKey, MerchandiseResponse.class)
+            .switchIfEmpty(Mono.defer(() -> fetchAndCache(sku, cacheKey)));
+    }
+
+    private Mono<MerchandiseResponse> fetchAndCache(long sku, String cacheKey) {
         Mono<MerchandiseResponse> call = merchandiseWebClient.get()
             .uri("/merchandise/{sku}", sku)
             .retrieve()
             .bodyToMono(MerchandiseResponse.class);
 
         return resilience.decorate(RESILIENCE_NAME, call)
-            .onErrorResume(t -> handleError(t));
+            .flatMap(response -> cacheAndReturn(cacheKey, response))
+            .onErrorResume(this::handleError);
+    }
+
+    private Mono<MerchandiseResponse> cacheAndReturn(String cacheKey, MerchandiseResponse response) {
+        return cacheService.put(cacheKey, response, cacheProperties.getMerchandise().getTtl())
+            .thenReturn(response);
     }
 
     private Mono<MerchandiseResponse> handleError(Throwable t) {

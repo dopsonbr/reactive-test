@@ -28,12 +28,20 @@ Services/
     ProductService          # Orchestrates parallel calls to repositories
 
 Repository/
-    MerchandiseRepository   # GET  /merchandise/{sku} → description
-    PriceRepository         # POST /price            → price
-    InventoryRepository     # POST /inventory        → availableQuantity
+    MerchandiseRepository   # GET  /merchandise/{sku} → description (cache-aside)
+    PriceRepository         # POST /price            → price (cache-aside)
+    InventoryRepository     # POST /inventory        → availableQuantity (fallback-only cache)
+
+Cache/
+    ReactiveCacheService    # Interface for reactive cache operations
+    RedisCacheService       # Redis implementation with graceful degradation
+    CacheKeyGenerator       # Consistent key generation (e.g., merchandise:sku:123)
+
+Resilience/
+    ReactiveResilience      # Circuit breaker, retry, timeout, bulkhead decorators
 ```
 
-All repository calls execute **in parallel**.
+All repository calls execute **in parallel**. Merchandise and Price check cache first; Inventory always calls HTTP first and uses cache only on errors.
 
 ## Logging
 
@@ -106,7 +114,7 @@ repository request
     "uri": "/price",
     "method": "POST",
     "headers": [],
-    "payload": { "sku":  12354}
+    "payload": {...}
   }
 }
 ```
@@ -130,7 +138,7 @@ repository response
     "method": "POST",
     "headers": [],
     "status": 200,
-    "payload": {"price":  "12.34"}
+    "payload": {..}
   }
 }
 ```
@@ -198,10 +206,12 @@ docker compose --profile test down -v
 |---------|------|-------------|
 | reactive-test | 8080 | Spring Boot application |
 | wiremock | 8081 | Mock external services |
+| redis | 6379 | Cache (merchandise, price, inventory fallback) |
 | grafana | 3000 | Dashboards (admin/admin) |
 | prometheus | 9090 | Metrics |
 | loki | 3100 | Logs |
 | tempo | 3200 | Traces |
+| redis-exporter | 9121 | Redis metrics for Prometheus |
 
 ### Grafana Dashboards
 
@@ -282,7 +292,106 @@ When a service fails, the application returns degraded responses:
 |---------|---------------|
 | Price | `"0.00"` |
 | Merchandise | `"Description unavailable"` |
-| Inventory | `0` |
+| Inventory | `-1` (backordered) or cached value |
+
+## Redis Caching
+
+The application uses Redis for caching with two distinct patterns based on data volatility.
+
+### Caching Patterns
+
+#### Cache-Aside (Merchandise & Price)
+
+For relatively stable data, the cache is checked **before** making HTTP calls:
+
+```
+Request → Check Cache → [HIT] → Return cached value
+                     → [MISS] → Call HTTP → Store in cache → Return value
+```
+
+- **Merchandise**: Product descriptions rarely change (TTL: 15 minutes)
+- **Price**: Prices change occasionally (TTL: 2 minutes)
+
+#### Fallback-Only (Inventory)
+
+For volatile data, HTTP is **always called first**. Cache is only used as a fallback after errors:
+
+```
+Request → Call HTTP (with retry) → [SUCCESS] → Update cache → Return value
+                                 → [ERROR] → Check cache → [HIT] → Return cached (stale) value
+                                                        → [MISS] → Return -1 (backordered)
+```
+
+- **Inventory**: Real-time stock data should never show stale values unless the service is unavailable
+- The `-1` value indicates "backordered" status when both HTTP and cache fail
+- TTL: 30 seconds (only used as emergency fallback)
+
+### Cache Configuration
+
+All TTLs are configurable via `application.yml`:
+
+```yaml
+cache:
+  merchandise:
+    ttl: 15m    # Product descriptions
+  price:
+    ttl: 2m     # Prices (more volatile)
+  inventory:
+    ttl: 30s    # Fallback cache only
+
+spring:
+  data:
+    redis:
+      host: localhost  # 'redis' in Docker
+      port: 6379
+      timeout: 1000ms
+```
+
+### Cache Keys
+
+Keys follow a consistent pattern for easy debugging:
+
+| Service | Key Pattern | Example |
+|---------|------------|---------|
+| Merchandise | `merchandise:sku:{sku}` | `merchandise:sku:123456` |
+| Price | `price:sku:{sku}` | `price:sku:123456` |
+| Inventory | `inventory:sku:{sku}` | `inventory:sku:123456` |
+
+### Graceful Degradation
+
+The application continues working if Redis is unavailable:
+- Cache operations return empty/false on Redis errors (no exceptions propagate)
+- Repositories fall back to direct HTTP calls
+- No impact on application availability
+
+### Redis in Docker
+
+Redis and Redis Exporter are included in the Docker Compose stack:
+
+```bash
+# Check Redis status
+docker exec redis redis-cli ping
+
+# View cache keys
+docker exec redis redis-cli keys "*"
+
+# Check cache hit/miss stats
+docker exec redis redis-cli INFO stats | grep keyspace
+
+# Clear all cache
+docker exec redis redis-cli FLUSHALL
+```
+
+### Redis Metrics in Grafana
+
+The Grafana dashboard includes Redis panels:
+
+- **Redis Memory Used** - Current memory consumption
+- **Redis Clients** - Connected client count
+- **Redis Keys** - Total cached keys
+- **Cache Hit Rate** - Percentage of cache hits
+- **Cache Hits vs Misses** - Rate over time
+- **Redis Commands/sec** - Command throughput
 
 ### Chaos Testing (Docker)
 
@@ -363,15 +472,3 @@ curl http://localhost:8080/actuator/health
 # Prometheus metrics
 curl http://localhost:8080/actuator/prometheus | grep resilience4j
 ```
-
-## Implementation Plan
-
-1. Create ProductController with inbound logging filter
-2. Implement Reactor Context propagation for metadata
-3. Create domain model and ProductService
-4. Create repositories with outbound logging filter
-5. Configure structured JSON logging
-6. Set up WireMock standalone with stubs
-7. Build k6 performance test script
-8. Create test orchestration script
-9. Validate log correlation

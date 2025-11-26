@@ -116,6 +116,36 @@ services:
     networks:
       - observability
 
+  # === Cache Layer ===
+  redis:
+    image: redis:7.4-alpine
+    container_name: redis
+    command: ["redis-server", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - observability
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.66.0
+    container_name: redis-exporter
+    environment:
+      - REDIS_ADDR=redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - observability
+
   # === Application ===
   reactive-test:
     build:
@@ -140,6 +170,8 @@ services:
       wiremock:
         condition: service_healthy
       tempo:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
@@ -238,6 +270,7 @@ volumes:
   grafana-data:
   app-logs:
   k6-output:
+  redis-data:
 
 networks:
   observability:

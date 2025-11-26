@@ -1,5 +1,12 @@
 # Docker profile - only overrides from base application.yml
 
+# Redis in Docker network
+spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
+
 # External service URLs (Docker network)
 services:
   merchandise:

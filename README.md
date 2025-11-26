@@ -247,6 +247,15 @@ Access Grafana at http://localhost:3000 (admin/admin):
 
 ## Testing
 
+### Test Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Test Plan](perf-test/TEST_PLAN.md) | Comprehensive test strategy covering input generation, WireMock setup, k6 execution, and log validation for metadata correlation. |
+| [Load Test](perf-test/k6/load-test.md) | Standard performance test running 10k requests to validate latency SLAs (p95 < 500ms) and throughput under normal conditions. |
+| [Resilience Test](perf-test/k6/resilience-test.md) | Multi-phase chaos test that injects 500 errors, timeouts, and 503s to verify graceful degradation and fallback behavior. |
+| [Circuit Breaker Test](perf-test/k6/circuit-breaker-test.md) | Focused test validating circuit breaker opens at 50% failure rate, fast-fails when open, and recovers when service heals. |
+
 ### Performance Test (Docker)
 
 ```bash

@@ -49,8 +49,19 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Testcontainers for integration tests
+    testImplementation 'org.testcontainers:testcontainers:1.20.4'
+    testImplementation 'org.testcontainers:junit-jupiter:1.20.4'
+
+    // WireMock for mocking external HTTP services
+    testImplementation 'org.wiremock:wiremock-standalone:3.10.0'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+
+    // Testcontainers configuration
+    // TESTCONTAINERS_RYUK_DISABLED prevents socket mount issues with Rancher Desktop/Colima
+    environment 'TESTCONTAINERS_RYUK_DISABLED', 'true'
 }

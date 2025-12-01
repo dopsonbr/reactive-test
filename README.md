@@ -17,29 +17,9 @@ Validate that request metadata is accurately propagated through reactive chains 
 
 ## Architecture
 
-```
-Controller/
-    ProductController       # GET /products/{sku} - validates input, creates Reactor Context
+See [PACKAGES.md](PACKAGES.md) for the complete package index with documentation links.
 
-Domain/
-    Product                 # { sku, description, price, availableQuantity }
-
-Services/
-    ProductService          # Orchestrates parallel calls to repositories
-
-Repository/
-    MerchandiseRepository   # GET  /merchandise/{sku} → description (cache-aside)
-    PriceRepository         # POST /price            → price (cache-aside)
-    InventoryRepository     # POST /inventory        → availableQuantity (fallback-only cache)
-
-Cache/
-    ReactiveCacheService    # Interface for reactive cache operations
-    RedisCacheService       # Redis implementation with graceful degradation
-    CacheKeyGenerator       # Consistent key generation (e.g., merchandise:sku:123)
-
-Resilience/
-    ReactiveResilience      # Circuit breaker, retry, timeout, bulkhead decorators
-```
+**Request flow:** Controller → Validation → Service → Repositories (parallel) → Cache/HTTP
 
 All repository calls execute **in parallel**. Merchandise and Price check cache first; Inventory always calls HTTP first and uses cache only on errors.
 
@@ -481,3 +461,41 @@ curl http://localhost:8080/actuator/health
 # Prometheus metrics
 curl http://localhost:8080/actuator/prometheus | grep resilience4j
 ```
+
+## Running All Tests
+
+To run the complete test suite (load, chaos, and circuit breaker tests):
+
+```bash
+# Build the application
+./gradlew bootJar
+
+# Start Docker stack
+cd docker
+docker compose up -d
+
+# Wait for services to be healthy (about 60 seconds)
+docker compose ps
+
+# Run load test (10k requests)
+docker compose --profile test up k6
+
+# Run resilience/chaos test (~3.5 minutes)
+docker compose --profile chaos up k6-resilience
+
+# Run circuit breaker test (~1.5 minutes)
+docker compose --profile chaos run k6-circuit-breaker
+
+# Stop everything
+docker compose --profile test --profile chaos down -v
+```
+
+### Expected Test Results
+
+| Test | Duration | Key Metrics |
+|------|----------|-------------|
+| Load Test | ~45s | 10k requests, 0% failures, p95 < 500ms |
+| Resilience Test | ~3.5m | 6 phases (baseline → chaos → recovery) |
+| Circuit Breaker Test | ~1.5m | 5 phases (warmup → trigger → open → heal → recovery) |
+
+All tests verify graceful degradation - the application continues returning HTTP 200 with fallback values when services fail.

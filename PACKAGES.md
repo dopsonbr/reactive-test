@@ -14,6 +14,7 @@
 | [repository](src/main/java/org/example/reactivetest/repository/) | Reactive HTTP clients with resilience and caching |
 | [resilience](src/main/java/org/example/reactivetest/resilience/) | Resilience4j decorator wrapper for reactive streams |
 | [service](src/main/java/org/example/reactivetest/service/) | Business logic orchestration with parallel repository calls |
+| [validation](src/main/java/org/example/reactivetest/validation/) | Request parameter and header validation with error collection |
 
 ## Documentation Structure
 

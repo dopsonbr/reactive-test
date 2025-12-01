@@ -1,0 +1,35 @@
+[versions]
+# Spring Boot provides most versions via BOM - only declare non-BOM deps here
+spring-boot = "3.5.8"
+spring-dependency-management = "1.1.7"
+resilience4j = "2.2.0"
+logstash-logback = "8.0"
+opentelemetry = "1.44.1"
+testcontainers = "1.20.4"
+wiremock = "3.10.0"
+
+[libraries]
+# Resilience4j (not in Spring Boot BOM)
+resilience4j-spring-boot3 = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+resilience4j-reactor = { module = "io.github.resilience4j:resilience4j-reactor", version.ref = "resilience4j" }
+resilience4j-micrometer = { module = "io.github.resilience4j:resilience4j-micrometer", version.ref = "resilience4j" }
+
+# Logging
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback" }
+
+# OpenTelemetry (API only - agent provides impl)
+opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api", version.ref = "opentelemetry" }
+
+# Testing
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-core = { module = "org.testcontainers:testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter" }
+wiremock-standalone = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
+
+[bundles]
+resilience4j = ["resilience4j-spring-boot3", "resilience4j-reactor", "resilience4j-micrometer"]
+testcontainers = ["testcontainers-core", "testcontainers-junit-jupiter"]
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }

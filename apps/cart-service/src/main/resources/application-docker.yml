@@ -1,0 +1,27 @@
+# Docker profile - only overrides from base application.yml
+
+# Redis in Docker network
+spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+# Logging path for container
+logging:
+  file:
+    name: /app/logs/application.log
+
+# Additional management settings for Docker
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+# Use standard port in Docker
+server:
+  port: 8080

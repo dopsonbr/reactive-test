@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: cart-service
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 1000ms
+
+# Logging
+logging:
+  file:
+    name: logs/cart-application.log
+
+# Actuator & Management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Server port (different from product-service in local dev)
+server:
+  port: 8082

@@ -4,9 +4,9 @@ services:
     image: wiremock/wiremock:3.10.0
     container_name: wiremock
     ports:
-      - "8081:8080"
+      - "8082:8080"
     volumes:
-      - ../perf-test/wiremock/mappings:/home/wiremock/mappings:ro
+      - ../e2e-test/wiremock/mappings:/home/wiremock/mappings:ro
     command: ["--global-response-templating", "--verbose"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/__admin/mappings"]
@@ -146,15 +146,15 @@ services:
     networks:
       - observability
 
-  # === Application ===
-  reactive-test:
+  # === Applications ===
+  product-service:
     build:
       context: ..
-      dockerfile: docker/Dockerfile
-    container_name: reactive-test
+      dockerfile: docker/Dockerfile.product-service
+    container_name: product-service
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - OTEL_SERVICE_NAME=reactive-test
+      - OTEL_SERVICE_NAME=product-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
       - OTEL_TRACES_EXPORTER=otlp
@@ -182,84 +182,118 @@ services:
     networks:
       - observability
 
-  # === Load Testing ===
-  k6:
-    image: grafana/k6:0.55.0
-    container_name: k6
+  cart-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.cart-service
+    container_name: cart-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - OTEL_SERVICE_NAME=cart-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_PROPAGATORS=tracecontext,baggage
+      - OTEL_INSTRUMENTATION_SPRING_WEBFLUX_ENABLED=true
     volumes:
-      - ../perf-test/k6:/scripts:ro
-      - ../perf-test/data:/data:ro
+      - app-logs:/app/logs
+    ports:
+      - "8081:8080"
+    depends_on:
+      tempo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
+  # === Load Testing (Product Service) ===
+  k6-product:
+    image: grafana/k6:0.55.0
+    container_name: k6-product
+    volumes:
+      - ../e2e-test/k6:/scripts:ro
+      - ../e2e-test/data:/data:ro
       - k6-output:/output
     environment:
       - K6_OUT=experimental-prometheus-rw
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
-      - BASE_URL=http://reactive-test:8080
+      - BASE_URL=http://product-service:8080
+      - WIREMOCK_URL=http://wiremock:8080
     command: >
       run
       --vus 50
       --iterations 10000
       /scripts/load-test.js
     depends_on:
-      reactive-test:
+      product-service:
         condition: service_healthy
       prometheus:
         condition: service_healthy
     profiles:
-      - test
+      - test-product
     networks:
       - observability
 
-  # === Chaos/Resilience Testing ===
-  k6-resilience:
+  # === Chaos/Resilience Testing (Product Service) ===
+  k6-product-resilience:
     image: grafana/k6:0.55.0
-    container_name: k6-resilience
+    container_name: k6-product-resilience
     volumes:
-      - ../perf-test/k6:/scripts:ro
-      - ../perf-test/data:/data:ro
+      - ../e2e-test/k6:/scripts:ro
+      - ../e2e-test/data:/data:ro
       - k6-output:/output
     environment:
       - K6_OUT=experimental-prometheus-rw
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
-      - BASE_URL=http://reactive-test:8080
+      - BASE_URL=http://product-service:8080
       - WIREMOCK_URL=http://wiremock:8080
     command: run /scripts/resilience-test.js
     depends_on:
-      reactive-test:
+      product-service:
         condition: service_healthy
       prometheus:
         condition: service_healthy
       wiremock:
         condition: service_healthy
     profiles:
-      - chaos
+      - chaos-product
     networks:
       - observability
 
-  k6-circuit-breaker:
+  k6-product-circuit-breaker:
     image: grafana/k6:0.55.0
-    container_name: k6-circuit-breaker
+    container_name: k6-product-circuit-breaker
     volumes:
-      - ../perf-test/k6:/scripts:ro
-      - ../perf-test/data:/data:ro
+      - ../e2e-test/k6:/scripts:ro
+      - ../e2e-test/data:/data:ro
       - k6-output:/output
     environment:
       - K6_OUT=experimental-prometheus-rw
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
-      - BASE_URL=http://reactive-test:8080
+      - BASE_URL=http://product-service:8080
       - WIREMOCK_URL=http://wiremock:8080
     command: run /scripts/circuit-breaker-test.js
     depends_on:
-      reactive-test:
+      product-service:
         condition: service_healthy
       prometheus:
         condition: service_healthy
       wiremock:
         condition: service_healthy
     profiles:
-      - chaos
+      - chaos-product
     networks:
       - observability
 

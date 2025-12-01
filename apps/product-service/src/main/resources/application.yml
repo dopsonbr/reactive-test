@@ -6,6 +6,41 @@ spring:
       host: localhost
       port: 6379
       timeout: 1000ms
+  security:
+    oauth2:
+      # Resource Server (inbound JWT validation)
+      resourceserver:
+        jwt:
+          issuer-uri: ${OAUTH_ISSUER_URI:http://localhost:8081/oauth}
+          jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
+      # Client (outbound client credentials for downstream services)
+      client:
+        registration:
+          downstream-services:
+            client-id: ${DOWNSTREAM_CLIENT_ID:reactive-test-client}
+            client-secret: ${DOWNSTREAM_CLIENT_SECRET:test-secret}
+            authorization-grant-type: client_credentials
+            scope: merchandise:read,price:read,inventory:read
+            provider: downstream-auth
+        provider:
+          downstream-auth:
+            # Different issuer than inbound tokens (separate auth domain)
+            token-uri: ${DOWNSTREAM_TOKEN_URI:http://localhost:8081/downstream-oauth/token}
+
+# Application Security Configuration
+app:
+  security:
+    enabled: true
+    # JWK Set URI (used by JwtValidatorConfig)
+    jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
+    # Allowed issuers for inbound JWT validation
+    allowed-issuers:
+      - ${OAUTH_ISSUER_URI:http://localhost:8081/oauth}
+      - test-issuer
+    # Required audience claim
+    required-audience: ${OAUTH_AUDIENCE:reactive-test-api}
+    # Clock skew tolerance for token expiration (seconds)
+    clock-skew-seconds: 30
 
 # Cache TTL Configuration (all configurable)
 cache:

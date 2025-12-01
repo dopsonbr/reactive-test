@@ -11,6 +11,9 @@ dependencies {
     api(libs.testcontainers.junit.jupiter)
     api(libs.wiremock.standalone)
 
+    // JWT generation for security tests
+    api(libs.bundles.jjwt)
+
     // Access to platform modules for test helpers
     implementation(project(":libs:platform:platform-logging"))
     implementation(project(":libs:platform:platform-cache"))

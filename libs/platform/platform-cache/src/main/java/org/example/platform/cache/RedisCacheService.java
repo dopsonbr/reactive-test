@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -12,8 +11,10 @@ import java.time.Duration;
 /**
  * Redis implementation of ReactiveCacheService.
  * Fails silently on Redis errors to avoid cascading failures.
+ *
+ * <p>This bean is auto-configured by {@link RedisCacheAutoConfiguration}
+ * when Redis is on the classpath.
  */
-@Service
 public class RedisCacheService implements ReactiveCacheService {
 
     private static final Logger log = LoggerFactory.getLogger(RedisCacheService.class);

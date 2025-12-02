@@ -9,7 +9,6 @@ import org.example.product.config.CacheProperties;
     "org.example.product",
     "org.example.platform.logging",
     "org.example.platform.resilience",
-    "org.example.platform.cache",
     "org.example.platform.error"
 })
 @EnableConfigurationProperties(CacheProperties.class)

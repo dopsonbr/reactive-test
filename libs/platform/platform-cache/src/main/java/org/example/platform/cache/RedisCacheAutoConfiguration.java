@@ -13,7 +13,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * Auto-configuration for Redis caching.
- * Provides a ReactiveRedisTemplate with JSON serialization.
+ * Provides a ReactiveRedisTemplate with JSON serialization and RedisCacheService.
  */
 @AutoConfiguration
 @ConditionalOnClass(ReactiveRedisConnectionFactory.class)
@@ -37,5 +37,13 @@ public class RedisCacheAutoConfiguration {
                 .build();
 
         return new ReactiveRedisTemplate<>(connectionFactory, context);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ReactiveCacheService.class)
+    public RedisCacheService redisCacheService(
+            ReactiveRedisTemplate<String, Object> redisTemplate,
+            ObjectMapper objectMapper) {
+        return new RedisCacheService(redisTemplate, objectMapper);
     }
 }

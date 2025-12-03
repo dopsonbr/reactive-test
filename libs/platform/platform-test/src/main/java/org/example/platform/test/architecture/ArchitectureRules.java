@@ -4,8 +4,6 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 
-import com.tngtech.archunit.core.importer.ImportOption;
-import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
@@ -112,7 +110,9 @@ public abstract class ArchitectureRules {
                     .beAnnotatedWith("org.springframework.stereotype.Controller")
                     .orShould()
                     .beAnnotatedWith("org.springframework.web.bind.annotation.RestController")
-                    .because("Domain classes should be pure data objects without Spring annotations");
+                    .because(
+                            "Domain classes should be pure data objects without Spring"
+                                    + " annotations");
 
     /** Controllers should be annotated with @RestController. */
     @ArchTest

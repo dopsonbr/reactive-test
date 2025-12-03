@@ -31,15 +31,15 @@ libs/
 │   ├── platform-webflux/
 │   ├── platform-security/
 │   └── platform-test/
-└── shared-domain/                     # NEW: Shared domain libraries
-    ├── shared-domain-product/         # Product domain objects
-    ├── shared-domain-customer/        # Customer domain objects (placeholder)
-    ├── shared-domain-discount/        # Discount domain objects
-    └── shared-domain-fulfillment/     # Fulfillment domain objects (placeholder)
+└── shared-model/                     # NEW: Shared model libraries
+    ├── shared-model-product/         # Product model objects
+    ├── shared-model-customer/        # Customer model objects (placeholder)
+    ├── shared-model-discount/        # Discount model objects
+    └── shared-model-fulfillment/     # Fulfillment model objects (placeholder)
 
 apps/
-├── product-service/                   # Uses shared-domain-product
-├── cart-service/                      # Uses all shared-domain-* libraries
+├── product-service/                   # Uses shared-model-product
+├── cart-service/                      # Uses all shared-model-* libraries
 ├── customer-service/                  # NEW: Placeholder service
 ├── discount-service/                  # NEW: Placeholder service
 └── fulfillment-service/               # NEW: Placeholder service
@@ -49,23 +49,23 @@ apps/
 
 | Module | Package |
 |--------|---------|
-| shared-domain-product | `org.example.domain.product` |
-| shared-domain-customer | `org.example.domain.customer` |
-| shared-domain-discount | `org.example.domain.discount` |
-| shared-domain-fulfillment | `org.example.domain.fulfillment` |
+| shared-model-product | `org.example.model.product` |
+| shared-model-customer | `org.example.model.customer` |
+| shared-model-discount | `org.example.model.discount` |
+| shared-model-fulfillment | `org.example.model.fulfillment` |
 | customer-service | `org.example.customer` |
 | discount-service | `org.example.discount` |
 | fulfillment-service | `org.example.fulfillment` |
 
 ---
 
-## Phase 1: Shared Domain Libraries
+## Phase 1: Shared model Libraries
 
-### 1.1 shared-domain-product
+### 1.1 shared-model-product
 
-**Location:** `libs/shared-domain/shared-domain-product/`
+**Location:** `libs/shared-model/shared-model-product/`
 
-**Package:** `org.example.domain.product`
+**Package:** `org.example.model.product`
 
 ```java
 // Product.java - core product representation
@@ -90,15 +90,15 @@ public record CartProduct(
 }
 ```
 
-**Dependencies:** None (standalone domain library)
+**Dependencies:** None (standalone model library)
 
-### 1.2 shared-domain-customer (Placeholder)
+### 1.2 shared-model-customer (Placeholder)
 
-**Location:** `libs/shared-domain/shared-domain-customer/`
+**Location:** `libs/shared-model/shared-model-customer/`
 
-**Package:** `org.example.domain.customer`
+**Package:** `org.example.model.customer`
 
-**Note:** This is a placeholder for a complex domain with B2B, B2C, and omnichannel use cases. Will be expanded in a future feature plan.
+**Note:** This is a placeholder for a complex model with B2B, B2C, and omnichannel use cases. Will be expanded in a future feature plan.
 
 ```java
 // CartCustomer.java - minimal placeholder for customer attached to cart
@@ -109,13 +109,13 @@ public record CartCustomer(
 ) {}
 ```
 
-**Dependencies:** None (standalone domain library)
+**Dependencies:** None (standalone model library)
 
-### 1.3 shared-domain-discount
+### 1.3 shared-model-discount
 
-**Location:** `libs/shared-domain/shared-domain-discount/`
+**Location:** `libs/shared-model/shared-model-discount/`
 
-**Package:** `org.example.domain.discount`
+**Package:** `org.example.model.discount`
 
 ```java
 // Discount.java - discount applied to a cart
@@ -147,15 +147,15 @@ public record AppliedDiscount(
 ) {}
 ```
 
-**Dependencies:** None (standalone domain library)
+**Dependencies:** None (standalone model library)
 
-### 1.4 shared-domain-fulfillment (Placeholder)
+### 1.4 shared-model-fulfillment (Placeholder)
 
-**Location:** `libs/shared-domain/shared-domain-fulfillment/`
+**Location:** `libs/shared-model/shared-model-fulfillment/`
 
-**Package:** `org.example.domain.fulfillment`
+**Package:** `org.example.model.fulfillment`
 
-**Note:** This is a placeholder for a complex domain with B2B, B2C, and omnichannel use cases (delivery, pickup, installation, haul-away, etc.). Will be expanded in a future feature plan.
+**Note:** This is a placeholder for a complex model with B2B, B2C, and omnichannel use cases (delivery, pickup, installation, haul-away, etc.). Will be expanded in a future feature plan.
 
 ```java
 // FulfillmentType.java
@@ -174,15 +174,15 @@ public record Fulfillment(
 ) {}
 ```
 
-**Dependencies:** None (standalone domain library)
+**Dependencies:** None (standalone model library)
 
 ---
 
-## Phase 2: Cart Domain Model
+## Phase 2: Cart model Model
 
 ### 2.1 Enhanced Cart Object
 
-**Location:** `apps/cart-service/src/main/java/org/example/cart/domain/`
+**Location:** `apps/cart-service/src/main/java/org/example/cart/model/`
 
 ```java
 // Cart.java - the complete cart aggregate
@@ -364,7 +364,7 @@ public record UpdateFulfillmentRequest(
 
 **Port:** 8083
 
-**Note:** Complex B2B/B2C omnichannel customer domain to be designed in a future feature plan.
+**Note:** Complex B2B/B2C omnichannel customer model to be designed in a future feature plan.
 
 **Placeholder Endpoints:**
 
@@ -410,7 +410,7 @@ public record UpdateFulfillmentRequest(
 
 **Port:** 8085
 
-**Note:** Complex B2B/B2C omnichannel fulfillment domain (delivery, pickup, installation, haul-away, scheduling) to be designed in a future feature plan.
+**Note:** Complex B2B/B2C omnichannel fulfillment model (delivery, pickup, installation, haul-away, scheduling) to be designed in a future feature plan.
 
 **Placeholder Endpoints:**
 
@@ -707,7 +707,7 @@ When 009_AUDIT_DATA is implemented, this will be replaced with a queue-based pub
 
 ### 8.1 Unit Tests
 
-- Domain object tests (Cart, CartTotals calculations)
+- model object tests (Cart, CartTotals calculations)
 - Service layer tests with mocked repositories
 - Controller tests with WebTestClient
 
@@ -736,17 +736,17 @@ When 009_AUDIT_DATA is implemented, this will be replaced with a queue-based pub
 
 ## Implementation Order
 
-### Step 1: Shared Domain Libraries
-1. Create `libs/shared-domain/` directory structure
-2. Implement `shared-domain-product`
-3. Implement `shared-domain-customer` (minimal placeholder)
-4. Implement `shared-domain-discount`
-5. Implement `shared-domain-fulfillment` (minimal placeholder)
+### Step 1: Shared model Libraries
+1. Create `libs/shared-model/` directory structure
+2. Implement `shared-model-product`
+3. Implement `shared-model-customer` (minimal placeholder)
+4. Implement `shared-model-discount`
+5. Implement `shared-model-fulfillment` (minimal placeholder)
 6. Update `settings.gradle.kts` with new modules
 
 ### Step 2: Refactor Product Service
-1. Update product-service to depend on `shared-domain-product`
-2. Remove local `Product` class, use shared domain
+1. Update product-service to depend on `shared-model-product`
+2. Remove local `Product` class, use shared model
 3. Verify all tests pass
 
 ### Step 3: Placeholder Services
@@ -756,7 +756,7 @@ When 009_AUDIT_DATA is implemented, this will be replaced with a queue-based pub
 4. Add services to Docker Compose
 
 ### Step 4: Cart Service Core
-1. Update cart domain model to use shared domain objects
+1. Update cart model model to use shared model objects
 2. Implement `CartRepository` with Redis persistence (including store index)
 3. Implement `CartService` with totals calculation
 4. Add resilience configuration
@@ -800,19 +800,19 @@ When 009_AUDIT_DATA is implemented, this will be replaced with a queue-based pub
 
 ### New Files to Create
 
-**Shared Domain Libraries:**
-- [ ] `libs/shared-domain/shared-domain-product/build.gradle.kts`
-- [ ] `libs/shared-domain/shared-domain-product/src/main/java/org/example/domain/product/Product.java`
-- [ ] `libs/shared-domain/shared-domain-product/src/main/java/org/example/domain/product/CartProduct.java`
-- [ ] `libs/shared-domain/shared-domain-customer/build.gradle.kts`
-- [ ] `libs/shared-domain/shared-domain-customer/src/main/java/org/example/domain/customer/CartCustomer.java`
-- [ ] `libs/shared-domain/shared-domain-discount/build.gradle.kts`
-- [ ] `libs/shared-domain/shared-domain-discount/src/main/java/org/example/domain/discount/Discount.java`
-- [ ] `libs/shared-domain/shared-domain-discount/src/main/java/org/example/domain/discount/DiscountType.java`
-- [ ] `libs/shared-domain/shared-domain-discount/src/main/java/org/example/domain/discount/AppliedDiscount.java`
-- [ ] `libs/shared-domain/shared-domain-fulfillment/build.gradle.kts`
-- [ ] `libs/shared-domain/shared-domain-fulfillment/src/main/java/org/example/domain/fulfillment/Fulfillment.java`
-- [ ] `libs/shared-domain/shared-domain-fulfillment/src/main/java/org/example/domain/fulfillment/FulfillmentType.java`
+**Shared model Libraries:**
+- [ ] `libs/shared-model/shared-model-product/build.gradle.kts`
+- [ ] `libs/shared-model/shared-model-product/src/main/java/org/example/model/product/Product.java`
+- [ ] `libs/shared-model/shared-model-product/src/main/java/org/example/model/product/CartProduct.java`
+- [ ] `libs/shared-model/shared-model-customer/build.gradle.kts`
+- [ ] `libs/shared-model/shared-model-customer/src/main/java/org/example/model/customer/CartCustomer.java`
+- [ ] `libs/shared-model/shared-model-discount/build.gradle.kts`
+- [ ] `libs/shared-model/shared-model-discount/src/main/java/org/example/model/discount/Discount.java`
+- [ ] `libs/shared-model/shared-model-discount/src/main/java/org/example/model/discount/DiscountType.java`
+- [ ] `libs/shared-model/shared-model-discount/src/main/java/org/example/model/discount/AppliedDiscount.java`
+- [ ] `libs/shared-model/shared-model-fulfillment/build.gradle.kts`
+- [ ] `libs/shared-model/shared-model-fulfillment/src/main/java/org/example/model/fulfillment/Fulfillment.java`
+- [ ] `libs/shared-model/shared-model-fulfillment/src/main/java/org/example/model/fulfillment/FulfillmentType.java`
 
 **Placeholder Services:**
 - [ ] `apps/customer-service/build.gradle.kts`
@@ -829,8 +829,8 @@ When 009_AUDIT_DATA is implemented, this will be replaced with a queue-based pub
 - [ ] `apps/fulfillment-service/src/main/resources/application.yml`
 
 **Cart Service Enhancements:**
-- [ ] `apps/cart-service/src/main/java/org/example/cart/domain/Cart.java` (update)
-- [ ] `apps/cart-service/src/main/java/org/example/cart/domain/CartTotals.java`
+- [ ] `apps/cart-service/src/main/java/org/example/cart/model/Cart.java` (update)
+- [ ] `apps/cart-service/src/main/java/org/example/cart/model/CartTotals.java`
 - [ ] `apps/cart-service/src/main/java/org/example/cart/repository/CartRepository.java`
 - [ ] `apps/cart-service/src/main/java/org/example/cart/repository/RedisCartRepository.java`
 - [ ] `apps/cart-service/src/main/java/org/example/cart/controller/CartController.java` (update)
@@ -855,9 +855,9 @@ When 009_AUDIT_DATA is implemented, this will be replaced with a queue-based pub
 
 ### Files to Modify
 
-- [ ] `apps/product-service/build.gradle.kts` - add shared-domain-product dependency
-- [ ] `apps/product-service/src/main/java/org/example/product/domain/Product.java` - remove (use shared)
-- [ ] `apps/cart-service/build.gradle.kts` - add shared-domain dependencies
+- [ ] `apps/product-service/build.gradle.kts` - add shared-model-product dependency
+- [ ] `apps/product-service/src/main/java/org/example/product/model/Product.java` - remove (use shared)
+- [ ] `apps/cart-service/build.gradle.kts` - add shared-model dependencies
 
 ---
 

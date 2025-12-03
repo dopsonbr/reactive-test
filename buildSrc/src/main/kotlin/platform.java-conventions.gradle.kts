@@ -27,3 +27,8 @@ tasks.withType<Test> {
     // Testcontainers configuration - RYUK disabled for Rancher Desktop/Colima
     environment("TESTCONTAINERS_RYUK_DISABLED", "true")
 }
+
+// JUnit Platform Launcher is required for Gradle 8.x with JUnit 5.12+
+dependencies {
+    "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
+}

@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -129,6 +131,26 @@ public class GlobalErrorHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+            Exception ex,
+            ServerWebExchange exchange) {
+        String traceId = getTraceId();
+        String path = exchange.getRequest().getPath().value();
+
+        log.warn("Access denied for path {}: {}", path, ex.getMessage());
+
+        ErrorResponse response = ErrorResponse.of(
+            "Forbidden",
+            "Access denied: insufficient permissions",
+            path,
+            HttpStatus.FORBIDDEN.value(),
+            traceId
+        );
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,0 +1,6 @@
+# Profile for testing OAuth2 client configuration
+
+app:
+  security:
+    oauth2-client:
+      enabled: true

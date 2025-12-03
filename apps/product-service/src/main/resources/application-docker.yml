@@ -1,11 +1,27 @@
 # Docker profile - only overrides from base application.yml
 
-# Redis in Docker network
+# Redis and OAuth in Docker network
 spring:
   data:
     redis:
       host: redis
       port: 6379
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://wiremock:8080/oauth
+          jwk-set-uri: http://wiremock:8080/oauth/.well-known/jwks.json
+      client:
+        provider:
+          downstream-auth:
+            token-uri: http://wiremock:8080/downstream-oauth/token
+
+# Docker OAuth configuration
+app:
+  security:
+    allowed-issuers:
+      - http://wiremock:8080/oauth
 
 # External service URLs (Docker network)
 services:

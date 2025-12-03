@@ -1,0 +1,23 @@
+# Test profile - for integration tests
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Local WireMock for tests
+          issuer-uri: http://localhost:8081/oauth
+          jwk-set-uri: http://localhost:8081/oauth/.well-known/jwks.json
+      client:
+        provider:
+          downstream-auth:
+            token-uri: http://localhost:8081/downstream-oauth/token
+
+# Test OAuth configuration
+app:
+  security:
+    allowed-issuers:
+      - http://localhost:8081/oauth
+      - test-issuer  # For unit tests with fake tokens
+    required-audience: reactive-test-api
+    clock-skew-seconds: 30

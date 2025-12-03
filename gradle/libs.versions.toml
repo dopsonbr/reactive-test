@@ -7,6 +7,7 @@ logstash-logback = "8.0"
 opentelemetry = "1.44.1"
 testcontainers = "1.20.4"
 wiremock = "3.10.0"
+jjwt = "0.12.6"
 
 [libraries]
 # Resilience4j (not in Spring Boot BOM)
@@ -26,9 +27,15 @@ testcontainers-core = { module = "org.testcontainers:testcontainers" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter" }
 wiremock-standalone = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
 
+# JWT for testing
+jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+
 [bundles]
 resilience4j = ["resilience4j-spring-boot3", "resilience4j-reactor", "resilience4j-micrometer"]
 testcontainers = ["testcontainers-core", "testcontainers-junit-jupiter"]
+jjwt = ["jjwt-api", "jjwt-impl", "jjwt-jackson"]
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

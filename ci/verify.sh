@@ -3,9 +3,11 @@
 # Pre-merge verification script
 #
 # Runs all checks to ensure code is ready for merging:
-#   1. Build all modules
-#   2. Run all unit tests
-#   3. Build boot JARs (verify they can be packaged)
+#   1. Check code formatting (Spotless)
+#   2. Build all modules
+#   3. Run architecture tests (ArchUnit)
+#   4. Run all unit tests
+#   5. Build boot JARs (verify they can be packaged)
 #
 # Usage: ./ci/verify.sh [--ci]
 #
@@ -51,9 +53,22 @@ echo ""
 # Track overall status
 FAILED=false
 
-# Step 1: Build all modules
+# Step 1: Check code formatting
 echo "----------------------------------------------"
-echo "  Step 1/3: Building all modules"
+echo "  Step 1/5: Checking code formatting"
+echo "----------------------------------------------"
+if "$SCRIPT_DIR/format-check.sh" $CI_FLAG; then
+    echo "[PASS] Code formatting OK"
+else
+    echo "[FAIL] Code formatting issues found"
+    echo "       Run './ci/format-apply.sh' to fix"
+    FAILED=true
+fi
+echo ""
+
+# Step 2: Build all modules
+echo "----------------------------------------------"
+echo "  Step 2/5: Building all modules"
 echo "----------------------------------------------"
 if "$SCRIPT_DIR/build-all.sh" $CI_FLAG; then
     echo "[PASS] Build completed"
@@ -63,9 +78,21 @@ else
 fi
 echo ""
 
-# Step 2: Run all unit tests
+# Step 3: Run architecture tests
 echo "----------------------------------------------"
-echo "  Step 2/3: Running all unit tests"
+echo "  Step 3/5: Running architecture tests"
+echo "----------------------------------------------"
+if "$SCRIPT_DIR/arch-check.sh" $CI_FLAG; then
+    echo "[PASS] Architecture tests passed"
+else
+    echo "[FAIL] Architecture violations found"
+    FAILED=true
+fi
+echo ""
+
+# Step 4: Run all unit tests
+echo "----------------------------------------------"
+echo "  Step 4/5: Running all unit tests"
 echo "----------------------------------------------"
 if "$SCRIPT_DIR/test-unit.sh" $CI_FLAG; then
     echo "[PASS] All tests passed"
@@ -75,9 +102,9 @@ else
 fi
 echo ""
 
-# Step 3: Build boot JARs
+# Step 5: Build boot JARs
 echo "----------------------------------------------"
-echo "  Step 3/3: Building boot JARs"
+echo "  Step 5/5: Building boot JARs"
 echo "----------------------------------------------"
 if "$SCRIPT_DIR/build-bootjars.sh" $CI_FLAG; then
     echo "[PASS] Boot JARs built"

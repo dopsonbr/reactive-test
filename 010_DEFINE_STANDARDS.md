@@ -1486,11 +1486,11 @@ Add format and architecture checks to pre-merge verification.
 - [x] Create `platform-security/README.md`
 - [x] Create `platform-test/README.md`
 
-### Phase 6: CI Pipeline Updates
-- [ ] Create `ci/format-check.sh`
-- [ ] Create `ci/format-apply.sh`
-- [ ] Create `ci/arch-check.sh`
-- [ ] Update `ci/verify.sh`
+### Phase 6: CI Pipeline Updates ✅ COMPLETE
+- [x] Create `ci/format-check.sh`
+- [x] Create `ci/format-apply.sh`
+- [x] Create `ci/arch-check.sh`
+- [x] Update `ci/verify.sh` (now includes format and arch checks)
 
 ---
 

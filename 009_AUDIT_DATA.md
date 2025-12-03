@@ -2,7 +2,7 @@
 
 ## Overview
 
-This plan introduces an audit-service for capturing, storing, and querying audit events from cart-service and other services. The service provides both a CRUD REST API for direct event submission and a message queue consumer as the primary ingestion mechanism. Audit data is stored in an append-only wide-column database optimized for time-series queries.
+This plan introduces an audit-service for capturing, storing, and querying audit events from cart-service and other services. The service provides both a CRUD REST API for direct event submission and a message queue consumer as the primary ingestion mechanism. Audit data is stored in PostgreSQL with optimized indexes for time-series queries.
 
 **Related Plans:**
 - **008_CART_SERVICE** - Cart service will publish audit events (can be developed in parallel)
@@ -12,7 +12,7 @@ This plan introduces an audit-service for capturing, storing, and querying audit
 1. Create a new audit-service application
 2. Implement message queue consumer for audit event ingestion (primary mechanism)
 3. Implement CRUD REST API for audit events (secondary/convenience mechanism)
-4. Store audit data in append-only wide-column database
+4. Store audit data in PostgreSQL with reactive R2DBC driver
 5. Provide query APIs for audit trail retrieval
 6. Apply resilience, logging, and security patterns
 7. Create shared platform library for audit event publishing
@@ -49,8 +49,8 @@ This plan introduces an audit-service for capturing, storing, and querying audit
                                 │
                                 ▼
                     ┌─────────────────────────┐
-                    │   ScyllaDB / Cassandra  │
-                    │   (Wide-Column Store)   │
+                    │       PostgreSQL        │
+                    │   (Relational Database) │
                     └─────────────────────────┘
 ```
 
@@ -70,7 +70,7 @@ apps/
 └── audit-service/                   # NEW: Audit data service
     ├── consumer/                    # Queue consumer
     ├── controller/                  # REST API
-    ├── repository/                  # Cassandra/ScyllaDB repository
+    ├── repository/                  # PostgreSQL R2DBC repository
     ├── domain/                      # Domain models
     └── config/                      # Configuration
 ```
@@ -316,44 +316,49 @@ public record AuditProperties(
 - platform-audit
 - spring-boot-starter-webflux
 - spring-boot-starter-data-redis-reactive
-- spring-boot-starter-data-cassandra-reactive
+- spring-boot-starter-data-r2dbc
+- r2dbc-postgresql
 
 ### 2.2 Domain Models
 
 ```java
-// AuditRecord.java - persisted audit record
+// AuditRecord.java - persisted audit record (R2DBC entity)
 @Table("audit_events")
-public record AuditRecord(
-    @PrimaryKeyColumn(name = "store_number", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-    int storeNumber,
+public class AuditRecord {
 
-    @PrimaryKeyColumn(name = "entity_type", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
-    String entityType,
-
-    @PrimaryKeyColumn(name = "timestamp", ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
-    Instant timestamp,
-
-    @PrimaryKeyColumn(name = "event_id", ordinal = 3, type = PrimaryKeyType.CLUSTERED)
-    String eventId,
+    @Id
+    private String eventId;
 
     @Column("event_type")
-    String eventType,
+    private String eventType;
+
+    @Column("entity_type")
+    private String entityType;
 
     @Column("entity_id")
-    String entityId,
+    private String entityId;
+
+    @Column("store_number")
+    private int storeNumber;
 
     @Column("user_id")
-    String userId,
+    private String userId;
 
     @Column("session_id")
-    String sessionId,
+    private String sessionId;
 
     @Column("trace_id")
-    String traceId,
+    private String traceId;
+
+    @Column("created_at")
+    private Instant createdAt;
 
     @Column("data")
-    String data  // JSON string
-) {
+    private String data;  // JSON string (JSONB in PostgreSQL)
+
+    // Default constructor for R2DBC
+    public AuditRecord() {}
+
     public static AuditRecord fromEvent(AuditEvent event, ObjectMapper mapper) {
         String dataJson;
         try {
@@ -361,79 +366,67 @@ public record AuditRecord(
         } catch (JsonProcessingException e) {
             dataJson = "{}";
         }
-        return new AuditRecord(
-            event.storeNumber(),
-            event.entityType(),
-            event.timestamp(),
-            event.eventId(),
-            event.eventType(),
-            event.entityId(),
-            event.userId(),
-            event.sessionId(),
-            event.traceId(),
-            dataJson
-        );
+        AuditRecord record = new AuditRecord();
+        record.eventId = event.eventId();
+        record.eventType = event.eventType();
+        record.entityType = event.entityType();
+        record.entityId = event.entityId();
+        record.storeNumber = event.storeNumber();
+        record.userId = event.userId();
+        record.sessionId = event.sessionId();
+        record.traceId = event.traceId();
+        record.createdAt = event.timestamp();
+        record.data = dataJson;
+        return record;
     }
+
+    // Getters and setters omitted for brevity
 }
 ```
 
-### 2.3 Cassandra Schema
+### 2.3 PostgreSQL Schema
 
-```cql
--- Keyspace
-CREATE KEYSPACE IF NOT EXISTS audit
-WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
-
+```sql
 -- Main audit events table
--- Partitioned by store_number + entity_type for efficient queries
--- Clustered by timestamp (descending) for time-series queries
-CREATE TABLE IF NOT EXISTS audit.audit_events (
-    store_number int,
-    entity_type text,
-    timestamp timestamp,
-    event_id text,
-    event_type text,
-    entity_id text,
-    user_id text,
-    session_id text,
-    trace_id text,
-    data text,  -- JSON payload
-    PRIMARY KEY ((store_number, entity_type), timestamp, event_id)
-) WITH CLUSTERING ORDER BY (timestamp DESC, event_id ASC)
-  AND default_time_to_live = 31536000  -- 1 year TTL
-  AND compaction = {'class': 'TimeWindowCompactionStrategy', 'compaction_window_size': 1, 'compaction_window_unit': 'DAYS'};
+-- Optimized with indexes for common query patterns
+CREATE TABLE IF NOT EXISTS audit_events (
+    event_id VARCHAR(36) PRIMARY KEY,
+    event_type VARCHAR(50) NOT NULL,
+    entity_type VARCHAR(50) NOT NULL,
+    entity_id VARCHAR(255) NOT NULL,
+    store_number INTEGER NOT NULL,
+    user_id VARCHAR(50),
+    session_id VARCHAR(36),
+    trace_id VARCHAR(36),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    data JSONB NOT NULL DEFAULT '{}'
+);
 
--- Secondary index for entity lookups
-CREATE TABLE IF NOT EXISTS audit.audit_events_by_entity (
-    entity_type text,
-    entity_id text,
-    timestamp timestamp,
-    event_id text,
-    store_number int,
-    event_type text,
-    user_id text,
-    session_id text,
-    trace_id text,
-    data text,
-    PRIMARY KEY ((entity_type, entity_id), timestamp, event_id)
-) WITH CLUSTERING ORDER BY (timestamp DESC, event_id ASC)
-  AND default_time_to_live = 31536000;
+-- Index for time-series queries by store and entity type
+CREATE INDEX idx_audit_store_entity_time
+ON audit_events (store_number, entity_type, created_at DESC);
 
--- Index for user activity
-CREATE TABLE IF NOT EXISTS audit.audit_events_by_user (
-    user_id text,
-    timestamp timestamp,
-    event_id text,
-    store_number int,
-    entity_type text,
-    entity_id text,
-    event_type text,
-    session_id text,
-    trace_id text,
-    data text,
-    PRIMARY KEY (user_id, timestamp, event_id)
-) WITH CLUSTERING ORDER BY (timestamp DESC, event_id ASC)
-  AND default_time_to_live = 31536000;
+-- Index for entity lookups (e.g., all events for a specific cart)
+CREATE INDEX idx_audit_entity
+ON audit_events (entity_type, entity_id, created_at DESC);
+
+-- Index for user activity queries
+CREATE INDEX idx_audit_user
+ON audit_events (user_id, created_at DESC);
+
+-- Index for event type filtering
+CREATE INDEX idx_audit_event_type
+ON audit_events (event_type, created_at DESC);
+
+-- GIN index for JSONB data queries (optional, for searching within event data)
+CREATE INDEX idx_audit_data_gin
+ON audit_events USING GIN (data);
+
+-- Partitioning by month (optional, for large-scale deployments)
+-- Can be added later using PostgreSQL declarative partitioning
+
+-- Data retention policy (run periodically via cron or pg_cron)
+-- DELETE FROM audit_events WHERE created_at < NOW() - INTERVAL '1 year';
 ```
 
 ---
@@ -666,27 +659,35 @@ public interface AuditRepository {
 }
 ```
 
-### 5.2 Cassandra Repository Implementation
+### 5.2 R2DBC Repository Implementation
 
 ```java
-// CassandraAuditRepository.java
+// R2dbcAuditRepository.java
 @Repository
-public class CassandraAuditRepository implements AuditRepository {
+public class R2dbcAuditRepository implements AuditRepository {
 
-    private final ReactiveCassandraTemplate cassandraTemplate;
+    private final R2dbcEntityTemplate template;
     private final ObjectMapper objectMapper;
-    private final StructuredLogger logger;
+    private final StructuredLogger logger = StructuredLogger.getLogger(R2dbcAuditRepository.class);
+
+    public R2dbcAuditRepository(R2dbcEntityTemplate template, ObjectMapper objectMapper) {
+        this.template = template;
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public Mono<AuditEvent> save(AuditEvent event) {
         AuditRecord record = AuditRecord.fromEvent(event, objectMapper);
+        return template.insert(record)
+            .map(this::toEvent);
+    }
 
-        // Write to all tables (denormalized for query efficiency)
-        return Mono.when(
-            cassandraTemplate.insert(record),
-            saveToEntityIndex(event),
-            saveToUserIndex(event)
-        ).thenReturn(event);
+    @Override
+    public Mono<AuditEvent> findById(String eventId) {
+        return template.selectOne(
+            Query.query(Criteria.where("event_id").is(eventId)),
+            AuditRecord.class
+        ).map(this::toEvent);
     }
 
     @Override
@@ -697,10 +698,37 @@ public class CassandraAuditRepository implements AuditRepository {
         String eventType,
         int limit
     ) {
-        String cql = buildEntityQuery(timeRange, eventType);
-        return cassandraTemplate.select(cql, AuditRecord.class)
-            .map(this::toEvent)
-            .take(limit);
+        Criteria criteria = Criteria.where("entity_type").is(entityType)
+            .and("entity_id").is(entityId);
+
+        criteria = addTimeRangeCriteria(criteria, timeRange);
+        if (eventType != null) {
+            criteria = criteria.and("event_type").is(eventType);
+        }
+
+        return template.select(
+            Query.query(criteria)
+                .sort(Sort.by(Sort.Direction.DESC, "created_at"))
+                .limit(limit),
+            AuditRecord.class
+        ).map(this::toEvent);
+    }
+
+    @Override
+    public Flux<AuditEvent> findByUser(
+        String userId,
+        TimeRange timeRange,
+        int limit
+    ) {
+        Criteria criteria = Criteria.where("user_id").is(userId);
+        criteria = addTimeRangeCriteria(criteria, timeRange);
+
+        return template.select(
+            Query.query(criteria)
+                .sort(Sort.by(Sort.Direction.DESC, "created_at"))
+                .limit(limit),
+            AuditRecord.class
+        ).map(this::toEvent);
     }
 
     @Override
@@ -711,39 +739,50 @@ public class CassandraAuditRepository implements AuditRepository {
         String eventType,
         int limit
     ) {
-        // Query the main table by partition key (store_number, entity_type)
-        String cql = """
-            SELECT * FROM audit_events
-            WHERE store_number = ? AND entity_type = ?
-            AND timestamp >= ? AND timestamp < ?
-            """ + (eventType != null ? " AND event_type = ?" : "") +
-            " LIMIT ?";
+        Criteria criteria = Criteria.where("store_number").is(storeNumber)
+            .and("entity_type").is(entityType);
 
-        return cassandraTemplate.select(cql, AuditRecord.class,
-            storeNumber, entityType,
-            timeRange.start(), timeRange.end(),
-            eventType, limit)
-            .map(this::toEvent);
+        criteria = addTimeRangeCriteria(criteria, timeRange);
+        if (eventType != null) {
+            criteria = criteria.and("event_type").is(eventType);
+        }
+
+        return template.select(
+            Query.query(criteria)
+                .sort(Sort.by(Sort.Direction.DESC, "created_at"))
+                .limit(limit),
+            AuditRecord.class
+        ).map(this::toEvent);
+    }
+
+    private Criteria addTimeRangeCriteria(Criteria criteria, TimeRange timeRange) {
+        if (timeRange.start() != null) {
+            criteria = criteria.and("created_at").greaterThanOrEquals(timeRange.start());
+        }
+        if (timeRange.end() != null) {
+            criteria = criteria.and("created_at").lessThan(timeRange.end());
+        }
+        return criteria;
     }
 
     private AuditEvent toEvent(AuditRecord record) {
         Map<String, Object> data;
         try {
-            data = objectMapper.readValue(record.data(),
+            data = objectMapper.readValue(record.getData(),
                 new TypeReference<Map<String, Object>>() {});
         } catch (Exception e) {
             data = Map.of();
         }
         return new AuditEvent(
-            record.eventId(),
-            record.eventType(),
-            record.entityType(),
-            record.entityId(),
-            record.storeNumber(),
-            record.userId(),
-            record.sessionId(),
-            record.traceId(),
-            record.timestamp(),
+            record.getEventId(),
+            record.getEventType(),
+            record.getEntityType(),
+            record.getEntityId(),
+            record.getStoreNumber(),
+            record.getUserId(),
+            record.getSessionId(),
+            record.getTraceId(),
+            record.getCreatedAt(),
             data
         );
     }
@@ -760,7 +799,7 @@ public class CassandraAuditRepository implements AuditRepository {
 resilience4j:
   circuitbreaker:
     instances:
-      cassandra:
+      postgres:
         registerHealthIndicator: true
         slidingWindowSize: 10
         failureRateThreshold: 50
@@ -769,13 +808,13 @@ resilience4j:
 
   retry:
     instances:
-      cassandra:
+      postgres:
         maxAttempts: 3
         waitDuration: 500ms
         exponentialBackoffMultiplier: 2
         retryExceptions:
-          - com.datastax.oss.driver.api.core.AllNodesFailedException
-          - com.datastax.oss.driver.api.core.connection.ConnectionException
+          - io.r2dbc.spi.R2dbcTransientResourceException
+          - org.springframework.dao.TransientDataAccessException
 
   bulkhead:
     instances:
@@ -909,7 +948,7 @@ logger.warn(ctx, "Failed to process audit event", Map.of(
 ### 9.2 Integration Tests
 
 - Redis Streams consumer tests with embedded Redis
-- Cassandra repository tests with Testcontainers
+- PostgreSQL repository tests with Testcontainers
 - Full API tests with WebTestClient
 
 ### 9.3 Contract Tests
@@ -940,13 +979,13 @@ logger.warn(ctx, "Failed to process audit event", Map.of(
 1. Create `apps/audit-service/` directory
 2. Create `build.gradle.kts` with dependencies
 3. Create application bootstrap class
-4. Configure Cassandra connection
+4. Configure PostgreSQL R2DBC connection
 5. Configure Redis Streams connection
 
 ### Step 3: Database Schema
-1. Create Cassandra keyspace and tables
+1. Create PostgreSQL schema and indexes
 2. Implement `AuditRecord` domain model
-3. Implement `CassandraAuditRepository`
+3. Implement `R2dbcAuditRepository`
 
 ### Step 4: Queue Consumer
 1. Implement `AuditEventConsumer`
@@ -977,7 +1016,7 @@ logger.warn(ctx, "Failed to process audit event", Map.of(
 3. Add alerting rules
 
 ### Step 9: Docker & Testing
-1. Add Cassandra to Docker Compose
+1. Add PostgreSQL to Docker Compose (if not already present)
 2. Update audit-service Docker configuration
 3. Write integration tests
 4. Write load tests
@@ -1006,23 +1045,23 @@ logger.warn(ctx, "Failed to process audit event", Map.of(
 - [ ] `apps/audit-service/src/main/java/org/example/audit/domain/AuditRecord.java`
 - [ ] `apps/audit-service/src/main/java/org/example/audit/domain/TimeRange.java`
 - [ ] `apps/audit-service/src/main/java/org/example/audit/repository/AuditRepository.java`
-- [ ] `apps/audit-service/src/main/java/org/example/audit/repository/CassandraAuditRepository.java`
+- [ ] `apps/audit-service/src/main/java/org/example/audit/repository/R2dbcAuditRepository.java`
 - [ ] `apps/audit-service/src/main/java/org/example/audit/consumer/AuditEventConsumer.java`
 - [ ] `apps/audit-service/src/main/java/org/example/audit/consumer/DeadLetterHandler.java`
 - [ ] `apps/audit-service/src/main/java/org/example/audit/service/AuditService.java`
 - [ ] `apps/audit-service/src/main/java/org/example/audit/controller/AuditController.java`
 - [ ] `apps/audit-service/src/main/java/org/example/audit/config/SecurityConfig.java`
-- [ ] `apps/audit-service/src/main/java/org/example/audit/config/CassandraConfig.java`
+- [ ] `apps/audit-service/src/main/java/org/example/audit/config/R2dbcConfig.java`
 - [ ] `apps/audit-service/src/main/java/org/example/audit/config/RedisStreamConfig.java`
 - [ ] `apps/audit-service/src/main/resources/application.yml`
-- [ ] `apps/audit-service/src/main/resources/schema.cql`
+- [ ] `apps/audit-service/src/main/resources/schema.sql`
 
 **Docker:**
-- [ ] `docker/cassandra/init.cql` (schema initialization)
+- [ ] `docker/postgres/init-audit.sql` (schema initialization)
 
 **Configuration Updates:**
 - [ ] `settings.gradle.kts` (add new modules)
-- [ ] `docker/docker-compose.yml` (add Cassandra, audit-service)
+- [ ] `docker/docker-compose.yml` (add PostgreSQL if needed, audit-service)
 
 ### Files to Modify
 
@@ -1037,21 +1076,23 @@ logger.warn(ctx, "Failed to process audit event", Map.of(
 ```yaml
 # docker-compose.yml additions
 
-cassandra:
-  image: cassandra:4.1
-  container_name: cassandra
+# PostgreSQL (may already exist in docker-compose.yml)
+postgres:
+  image: postgres:16-alpine
+  container_name: postgres
   ports:
-    - "9042:9042"
+    - "5432:5432"
   environment:
-    - CASSANDRA_CLUSTER_NAME=audit-cluster
-    - CASSANDRA_DC=dc1
+    POSTGRES_USER: audit
+    POSTGRES_PASSWORD: audit
+    POSTGRES_DB: audit
   volumes:
-    - cassandra-data:/var/lib/cassandra
-    - ./cassandra/init.cql:/docker-entrypoint-initdb.d/init.cql
+    - postgres-data:/var/lib/postgresql/data
+    - ./postgres/init-audit.sql:/docker-entrypoint-initdb.d/init-audit.sql
   healthcheck:
-    test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
-    interval: 30s
-    timeout: 10s
+    test: ["CMD-SHELL", "pg_isready -U audit -d audit"]
+    interval: 10s
+    timeout: 5s
     retries: 5
 
 audit-service:
@@ -1063,10 +1104,12 @@ audit-service:
     - "8086:8080"
   environment:
     - SPRING_PROFILES_ACTIVE=docker
-    - SPRING_DATA_CASSANDRA_CONTACT_POINTS=cassandra
+    - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/audit
+    - SPRING_R2DBC_USERNAME=audit
+    - SPRING_R2DBC_PASSWORD=audit
     - SPRING_DATA_REDIS_HOST=redis
   depends_on:
-    cassandra:
+    postgres:
       condition: service_healthy
     redis:
       condition: service_started
@@ -1076,7 +1119,7 @@ audit-service:
     - "prometheus.path=/actuator/prometheus"
 
 volumes:
-  cassandra-data:
+  postgres-data:
 ```
 
 ---
@@ -1084,7 +1127,7 @@ volumes:
 ## Open Questions
 
 1. **Data Retention:** How long should audit data be retained?
-   - **Proposed:** 1 year TTL in Cassandra, configurable per event type
+   - **Proposed:** 1 year retention, managed via scheduled cleanup job or pg_cron
 
 2. **Event Ordering:** Is strict ordering required within an entity?
    - **Proposed:** Best-effort ordering via timestamp; exact ordering available via eventId
@@ -1101,5 +1144,5 @@ volumes:
 6. **Cross-Service Correlation:** How to correlate events across services?
    - **Proposed:** Use `traceId` from OpenTelemetry for distributed tracing correlation
 
-7. **Cassandra vs ScyllaDB:** Which wide-column database to use?
-   - **Proposed:** Start with Cassandra for familiarity; ScyllaDB is drop-in compatible for future migration
+7. **Table Partitioning:** Should audit_events table be partitioned for large-scale deployments?
+   - **Proposed:** Start without partitioning; add monthly partitions via PostgreSQL declarative partitioning if needed

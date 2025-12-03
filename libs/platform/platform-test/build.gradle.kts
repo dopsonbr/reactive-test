@@ -11,6 +11,9 @@ dependencies {
     api(libs.testcontainers.junit.jupiter)
     api(libs.wiremock.standalone)
 
+    // Architecture testing
+    api(libs.archunit.junit5)
+
     // JWT generation for security tests
     api(libs.bundles.jjwt)
 

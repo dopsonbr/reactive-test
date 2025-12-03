@@ -21,5 +21,6 @@ dependencies {
         api(libs.logstash.logback.encoder)
         api(libs.opentelemetry.api)
         api(libs.wiremock.standalone)
+        api(libs.archunit.junit5)
     }
 }

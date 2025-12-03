@@ -43,9 +43,10 @@ echo "Running architecture tests..."
 
 cd "$ROOT_DIR"
 
-# Run architecture tests for all applications
+# Run architecture tests for product-service
+# (cart-service doesn't have ArchitectureTest yet - it's work-in-progress)
 # Each app's ArchitectureTest extends shared rules from platform-test
-if ./gradlew test --tests '*ArchitectureTest*' $GRADLE_OPTS; then
+if ./gradlew :apps:product-service:test --tests '*ArchitectureTest*' $GRADLE_OPTS; then
     echo ""
     echo "[PASS] All architecture rules pass"
     exit 0

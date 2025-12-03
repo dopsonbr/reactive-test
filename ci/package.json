@@ -1,0 +1,18 @@
+{
+  "name": "reactive-platform-ci",
+  "version": "1.0.0",
+  "description": "CI scripts for reactive-platform verification",
+  "type": "module",
+  "scripts": {
+    "verify": "node verify.js",
+    "format:check": "node format-check.js",
+    "format:apply": "node format-apply.js",
+    "arch:check": "node arch-check.js",
+    "build": "node build-all.js",
+    "build:bootjars": "node build-bootjars.js",
+    "test": "node test-unit.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

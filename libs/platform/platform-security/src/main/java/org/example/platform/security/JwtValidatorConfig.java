@@ -1,5 +1,6 @@
 package org.example.platform.security;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,7 @@ public class JwtValidatorConfig {
     }
 
     @Bean
+    @ConditionalOnMissingBean(ReactiveJwtDecoder.class)
     public ReactiveJwtDecoder jwtDecoder() {
         NimbusReactiveJwtDecoder decoder = NimbusReactiveJwtDecoder
             .withJwkSetUri(securityProperties.getJwkSetUri())

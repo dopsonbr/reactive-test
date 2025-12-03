@@ -302,17 +302,18 @@ services:
     image: grafana/k6:0.55.0
     container_name: k6-oauth-chaos
     volumes:
-      - ../perf-test/k6:/scripts:ro
+      - ../e2e-test/k6:/scripts:ro
+      - ../e2e-test/data:/data:ro
       - k6-output:/output
     environment:
       - K6_OUT=experimental-prometheus-rw
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
-      - BASE_URL=http://reactive-test:8080
+      - BASE_URL=http://product-service:8080
       - WIREMOCK_URL=http://wiremock:8080
     command: run /scripts/oauth-chaos-test.js
     depends_on:
-      reactive-test:
+      product-service:
         condition: service_healthy
       prometheus:
         condition: service_healthy
@@ -327,17 +328,18 @@ services:
     image: grafana/k6:0.55.0
     container_name: k6-oauth-circuit-breaker
     volumes:
-      - ../perf-test/k6:/scripts:ro
+      - ../e2e-test/k6:/scripts:ro
+      - ../e2e-test/data:/data:ro
       - k6-output:/output
     environment:
       - K6_OUT=experimental-prometheus-rw
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
-      - BASE_URL=http://reactive-test:8080
+      - BASE_URL=http://product-service:8080
       - WIREMOCK_URL=http://wiremock:8080
     command: run /scripts/oauth-circuit-breaker-test.js
     depends_on:
-      reactive-test:
+      product-service:
         condition: service_healthy
       prometheus:
         condition: service_healthy

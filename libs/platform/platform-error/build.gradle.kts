@@ -12,6 +12,9 @@ dependencies {
     // Logging integration
     implementation(project(":libs:platform:platform-logging"))
 
+    // Security exceptions - optional, only needed for apps using OAuth
+    compileOnly("org.springframework.boot:spring-boot-starter-security")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
 }

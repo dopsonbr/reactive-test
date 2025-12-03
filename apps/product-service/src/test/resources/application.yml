@@ -1,0 +1,80 @@
+# Test configuration for product-service
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 1000ms
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Will be overridden by TestSecurityConfig's custom JwtDecoder
+          issuer-uri: test-issuer
+      client:
+        registration:
+          downstream-services:
+            client-id: test-client
+            client-secret: test-secret
+            authorization-grant-type: client_credentials
+            scope: merchandise:read,price:read,inventory:read
+            provider: downstream-auth
+        provider:
+          downstream-auth:
+            token-uri: http://localhost:8081/downstream-oauth/token
+
+# Application Security Configuration
+app:
+  security:
+    # Disable the JwtValidatorConfig so TestSecurityConfig's decoder is used
+    enabled: false
+    # Disable OAuth2 client for most tests - use mock WebClient instead
+    oauth2-client:
+      enabled: false
+    # Properties still needed for any code that reads them
+    jwk-set-uri: http://localhost:8081/test/.well-known/jwks.json
+    allowed-issuers:
+      - test-issuer
+    required-audience: reactive-test-api
+    clock-skew-seconds: 300  # Generous skew for tests
+
+# External service URLs (WireMock in test)
+services:
+  merchandise:
+    base-url: http://localhost:8081
+  price:
+    base-url: http://localhost:8081
+  inventory:
+    base-url: http://localhost:8081
+
+# Logging
+logging:
+  level:
+    org.example: DEBUG
+    org.springframework.security: DEBUG
+
+# Actuator & Management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,circuitbreakers,retries
+
+# Resilience4j - relaxed for tests
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        minimum-number-of-calls: 100
+        failure-rate-threshold: 90
+  retry:
+    configs:
+      default:
+        max-attempts: 1
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s

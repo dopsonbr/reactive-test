@@ -7,8 +7,7 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import reactor.core.publisher.Mono;
 
 /**
- * WebClient filter that logs outbound HTTP requests and responses
- * with Reactor Context correlation.
+ * WebClient filter that logs outbound HTTP requests and responses with Reactor Context correlation.
  */
 @Component
 public class WebClientLoggingFilter {
@@ -25,14 +24,23 @@ public class WebClientLoggingFilter {
      * @return an ExchangeFilterFunction for WebClient
      */
     public ExchangeFilterFunction create(String repositoryName) {
-        return (request, next) -> Mono.deferContextual(ctx -> {
-            logRequest(ctx, repositoryName, request);
-            return next.exchange(request)
-                .doOnNext(response -> logResponse(ctx, repositoryName, request, response));
-        });
+        return (request, next) ->
+                Mono.deferContextual(
+                        ctx -> {
+                            logRequest(ctx, repositoryName, request);
+                            return next.exchange(request)
+                                    .doOnNext(
+                                            response ->
+                                                    logResponse(
+                                                            ctx,
+                                                            repositoryName,
+                                                            request,
+                                                            response));
+                        });
     }
 
-    private void logRequest(reactor.util.context.ContextView ctx, String repositoryName, ClientRequest request) {
+    private void logRequest(
+            reactor.util.context.ContextView ctx, String repositoryName, ClientRequest request) {
         String path = request.url().getPath();
         String host = request.url().getHost() + ":" + request.url().getPort();
         String uri = request.url().getPath();
@@ -42,8 +50,11 @@ public class WebClientLoggingFilter {
         structuredLogger.logRequest(ctx, repositoryName, data);
     }
 
-    private void logResponse(reactor.util.context.ContextView ctx, String repositoryName,
-                             ClientRequest request, ClientResponse response) {
+    private void logResponse(
+            reactor.util.context.ContextView ctx,
+            String repositoryName,
+            ClientRequest request,
+            ClientResponse response) {
         String path = request.url().getPath();
         String host = request.url().getHost() + ":" + request.url().getPort();
         String uri = request.url().getPath();

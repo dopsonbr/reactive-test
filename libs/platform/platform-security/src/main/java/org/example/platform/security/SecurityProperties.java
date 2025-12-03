@@ -1,42 +1,31 @@
 package org.example.platform.security;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Configuration properties for OAuth2 security.
- * Bound to the 'app.security' prefix in application.yml.
+ * Configuration properties for OAuth2 security. Bound to the 'app.security' prefix in
+ * application.yml.
  */
 @Component
 @ConfigurationProperties(prefix = "app.security")
 public class SecurityProperties {
 
-    /**
-     * Whether security is enabled. Set to false in tests to skip JWT validation config.
-     */
+    /** Whether security is enabled. Set to false in tests to skip JWT validation config. */
     private boolean enabled = true;
 
-    /**
-     * JWK Set URI for JWT signature verification.
-     */
+    /** JWK Set URI for JWT signature verification. */
     private String jwkSetUri;
 
-    /**
-     * List of allowed token issuers.
-     */
+    /** List of allowed token issuers. */
     private List<String> allowedIssuers = new ArrayList<>();
 
-    /**
-     * Required audience claim value.
-     */
+    /** Required audience claim value. */
     private String requiredAudience = "reactive-test-api";
 
-    /**
-     * Clock skew tolerance in seconds for token expiration validation.
-     */
+    /** Clock skew tolerance in seconds for token expiration validation. */
     private long clockSkewSeconds = 30;
 
     public boolean isEnabled() {

@@ -9,15 +9,12 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-/**
- * Application context test to verify the Spring context loads successfully.
- */
+/** Application context test to verify the Spring context loads successfully. */
 @SpringBootTest
 @Testcontainers
 class CartServiceApplicationTest {
 
-    @Container
-    static GenericContainer<?> redis = RedisTestSupport.createRedisContainer();
+    @Container static GenericContainer<?> redis = RedisTestSupport.createRedisContainer();
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {

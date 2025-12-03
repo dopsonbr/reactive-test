@@ -13,7 +13,8 @@ import reactor.core.publisher.Mono;
 public class MerchandiseRepository {
     private static final String RESILIENCE_NAME = "merchandise";
     private static final String LOGGER_NAME = "merchandiserepository";
-    private static final MerchandiseResponse FALLBACK = new MerchandiseResponse("Description unavailable");
+    private static final MerchandiseResponse FALLBACK =
+            new MerchandiseResponse("Description unavailable");
 
     private final WebClient merchandiseWebClient;
     private final ReactiveResilience resilience;
@@ -38,31 +39,38 @@ public class MerchandiseRepository {
         String cacheKey = CacheKeyGenerator.merchandiseKey(sku);
 
         // Cache-Aside Pattern: Check cache first
-        return cacheService.get(cacheKey, MerchandiseResponse.class)
-            .switchIfEmpty(Mono.defer(() -> fetchAndCache(sku, cacheKey)));
+        return cacheService
+                .get(cacheKey, MerchandiseResponse.class)
+                .switchIfEmpty(Mono.defer(() -> fetchAndCache(sku, cacheKey)));
     }
 
     private Mono<MerchandiseResponse> fetchAndCache(long sku, String cacheKey) {
-        Mono<MerchandiseResponse> call = merchandiseWebClient.get()
-            .uri("/merchandise/{sku}", sku)
-            .retrieve()
-            .bodyToMono(MerchandiseResponse.class);
+        Mono<MerchandiseResponse> call =
+                merchandiseWebClient
+                        .get()
+                        .uri("/merchandise/{sku}", sku)
+                        .retrieve()
+                        .bodyToMono(MerchandiseResponse.class);
 
-        return resilience.decorate(RESILIENCE_NAME, call)
-            .flatMap(response -> cacheAndReturn(cacheKey, response))
-            .onErrorResume(this::handleError);
+        return resilience
+                .decorate(RESILIENCE_NAME, call)
+                .flatMap(response -> cacheAndReturn(cacheKey, response))
+                .onErrorResume(this::handleError);
     }
 
-    private Mono<MerchandiseResponse> cacheAndReturn(String cacheKey, MerchandiseResponse response) {
-        return cacheService.put(cacheKey, response, cacheProperties.getMerchandise().getTtl())
-            .thenReturn(response);
+    private Mono<MerchandiseResponse> cacheAndReturn(
+            String cacheKey, MerchandiseResponse response) {
+        return cacheService
+                .put(cacheKey, response, cacheProperties.getMerchandise().getTtl())
+                .thenReturn(response);
     }
 
     private Mono<MerchandiseResponse> handleError(Throwable t) {
-        return Mono.deferContextual(ctx -> {
-            String cbState = resilience.getCircuitBreakerState(RESILIENCE_NAME).name();
-            structuredLogger.logError(ctx, LOGGER_NAME, RESILIENCE_NAME, t, cbState);
-            return Mono.just(FALLBACK);
-        });
+        return Mono.deferContextual(
+                ctx -> {
+                    String cbState = resilience.getCircuitBreakerState(RESILIENCE_NAME).name();
+                    structuredLogger.logError(ctx, LOGGER_NAME, RESILIENCE_NAME, t, cbState);
+                    return Mono.just(FALLBACK);
+                });
     }
 }

@@ -1,6 +1,15 @@
 package org.example.product.repository.inventory;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import java.time.Duration;
 import org.example.platform.cache.ReactiveCacheService;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.resilience.ReactiveResilience;
@@ -14,48 +23,28 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.time.Duration;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class InventoryRepositoryCacheTest {
 
-    @Mock
-    private WebClient webClient;
+    @Mock private WebClient webClient;
 
-    @Mock
-    private WebClient.RequestBodyUriSpec requestBodyUriSpec;
+    @Mock private WebClient.RequestBodyUriSpec requestBodyUriSpec;
 
-    @Mock
-    private WebClient.RequestBodySpec requestBodySpec;
+    @Mock private WebClient.RequestBodySpec requestBodySpec;
 
-    @Mock
-    private WebClient.RequestHeadersSpec requestHeadersSpec;
+    @Mock private WebClient.RequestHeadersSpec requestHeadersSpec;
 
-    @Mock
-    private WebClient.ResponseSpec responseSpec;
+    @Mock private WebClient.ResponseSpec responseSpec;
 
-    @Mock
-    private ReactiveResilience resilience;
+    @Mock private ReactiveResilience resilience;
 
-    @Mock
-    private StructuredLogger structuredLogger;
+    @Mock private StructuredLogger structuredLogger;
 
-    @Mock
-    private ReactiveCacheService cacheService;
+    @Mock private ReactiveCacheService cacheService;
 
-    @Mock
-    private CacheProperties cacheProperties;
+    @Mock private CacheProperties cacheProperties;
 
-    @Mock
-    private CacheProperties.ServiceCache serviceCache;
+    @Mock private CacheProperties.ServiceCache serviceCache;
 
     private InventoryRepository repository;
 
@@ -64,13 +53,9 @@ class InventoryRepositoryCacheTest {
         lenient().when(cacheProperties.getInventory()).thenReturn(serviceCache);
         lenient().when(serviceCache.getTtl()).thenReturn(Duration.ofSeconds(30));
 
-        repository = new InventoryRepository(
-            webClient,
-            resilience,
-            structuredLogger,
-            cacheService,
-            cacheProperties
-        );
+        repository =
+                new InventoryRepository(
+                        webClient, resilience, structuredLogger, cacheService, cacheProperties);
     }
 
     @Test
@@ -90,16 +75,16 @@ class InventoryRepositoryCacheTest {
 
         // Resilience decoration returns the same mono
         when(resilience.decorate(eq("inventory"), any(Mono.class)))
-            .thenAnswer(invocation -> invocation.getArgument(1));
+                .thenAnswer(invocation -> invocation.getArgument(1));
 
         // Cache put succeeds
         when(cacheService.put(eq(cacheKey), eq(httpResponse), any(Duration.class)))
-            .thenReturn(Mono.just(true));
+                .thenReturn(Mono.just(true));
 
         // When & Then
         StepVerifier.create(repository.getAvailability(sku))
-            .expectNext(httpResponse)
-            .verifyComplete();
+                .expectNext(httpResponse)
+                .verifyComplete();
 
         // Verify HTTP call was made
         verify(webClient).post();
@@ -124,24 +109,24 @@ class InventoryRepositoryCacheTest {
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
         when(requestBodySpec.bodyValue(any(InventoryRequest.class))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(InventoryResponse.class)).thenReturn(Mono.just(new InventoryResponse(0)));
+        when(responseSpec.bodyToMono(InventoryResponse.class))
+                .thenReturn(Mono.just(new InventoryResponse(0)));
 
         // Resilience decoration throws error (after retries)
         when(resilience.decorate(eq("inventory"), any(Mono.class)))
-            .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
+                .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
 
         // Circuit breaker state
-        when(resilience.getCircuitBreakerState("inventory"))
-            .thenReturn(CircuitBreaker.State.OPEN);
+        when(resilience.getCircuitBreakerState("inventory")).thenReturn(CircuitBreaker.State.OPEN);
 
         // Cache has stale data
         when(cacheService.get(eq(cacheKey), eq(InventoryResponse.class)))
-            .thenReturn(Mono.just(cachedResponse));
+                .thenReturn(Mono.just(cachedResponse));
 
         // When & Then - should return cached value
         StepVerifier.create(repository.getAvailability(sku))
-            .expectNext(cachedResponse)
-            .verifyComplete();
+                .expectNext(cachedResponse)
+                .verifyComplete();
 
         // Verify cache was queried as fallback
         verify(cacheService).get(eq(cacheKey), eq(InventoryResponse.class));
@@ -159,24 +144,23 @@ class InventoryRepositoryCacheTest {
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
         when(requestBodySpec.bodyValue(any(InventoryRequest.class))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(InventoryResponse.class)).thenReturn(Mono.just(new InventoryResponse(0)));
+        when(responseSpec.bodyToMono(InventoryResponse.class))
+                .thenReturn(Mono.just(new InventoryResponse(0)));
 
         // Resilience decoration throws error (after retries)
         when(resilience.decorate(eq("inventory"), any(Mono.class)))
-            .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
+                .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
 
         // Circuit breaker state
-        when(resilience.getCircuitBreakerState("inventory"))
-            .thenReturn(CircuitBreaker.State.OPEN);
+        when(resilience.getCircuitBreakerState("inventory")).thenReturn(CircuitBreaker.State.OPEN);
 
         // Cache miss - no stale data available
-        when(cacheService.get(eq(cacheKey), eq(InventoryResponse.class)))
-            .thenReturn(Mono.empty());
+        when(cacheService.get(eq(cacheKey), eq(InventoryResponse.class))).thenReturn(Mono.empty());
 
         // When & Then - should return backordered (-1)
         StepVerifier.create(repository.getAvailability(sku))
-            .expectNextMatches(response -> response.availableQuantity() == -1)
-            .verifyComplete();
+                .expectNextMatches(response -> response.availableQuantity() == -1)
+                .verifyComplete();
     }
 
     @Test
@@ -196,16 +180,16 @@ class InventoryRepositoryCacheTest {
 
         // Resilience decoration returns the same mono
         when(resilience.decorate(eq("inventory"), any(Mono.class)))
-            .thenAnswer(invocation -> invocation.getArgument(1));
+                .thenAnswer(invocation -> invocation.getArgument(1));
 
         // Cache put succeeds
         when(cacheService.put(eq(cacheKey), eq(httpResponse), any(Duration.class)))
-            .thenReturn(Mono.just(true));
+                .thenReturn(Mono.just(true));
 
         // When & Then
         StepVerifier.create(repository.getAvailability(sku))
-            .expectNext(httpResponse)
-            .verifyComplete();
+                .expectNext(httpResponse)
+                .verifyComplete();
 
         // Verify cache was updated with fresh inventory data
         verify(cacheService).put(eq(cacheKey), eq(httpResponse), eq(Duration.ofSeconds(30)));
@@ -228,16 +212,16 @@ class InventoryRepositoryCacheTest {
 
         // Resilience decoration returns the same mono
         when(resilience.decorate(eq("inventory"), any(Mono.class)))
-            .thenAnswer(invocation -> invocation.getArgument(1));
+                .thenAnswer(invocation -> invocation.getArgument(1));
 
         // Cache put fails (Redis down) but should not break the flow
         when(cacheService.put(eq(cacheKey), eq(httpResponse), any(Duration.class)))
-            .thenReturn(Mono.just(false));
+                .thenReturn(Mono.just(false));
 
         // When & Then - should still return HTTP response
         StepVerifier.create(repository.getAvailability(sku))
-            .expectNext(httpResponse)
-            .verifyComplete();
+                .expectNext(httpResponse)
+                .verifyComplete();
     }
 
     @Test
@@ -252,23 +236,22 @@ class InventoryRepositoryCacheTest {
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
         when(requestBodySpec.bodyValue(any(InventoryRequest.class))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(InventoryResponse.class)).thenReturn(Mono.just(new InventoryResponse(0)));
+        when(responseSpec.bodyToMono(InventoryResponse.class))
+                .thenReturn(Mono.just(new InventoryResponse(0)));
 
         // Resilience decoration throws error
         when(resilience.decorate(eq("inventory"), any(Mono.class)))
-            .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
+                .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
 
         // Circuit breaker state
-        when(resilience.getCircuitBreakerState("inventory"))
-            .thenReturn(CircuitBreaker.State.OPEN);
+        when(resilience.getCircuitBreakerState("inventory")).thenReturn(CircuitBreaker.State.OPEN);
 
         // Redis is also down - returns empty
-        when(cacheService.get(eq(cacheKey), eq(InventoryResponse.class)))
-            .thenReturn(Mono.empty());
+        when(cacheService.get(eq(cacheKey), eq(InventoryResponse.class))).thenReturn(Mono.empty());
 
         // When & Then - should return backordered (-1) as last resort
         StepVerifier.create(repository.getAvailability(sku))
-            .expectNextMatches(response -> response.availableQuantity() == -1)
-            .verifyComplete();
+                .expectNextMatches(response -> response.availableQuantity() == -1)
+                .verifyComplete();
     }
 }

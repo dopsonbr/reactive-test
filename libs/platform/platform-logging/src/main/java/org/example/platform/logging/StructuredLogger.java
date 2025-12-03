@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import reactor.util.context.ContextView;
 
 /**
- * Structured JSON logger that extracts metadata from Reactor Context
- * and correlates logs with OpenTelemetry trace context.
+ * Structured JSON logger that extracts metadata from Reactor Context and correlates logs with
+ * OpenTelemetry trace context.
  */
 @Component
 public class StructuredLogger {
@@ -41,21 +41,23 @@ public class StructuredLogger {
     }
 
     public void logError(ContextView ctx, String loggerName, String service, Throwable error) {
-        ErrorLogData data = new ErrorLogData(
-            service,
-            error.getClass().getSimpleName(),
-            error.getMessage()
-        );
+        ErrorLogData data =
+                new ErrorLogData(service, error.getClass().getSimpleName(), error.getMessage());
         log(ctx, loggerName, "error", data);
     }
 
-    public void logError(ContextView ctx, String loggerName, String service, Throwable error, String circuitBreakerState) {
-        ErrorLogData data = new ErrorLogData(
-            service,
-            error.getClass().getSimpleName(),
-            error.getMessage(),
-            circuitBreakerState
-        );
+    public void logError(
+            ContextView ctx,
+            String loggerName,
+            String service,
+            Throwable error,
+            String circuitBreakerState) {
+        ErrorLogData data =
+                new ErrorLogData(
+                        service,
+                        error.getClass().getSimpleName(),
+                        error.getMessage(),
+                        circuitBreakerState);
         log(ctx, loggerName, "error", data);
     }
 

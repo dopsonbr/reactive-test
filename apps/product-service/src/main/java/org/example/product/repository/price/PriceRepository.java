@@ -38,32 +38,38 @@ public class PriceRepository {
         String cacheKey = CacheKeyGenerator.priceKey(sku);
 
         // Cache-Aside Pattern: Check cache first
-        return cacheService.get(cacheKey, PriceResponse.class)
-            .switchIfEmpty(Mono.defer(() -> fetchAndCache(sku, cacheKey)));
+        return cacheService
+                .get(cacheKey, PriceResponse.class)
+                .switchIfEmpty(Mono.defer(() -> fetchAndCache(sku, cacheKey)));
     }
 
     private Mono<PriceResponse> fetchAndCache(long sku, String cacheKey) {
-        Mono<PriceResponse> call = priceWebClient.post()
-            .uri("/price")
-            .bodyValue(new PriceRequest(sku))
-            .retrieve()
-            .bodyToMono(PriceResponse.class);
+        Mono<PriceResponse> call =
+                priceWebClient
+                        .post()
+                        .uri("/price")
+                        .bodyValue(new PriceRequest(sku))
+                        .retrieve()
+                        .bodyToMono(PriceResponse.class);
 
-        return resilience.decorate(RESILIENCE_NAME, call)
-            .flatMap(response -> cacheAndReturn(cacheKey, response))
-            .onErrorResume(this::handleError);
+        return resilience
+                .decorate(RESILIENCE_NAME, call)
+                .flatMap(response -> cacheAndReturn(cacheKey, response))
+                .onErrorResume(this::handleError);
     }
 
     private Mono<PriceResponse> cacheAndReturn(String cacheKey, PriceResponse response) {
-        return cacheService.put(cacheKey, response, cacheProperties.getPrice().getTtl())
-            .thenReturn(response);
+        return cacheService
+                .put(cacheKey, response, cacheProperties.getPrice().getTtl())
+                .thenReturn(response);
     }
 
     private Mono<PriceResponse> handleError(Throwable t) {
-        return Mono.deferContextual(ctx -> {
-            String cbState = resilience.getCircuitBreakerState(RESILIENCE_NAME).name();
-            structuredLogger.logError(ctx, LOGGER_NAME, RESILIENCE_NAME, t, cbState);
-            return Mono.just(FALLBACK);
-        });
+        return Mono.deferContextual(
+                ctx -> {
+                    String cbState = resilience.getCircuitBreakerState(RESILIENCE_NAME).name();
+                    structuredLogger.logError(ctx, LOGGER_NAME, RESILIENCE_NAME, t, cbState);
+                    return Mono.just(FALLBACK);
+                });
     }
 }

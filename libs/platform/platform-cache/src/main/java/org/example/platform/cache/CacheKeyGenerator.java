@@ -1,8 +1,8 @@
 package org.example.platform.cache;
 
 /**
- * Generates consistent cache keys for different services.
- * Each service should have its own prefix to avoid key collisions.
+ * Generates consistent cache keys for different services. Each service should have its own prefix
+ * to avoid key collisions.
  */
 public final class CacheKeyGenerator {
 

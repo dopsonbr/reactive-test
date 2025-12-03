@@ -12,8 +12,8 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
- * Auto-configuration for Redis caching.
- * Provides a ReactiveRedisTemplate with JSON serialization and RedisCacheService.
+ * Auto-configuration for Redis caching. Provides a ReactiveRedisTemplate with JSON serialization
+ * and RedisCacheService.
  */
 @AutoConfiguration
 @ConditionalOnClass(ReactiveRedisConnectionFactory.class)
@@ -22,19 +22,18 @@ public class RedisCacheAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public ReactiveRedisTemplate<String, Object> reactiveRedisTemplate(
-            ReactiveRedisConnectionFactory connectionFactory,
-            ObjectMapper objectMapper) {
+            ReactiveRedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
 
         Jackson2JsonRedisSerializer<Object> jsonSerializer =
-            new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
+                new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
 
         StringRedisSerializer stringSerializer = new StringRedisSerializer();
 
         RedisSerializationContext<String, Object> context =
-            RedisSerializationContext.<String, Object>newSerializationContext(stringSerializer)
-                .value(jsonSerializer)
-                .hashValue(jsonSerializer)
-                .build();
+                RedisSerializationContext.<String, Object>newSerializationContext(stringSerializer)
+                        .value(jsonSerializer)
+                        .hashValue(jsonSerializer)
+                        .build();
 
         return new ReactiveRedisTemplate<>(connectionFactory, context);
     }
@@ -42,8 +41,7 @@ public class RedisCacheAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ReactiveCacheService.class)
     public RedisCacheService redisCacheService(
-            ReactiveRedisTemplate<String, Object> redisTemplate,
-            ObjectMapper objectMapper) {
+            ReactiveRedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
         return new RedisCacheService(redisTemplate, objectMapper);
     }
 }

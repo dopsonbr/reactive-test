@@ -1,17 +1,18 @@
 package org.example.product;
 
+import org.example.product.config.CacheProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.example.product.config.CacheProperties;
 
-@SpringBootApplication(scanBasePackages = {
-    "org.example.product",
-    "org.example.platform.logging",
-    "org.example.platform.resilience",
-    "org.example.platform.error",
-    "org.example.platform.security"
-})
+@SpringBootApplication(
+        scanBasePackages = {
+            "org.example.product",
+            "org.example.platform.logging",
+            "org.example.platform.resilience",
+            "org.example.platform.error",
+            "org.example.platform.security"
+        })
 @EnableConfigurationProperties(CacheProperties.class)
 public class ProductServiceApplication {
 

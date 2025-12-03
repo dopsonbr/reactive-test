@@ -1,6 +1,15 @@
 package org.example.product.repository.price;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import java.time.Duration;
 import org.example.platform.cache.ReactiveCacheService;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.resilience.ReactiveResilience;
@@ -14,48 +23,28 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.time.Duration;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class PriceRepositoryCacheTest {
 
-    @Mock
-    private WebClient webClient;
+    @Mock private WebClient webClient;
 
-    @Mock
-    private WebClient.RequestBodyUriSpec requestBodyUriSpec;
+    @Mock private WebClient.RequestBodyUriSpec requestBodyUriSpec;
 
-    @Mock
-    private WebClient.RequestBodySpec requestBodySpec;
+    @Mock private WebClient.RequestBodySpec requestBodySpec;
 
-    @Mock
-    private WebClient.RequestHeadersSpec requestHeadersSpec;
+    @Mock private WebClient.RequestHeadersSpec requestHeadersSpec;
 
-    @Mock
-    private WebClient.ResponseSpec responseSpec;
+    @Mock private WebClient.ResponseSpec responseSpec;
 
-    @Mock
-    private ReactiveResilience resilience;
+    @Mock private ReactiveResilience resilience;
 
-    @Mock
-    private StructuredLogger structuredLogger;
+    @Mock private StructuredLogger structuredLogger;
 
-    @Mock
-    private ReactiveCacheService cacheService;
+    @Mock private ReactiveCacheService cacheService;
 
-    @Mock
-    private CacheProperties cacheProperties;
+    @Mock private CacheProperties cacheProperties;
 
-    @Mock
-    private CacheProperties.ServiceCache serviceCache;
+    @Mock private CacheProperties.ServiceCache serviceCache;
 
     private PriceRepository repository;
 
@@ -64,13 +53,9 @@ class PriceRepositoryCacheTest {
         lenient().when(cacheProperties.getPrice()).thenReturn(serviceCache);
         lenient().when(serviceCache.getTtl()).thenReturn(Duration.ofMinutes(2));
 
-        repository = new PriceRepository(
-            webClient,
-            resilience,
-            structuredLogger,
-            cacheService,
-            cacheProperties
-        );
+        repository =
+                new PriceRepository(
+                        webClient, resilience, structuredLogger, cacheService, cacheProperties);
     }
 
     @Test
@@ -81,12 +66,10 @@ class PriceRepositoryCacheTest {
         PriceResponse cachedResponse = new PriceResponse("99.99");
 
         when(cacheService.get(eq(cacheKey), eq(PriceResponse.class)))
-            .thenReturn(Mono.just(cachedResponse));
+                .thenReturn(Mono.just(cachedResponse));
 
         // When & Then
-        StepVerifier.create(repository.getPrice(sku))
-            .expectNext(cachedResponse)
-            .verifyComplete();
+        StepVerifier.create(repository.getPrice(sku)).expectNext(cachedResponse).verifyComplete();
 
         // Verify no HTTP call was made
         verify(webClient, never()).post();
@@ -101,8 +84,7 @@ class PriceRepositoryCacheTest {
         PriceResponse httpResponse = new PriceResponse("149.99");
 
         // Cache miss
-        when(cacheService.get(eq(cacheKey), eq(PriceResponse.class)))
-            .thenReturn(Mono.empty());
+        when(cacheService.get(eq(cacheKey), eq(PriceResponse.class))).thenReturn(Mono.empty());
 
         // HTTP call setup
         when(webClient.post()).thenReturn(requestBodyUriSpec);
@@ -113,16 +95,14 @@ class PriceRepositoryCacheTest {
 
         // Resilience decoration returns the same mono
         when(resilience.decorate(eq("price"), any(Mono.class)))
-            .thenAnswer(invocation -> invocation.getArgument(1));
+                .thenAnswer(invocation -> invocation.getArgument(1));
 
         // Cache put succeeds
         when(cacheService.put(eq(cacheKey), eq(httpResponse), any(Duration.class)))
-            .thenReturn(Mono.just(true));
+                .thenReturn(Mono.just(true));
 
         // When & Then
-        StepVerifier.create(repository.getPrice(sku))
-            .expectNext(httpResponse)
-            .verifyComplete();
+        StepVerifier.create(repository.getPrice(sku)).expectNext(httpResponse).verifyComplete();
 
         // Verify cache was populated
         verify(cacheService).put(eq(cacheKey), eq(httpResponse), any(Duration.class));
@@ -136,29 +116,27 @@ class PriceRepositoryCacheTest {
         String cacheKey = "price:sku:" + sku;
 
         // Cache miss
-        when(cacheService.get(eq(cacheKey), eq(PriceResponse.class)))
-            .thenReturn(Mono.empty());
+        when(cacheService.get(eq(cacheKey), eq(PriceResponse.class))).thenReturn(Mono.empty());
 
         // HTTP call setup
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
         when(requestBodySpec.bodyValue(any(PriceRequest.class))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(PriceResponse.class)).thenReturn(Mono.just(new PriceResponse("test")));
+        when(responseSpec.bodyToMono(PriceResponse.class))
+                .thenReturn(Mono.just(new PriceResponse("test")));
 
         // Resilience decoration throws error
         when(resilience.decorate(eq("price"), any(Mono.class)))
-            .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
+                .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
 
         // Circuit breaker state
-        when(resilience.getCircuitBreakerState("price"))
-            .thenReturn(CircuitBreaker.State.OPEN);
+        when(resilience.getCircuitBreakerState("price")).thenReturn(CircuitBreaker.State.OPEN);
 
         // When & Then - should return fallback "0.00"
         StepVerifier.create(repository.getPrice(sku))
-            .expectNextMatches(response ->
-                response.price().equals("0.00"))
-            .verifyComplete();
+                .expectNextMatches(response -> response.price().equals("0.00"))
+                .verifyComplete();
     }
 
     @Test
@@ -170,8 +148,7 @@ class PriceRepositoryCacheTest {
         PriceResponse httpResponse = new PriceResponse("199.99");
 
         // Redis is down - cache get returns empty (graceful degradation)
-        when(cacheService.get(eq(cacheKey), eq(PriceResponse.class)))
-            .thenReturn(Mono.empty());
+        when(cacheService.get(eq(cacheKey), eq(PriceResponse.class))).thenReturn(Mono.empty());
 
         // HTTP call setup
         when(webClient.post()).thenReturn(requestBodyUriSpec);
@@ -182,15 +159,13 @@ class PriceRepositoryCacheTest {
 
         // Resilience decoration returns the same mono
         when(resilience.decorate(eq("price"), any(Mono.class)))
-            .thenAnswer(invocation -> invocation.getArgument(1));
+                .thenAnswer(invocation -> invocation.getArgument(1));
 
         // Cache put fails (Redis down) but should not break the flow
         when(cacheService.put(eq(cacheKey), eq(httpResponse), any(Duration.class)))
-            .thenReturn(Mono.just(false));
+                .thenReturn(Mono.just(false));
 
         // When & Then - should still return HTTP response
-        StepVerifier.create(repository.getPrice(sku))
-            .expectNext(httpResponse)
-            .verifyComplete();
+        StepVerifier.create(repository.getPrice(sku)).expectNext(httpResponse).verifyComplete();
     }
 }

@@ -1,6 +1,7 @@
 // Shared Java conventions for all modules
 plugins {
     java
+    id("com.diffplug.spotless")
 }
 
 group = "org.example.platform"
@@ -31,4 +32,14 @@ tasks.withType<Test> {
 // JUnit Platform Launcher is required for Gradle 8.x with JUnit 5.12+
 dependencies {
     "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
+}
+
+// Spotless code formatting
+spotless {
+    java {
+        target("src/**/*.java")
+        googleJavaFormat("1.19.2").aosp().reflowLongStrings()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }

@@ -1,7 +1,6 @@
 package org.example.platform.test;
 
 import io.jsonwebtoken.Jwts;
-
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -15,10 +14,11 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Utility class for generating test JWT tokens.
- * Use this to create fake tokens for unit and integration tests.
+ * Utility class for generating test JWT tokens. Use this to create fake tokens for unit and
+ * integration tests.
  *
- * Example usage:
+ * <p>Example usage:
+ *
  * <pre>
  * String token = TestJwtBuilder.builder()
  *     .scope("product:read")
@@ -102,16 +102,18 @@ public class TestJwtBuilder {
 
     public String build() {
         return Jwts.builder()
-            .issuer(issuer)
-            .subject(subject)
-            .audience().add(audience).and()
-            .issuedAt(Date.from(issuedAt))
-            .expiration(Date.from(expiration))
-            .id(UUID.randomUUID().toString())
-            .claim("scope", scope)
-            .claims(additionalClaims)
-            .signWith(KEY_PAIR.getPrivate())
-            .compact();
+                .issuer(issuer)
+                .subject(subject)
+                .audience()
+                .add(audience)
+                .and()
+                .issuedAt(Date.from(issuedAt))
+                .expiration(Date.from(expiration))
+                .id(UUID.randomUUID().toString())
+                .claim("scope", scope)
+                .claims(additionalClaims)
+                .signWith(KEY_PAIR.getPrivate())
+                .compact();
     }
 
     private static KeyPair generateKeyPair() {

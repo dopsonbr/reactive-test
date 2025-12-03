@@ -11,8 +11,8 @@ import org.springframework.security.oauth2.server.resource.authentication.Reacti
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 /**
- * Main security configuration for OAuth2 resource server.
- * Configures JWT validation for inbound requests and authorization rules.
+ * Main security configuration for OAuth2 resource server. Configures JWT validation for inbound
+ * requests and authorization rules.
  */
 @Configuration
 @EnableWebFluxSecurity
@@ -22,36 +22,42 @@ public class SecurityConfig {
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
     private final SecurityErrorHandler securityErrorHandler;
 
-    public SecurityConfig(JwtAuthenticationConverter jwtAuthenticationConverter,
-                         SecurityErrorHandler securityErrorHandler) {
+    public SecurityConfig(
+            JwtAuthenticationConverter jwtAuthenticationConverter,
+            SecurityErrorHandler securityErrorHandler) {
         this.jwtAuthenticationConverter = jwtAuthenticationConverter;
         this.securityErrorHandler = securityErrorHandler;
     }
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        return http
-            .authorizeExchange(exchanges -> exchanges
-                // Actuator endpoints - allow health checks without auth
-                .pathMatchers("/actuator/health", "/actuator/health/**").permitAll()
-                .pathMatchers("/actuator/info").permitAll()
-                .pathMatchers("/actuator/prometheus").permitAll()
-                // All other actuator endpoints require authentication
-                .pathMatchers("/actuator/**").authenticated()
-                // All API endpoints require authentication
-                .anyExchange().authenticated()
-            )
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt
-                    .jwtAuthenticationConverter(
-                        new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter)
-                    )
-                )
-                .authenticationEntryPoint(securityErrorHandler)
-                .accessDeniedHandler(securityErrorHandler)
-            )
-            // Disable CSRF for stateless API
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .build();
+        return http.authorizeExchange(
+                        exchanges ->
+                                exchanges
+                                        // Actuator endpoints - allow health checks without auth
+                                        .pathMatchers("/actuator/health", "/actuator/health/**")
+                                        .permitAll()
+                                        .pathMatchers("/actuator/info")
+                                        .permitAll()
+                                        .pathMatchers("/actuator/prometheus")
+                                        .permitAll()
+                                        // All other actuator endpoints require authentication
+                                        .pathMatchers("/actuator/**")
+                                        .authenticated()
+                                        // All API endpoints require authentication
+                                        .anyExchange()
+                                        .authenticated())
+                .oauth2ResourceServer(
+                        oauth2 ->
+                                oauth2.jwt(
+                                                jwt ->
+                                                        jwt.jwtAuthenticationConverter(
+                                                                new ReactiveJwtAuthenticationConverterAdapter(
+                                                                        jwtAuthenticationConverter)))
+                                        .authenticationEntryPoint(securityErrorHandler)
+                                        .accessDeniedHandler(securityErrorHandler))
+                // Disable CSRF for stateless API
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .build();
     }
 }

@@ -1,8 +1,8 @@
 package org.example.platform.test;
 
 /**
- * Utilities for security testing.
- * Provides helper methods to create authorization headers with various token states.
+ * Utilities for security testing. Provides helper methods to create authorization headers with
+ * various token states.
  */
 public final class SecurityTestUtils {
 
@@ -17,9 +17,7 @@ public final class SecurityTestUtils {
      * @return a valid JWT token string
      */
     public static String validToken(String... scopes) {
-        return TestJwtBuilder.builder()
-            .scopes(scopes)
-            .build();
+        return TestJwtBuilder.builder().scopes(scopes).build();
     }
 
     /**
@@ -28,10 +26,7 @@ public final class SecurityTestUtils {
      * @return an expired JWT token string
      */
     public static String expiredToken() {
-        return TestJwtBuilder.builder()
-            .expired()
-            .scope("product:read")
-            .build();
+        return TestJwtBuilder.builder().expired().scope("product:read").build();
     }
 
     /**
@@ -40,10 +35,7 @@ public final class SecurityTestUtils {
      * @return a JWT token with incorrect audience
      */
     public static String wrongAudienceToken() {
-        return TestJwtBuilder.builder()
-            .audience("wrong-audience")
-            .scope("product:read")
-            .build();
+        return TestJwtBuilder.builder().audience("wrong-audience").scope("product:read").build();
     }
 
     /**
@@ -52,10 +44,7 @@ public final class SecurityTestUtils {
      * @return a JWT token with incorrect issuer
      */
     public static String wrongIssuerToken() {
-        return TestJwtBuilder.builder()
-            .issuer("wrong-issuer")
-            .scope("product:read")
-            .build();
+        return TestJwtBuilder.builder().issuer("wrong-issuer").scope("product:read").build();
     }
 
     /**
@@ -64,9 +53,7 @@ public final class SecurityTestUtils {
      * @return a JWT token without scopes
      */
     public static String noScopesToken() {
-        return TestJwtBuilder.builder()
-            .scope("")
-            .build();
+        return TestJwtBuilder.builder().scope("").build();
     }
 
     /**
@@ -77,10 +64,7 @@ public final class SecurityTestUtils {
      * @return a JWT token with the specified subject
      */
     public static String tokenWithSubject(String subject, String... scopes) {
-        return TestJwtBuilder.builder()
-            .subject(subject)
-            .scopes(scopes)
-            .build();
+        return TestJwtBuilder.builder().subject(subject).scopes(scopes).build();
     }
 
     /**

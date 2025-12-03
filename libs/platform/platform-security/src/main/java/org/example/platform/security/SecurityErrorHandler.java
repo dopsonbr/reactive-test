@@ -20,11 +20,12 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * Handles security-related errors and returns structured JSON responses.
- * Implements both authentication (401) and authorization (403) error handling.
+ * Handles security-related errors and returns structured JSON responses. Implements both
+ * authentication (401) and authorization (403) error handling.
  */
 @Component
-public class SecurityErrorHandler implements ServerAuthenticationEntryPoint, ServerAccessDeniedHandler {
+public class SecurityErrorHandler
+        implements ServerAuthenticationEntryPoint, ServerAccessDeniedHandler {
 
     private static final Logger log = LoggerFactory.getLogger(SecurityErrorHandler.class);
 
@@ -44,8 +45,8 @@ public class SecurityErrorHandler implements ServerAuthenticationEntryPoint, Ser
         return handleError(exchange, HttpStatus.FORBIDDEN, "Access denied", ex);
     }
 
-    private Mono<Void> handleError(ServerWebExchange exchange, HttpStatus status,
-                                    String error, Exception ex) {
+    private Mono<Void> handleError(
+            ServerWebExchange exchange, HttpStatus status, String error, Exception ex) {
         String message = ex.getMessage();
         if (ex instanceof InvalidBearerTokenException) {
             message = "Invalid or expired bearer token";
@@ -61,16 +62,16 @@ public class SecurityErrorHandler implements ServerAuthenticationEntryPoint, Ser
         }
 
         // Log security error
-        log.warn("Security error: status={}, error={}, message={}, path={}, traceId={}",
-            status.value(), error, message, path, traceId);
+        log.warn(
+                "Security error: status={}, error={}, message={}, path={}, traceId={}",
+                status.value(),
+                error,
+                message,
+                path,
+                traceId);
 
-        ErrorResponse errorResponse = ErrorResponse.of(
-            error,
-            message,
-            path,
-            status.value(),
-            traceId
-        );
+        ErrorResponse errorResponse =
+                ErrorResponse.of(error, message, path, status.value(), traceId);
 
         exchange.getResponse().setStatusCode(status);
         exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);

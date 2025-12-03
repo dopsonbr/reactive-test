@@ -1,5 +1,7 @@
 package org.example.platform.security;
 
+import java.time.Duration;
+import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -15,17 +17,12 @@ import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 
-import java.time.Duration;
-import java.util.List;
-
 /**
- * Configures JWT validation with custom validators for audience, issuer, and expiration.
- * Validates:
- * - Token expiration with configurable clock skew tolerance
- * - Issuer against allowed issuers list
- * - Audience contains required audience
+ * Configures JWT validation with custom validators for audience, issuer, and expiration. Validates:
+ * - Token expiration with configurable clock skew tolerance - Issuer against allowed issuers list -
+ * Audience contains required audience
  *
- * This configuration is disabled when app.security.enabled=false (e.g., in tests).
+ * <p>This configuration is disabled when app.security.enabled=false (e.g., in tests).
  */
 @Configuration
 @ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
@@ -40,18 +37,18 @@ public class JwtValidatorConfig {
     @Bean
     @ConditionalOnMissingBean(ReactiveJwtDecoder.class)
     public ReactiveJwtDecoder jwtDecoder() {
-        NimbusReactiveJwtDecoder decoder = NimbusReactiveJwtDecoder
-            .withJwkSetUri(securityProperties.getJwkSetUri())
-            .build();
+        NimbusReactiveJwtDecoder decoder =
+                NimbusReactiveJwtDecoder.withJwkSetUri(securityProperties.getJwkSetUri()).build();
 
-        OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(
-            // Expiration validation with clock skew tolerance
-            new JwtTimestampValidator(Duration.ofSeconds(securityProperties.getClockSkewSeconds())),
-            // Issuer validation
-            issuerValidator(),
-            // Audience validation
-            audienceValidator()
-        );
+        OAuth2TokenValidator<Jwt> validator =
+                new DelegatingOAuth2TokenValidator<>(
+                        // Expiration validation with clock skew tolerance
+                        new JwtTimestampValidator(
+                                Duration.ofSeconds(securityProperties.getClockSkewSeconds())),
+                        // Issuer validation
+                        issuerValidator(),
+                        // Audience validation
+                        audienceValidator());
 
         decoder.setJwtValidator(validator);
         return decoder;
@@ -62,11 +59,11 @@ public class JwtValidatorConfig {
         return token -> {
             String issuer = token.getClaimAsString(JwtClaimNames.ISS);
             if (issuer == null || !allowedIssuers.contains(issuer)) {
-                OAuth2Error error = new OAuth2Error(
-                    "invalid_token",
-                    "The iss claim is not valid. Expected one of: " + allowedIssuers,
-                    null
-                );
+                OAuth2Error error =
+                        new OAuth2Error(
+                                "invalid_token",
+                                "The iss claim is not valid. Expected one of: " + allowedIssuers,
+                                null);
                 return OAuth2TokenValidatorResult.failure(error);
             }
             return OAuth2TokenValidatorResult.success();
@@ -76,8 +73,6 @@ public class JwtValidatorConfig {
     private OAuth2TokenValidator<Jwt> audienceValidator() {
         String requiredAudience = securityProperties.getRequiredAudience();
         return new JwtClaimValidator<List<String>>(
-            JwtClaimNames.AUD,
-            aud -> aud != null && aud.contains(requiredAudience)
-        );
+                JwtClaimNames.AUD, aud -> aud != null && aud.contains(requiredAudience));
     }
 }

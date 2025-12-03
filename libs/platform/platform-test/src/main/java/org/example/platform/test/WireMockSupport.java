@@ -3,9 +3,7 @@ package org.example.platform.test;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 
-/**
- * Support class for WireMock integration tests.
- */
+/** Support class for WireMock integration tests. */
 public final class WireMockSupport {
 
     private WireMockSupport() {}

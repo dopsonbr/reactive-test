@@ -1,14 +1,11 @@
 package org.example.platform.test;
 
+import java.time.Duration;
+import java.util.function.Predicate;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.time.Duration;
-import java.util.function.Predicate;
-
-/**
- * Support class for testing reactive streams with StepVerifier.
- */
+/** Support class for testing reactive streams with StepVerifier. */
 public final class ReactorTestSupport {
 
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
@@ -23,9 +20,7 @@ public final class ReactorTestSupport {
      * @param <T> the type of the value
      */
     public static <T> void verifyMono(Mono<T> mono, T expected) {
-        StepVerifier.create(mono)
-            .expectNext(expected)
-            .verifyComplete();
+        StepVerifier.create(mono).expectNext(expected).verifyComplete();
     }
 
     /**
@@ -36,9 +31,7 @@ public final class ReactorTestSupport {
      * @param <T> the type of the value
      */
     public static <T> void verifyMono(Mono<T> mono, Predicate<T> predicate) {
-        StepVerifier.create(mono)
-            .expectNextMatches(predicate)
-            .verifyComplete();
+        StepVerifier.create(mono).expectNextMatches(predicate).verifyComplete();
     }
 
     /**
@@ -48,8 +41,7 @@ public final class ReactorTestSupport {
      * @param <T> the type of the value
      */
     public static <T> void verifyEmpty(Mono<T> mono) {
-        StepVerifier.create(mono)
-            .verifyComplete();
+        StepVerifier.create(mono).verifyComplete();
     }
 
     /**
@@ -60,8 +52,7 @@ public final class ReactorTestSupport {
      * @param <T> the type of the value
      */
     public static <T> void verifyError(Mono<T> mono, Class<? extends Throwable> exceptionType) {
-        StepVerifier.create(mono)
-            .verifyError(exceptionType);
+        StepVerifier.create(mono).verifyError(exceptionType);
     }
 
     /**
@@ -73,9 +64,6 @@ public final class ReactorTestSupport {
      * @param <T> the type of the value
      */
     public static <T> void verifyMonoWithTimeout(Mono<T> mono, T expected, Duration timeout) {
-        StepVerifier.create(mono)
-            .expectNext(expected)
-            .expectComplete()
-            .verify(timeout);
+        StepVerifier.create(mono).expectNext(expected).expectComplete().verify(timeout);
     }
 }

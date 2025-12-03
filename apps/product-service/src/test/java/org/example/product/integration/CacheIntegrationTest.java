@@ -1,9 +1,18 @@
 package org.example.product.integration;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import java.time.Duration;
 import org.example.platform.cache.ReactiveCacheService;
 import org.example.platform.test.RedisTestSupport;
+import org.example.platform.test.TestSecurityConfig;
 import org.example.platform.test.WireMockSupport;
 import org.example.product.repository.inventory.InventoryRepository;
 import org.example.product.repository.inventory.InventoryResponse;
@@ -11,7 +20,6 @@ import org.example.product.repository.merchandise.MerchandiseRepository;
 import org.example.product.repository.merchandise.MerchandiseResponse;
 import org.example.product.repository.price.PriceRepository;
 import org.example.product.repository.price.PriceResponse;
-import org.example.platform.test.TestSecurityConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,47 +38,31 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 
-import java.time.Duration;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Integration tests for Redis caching behavior.
  *
- * Tests the two caching patterns:
- * 1. Cache-Aside (Merchandise & Price): Check cache first, call HTTP on miss
- * 2. Fallback-Only (Inventory): Always call HTTP first, use cache only on errors
+ * <p>Tests the two caching patterns: 1. Cache-Aside (Merchandise & Price): Check cache first, call
+ * HTTP on miss 2. Fallback-Only (Inventory): Always call HTTP first, use cache only on errors
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Testcontainers
 @Import(TestSecurityConfig.class)
 class CacheIntegrationTest {
 
-    @Container
-    static GenericContainer<?> redis = RedisTestSupport.createRedisContainer();
+    @Container static GenericContainer<?> redis = RedisTestSupport.createRedisContainer();
 
     // Initialize WireMock at class load time so port is available for @DynamicPropertySource
     private static final WireMockServer wireMockServer = WireMockSupport.createServer();
 
-    @Autowired
-    private MerchandiseRepository merchandiseRepository;
+    @Autowired private MerchandiseRepository merchandiseRepository;
 
-    @Autowired
-    private PriceRepository priceRepository;
+    @Autowired private PriceRepository priceRepository;
 
-    @Autowired
-    private InventoryRepository inventoryRepository;
+    @Autowired private InventoryRepository inventoryRepository;
 
-    @Autowired
-    private ReactiveCacheService cacheService;
+    @Autowired private ReactiveCacheService cacheService;
 
-    @Autowired
-    private ReactiveRedisTemplate<String, Object> redisTemplate;
+    @Autowired private ReactiveRedisTemplate<String, Object> redisTemplate;
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -83,12 +75,15 @@ class CacheIntegrationTest {
         registry.add("cache.inventory.ttl", () -> "10s");
 
         // Configure services to use WireMock (port set in @BeforeAll)
-        registry.add("services.merchandise.base-url", () -> "http://localhost:" + wireMockServer.port());
+        registry.add(
+                "services.merchandise.base-url", () -> "http://localhost:" + wireMockServer.port());
         registry.add("services.price.base-url", () -> "http://localhost:" + wireMockServer.port());
-        registry.add("services.inventory.base-url", () -> "http://localhost:" + wireMockServer.port());
+        registry.add(
+                "services.inventory.base-url", () -> "http://localhost:" + wireMockServer.port());
 
         // Disable resilience4j features for cleaner testing
-        registry.add("resilience4j.circuitbreaker.configs.default.minimum-number-of-calls", () -> "100");
+        registry.add(
+                "resilience4j.circuitbreaker.configs.default.minimum-number-of-calls", () -> "100");
         registry.add("resilience4j.retry.configs.default.max-attempts", () -> "1");
         registry.add("resilience4j.timelimiter.configs.default.timeout-duration", () -> "5s");
     }
@@ -112,8 +107,7 @@ class CacheIntegrationTest {
     @AfterEach
     void clearCache() {
         // Clear all keys from Redis after each test
-        redisTemplate.execute(connection -> connection.serverCommands().flushAll())
-            .blockFirst();
+        redisTemplate.execute(connection -> connection.serverCommands().flushAll()).blockFirst();
     }
 
     @Nested
@@ -131,17 +125,21 @@ class CacheIntegrationTest {
 
             // When: First call (cache miss)
             StepVerifier.create(merchandiseRepository.getDescription(SKU))
-                .assertNext(response -> {
-                    assertThat(response.description()).isEqualTo("Test Product Description");
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                assertThat(response.description())
+                                        .isEqualTo("Test Product Description");
+                            })
+                    .verifyComplete();
 
             // Then: Value should be cached
             StepVerifier.create(cacheService.get(CACHE_KEY, MerchandiseResponse.class))
-                .assertNext(cached -> {
-                    assertThat(cached.description()).isEqualTo("Test Product Description");
-                })
-                .verifyComplete();
+                    .assertNext(
+                            cached -> {
+                                assertThat(cached.description())
+                                        .isEqualTo("Test Product Description");
+                            })
+                    .verifyComplete();
 
             // Verify HTTP was called
             wireMockServer.verify(1, WireMock.getRequestedFor(urlEqualTo("/merchandise/" + SKU)));
@@ -156,10 +154,11 @@ class CacheIntegrationTest {
 
             // When: Call repository
             StepVerifier.create(merchandiseRepository.getDescription(SKU))
-                .assertNext(response -> {
-                    assertThat(response.description()).isEqualTo("Cached Description");
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                assertThat(response.description()).isEqualTo("Cached Description");
+                            })
+                    .verifyComplete();
 
             // Then: HTTP should NOT be called
             wireMockServer.verify(0, WireMock.getRequestedFor(urlEqualTo("/merchandise/" + SKU)));
@@ -173,24 +172,29 @@ class CacheIntegrationTest {
 
             // When: Call repository (no cache)
             StepVerifier.create(merchandiseRepository.getDescription(SKU))
-                .assertNext(response -> {
-                    assertThat(response.description()).isEqualTo("Description unavailable");
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                assertThat(response.description())
+                                        .isEqualTo("Description unavailable");
+                            })
+                    .verifyComplete();
         }
 
         private void stubMerchandiseSuccess(long sku, String description) {
-            wireMockServer.stubFor(get(urlEqualTo("/merchandise/" + sku))
-                .willReturn(aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "application/json")
-                    .withBody("{\"description\":\"" + description + "\"}")));
+            wireMockServer.stubFor(
+                    get(urlEqualTo("/merchandise/" + sku))
+                            .willReturn(
+                                    aResponse()
+                                            .withStatus(200)
+                                            .withHeader("Content-Type", "application/json")
+                                            .withBody(
+                                                    "{\"description\":\"" + description + "\"}")));
         }
 
         private void stubMerchandiseError(long sku, int status) {
-            wireMockServer.stubFor(get(urlEqualTo("/merchandise/" + sku))
-                .willReturn(aResponse()
-                    .withStatus(status)));
+            wireMockServer.stubFor(
+                    get(urlEqualTo("/merchandise/" + sku))
+                            .willReturn(aResponse().withStatus(status)));
         }
     }
 
@@ -209,17 +213,19 @@ class CacheIntegrationTest {
 
             // When: First call (cache miss)
             StepVerifier.create(priceRepository.getPrice(SKU))
-                .assertNext(response -> {
-                    assertThat(response.price()).isEqualTo("99.99");
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                assertThat(response.price()).isEqualTo("99.99");
+                            })
+                    .verifyComplete();
 
             // Then: Value should be cached
             StepVerifier.create(cacheService.get(CACHE_KEY, PriceResponse.class))
-                .assertNext(cached -> {
-                    assertThat(cached.price()).isEqualTo("99.99");
-                })
-                .verifyComplete();
+                    .assertNext(
+                            cached -> {
+                                assertThat(cached.price()).isEqualTo("99.99");
+                            })
+                    .verifyComplete();
 
             // Verify HTTP was called
             wireMockServer.verify(1, WireMock.postRequestedFor(urlPathEqualTo("/price")));
@@ -234,10 +240,11 @@ class CacheIntegrationTest {
 
             // When: Call repository
             StepVerifier.create(priceRepository.getPrice(SKU))
-                .assertNext(response -> {
-                    assertThat(response.price()).isEqualTo("149.99");
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                assertThat(response.price()).isEqualTo("149.99");
+                            })
+                    .verifyComplete();
 
             // Then: HTTP should NOT be called
             wireMockServer.verify(0, WireMock.postRequestedFor(urlPathEqualTo("/price")));
@@ -251,24 +258,26 @@ class CacheIntegrationTest {
 
             // When: Call repository (no cache)
             StepVerifier.create(priceRepository.getPrice(SKU))
-                .assertNext(response -> {
-                    assertThat(response.price()).isEqualTo("0.00");
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                assertThat(response.price()).isEqualTo("0.00");
+                            })
+                    .verifyComplete();
         }
 
         private void stubPriceSuccess(long sku, String price) {
-            wireMockServer.stubFor(post(urlPathEqualTo("/price"))
-                .willReturn(aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "application/json")
-                    .withBody("{\"price\":\"" + price + "\"}")));
+            wireMockServer.stubFor(
+                    post(urlPathEqualTo("/price"))
+                            .willReturn(
+                                    aResponse()
+                                            .withStatus(200)
+                                            .withHeader("Content-Type", "application/json")
+                                            .withBody("{\"price\":\"" + price + "\"}")));
         }
 
         private void stubPriceError(int status) {
-            wireMockServer.stubFor(post(urlPathEqualTo("/price"))
-                .willReturn(aResponse()
-                    .withStatus(status)));
+            wireMockServer.stubFor(
+                    post(urlPathEqualTo("/price")).willReturn(aResponse().withStatus(status)));
         }
     }
 
@@ -289,11 +298,12 @@ class CacheIntegrationTest {
 
             // When: Call repository
             StepVerifier.create(inventoryRepository.getAvailability(SKU))
-                .assertNext(response -> {
-                    // Should return HTTP response, not cached value
-                    assertThat(response.availableQuantity()).isEqualTo(50);
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                // Should return HTTP response, not cached value
+                                assertThat(response.availableQuantity()).isEqualTo(50);
+                            })
+                    .verifyComplete();
 
             // Then: HTTP WAS called (fallback-only pattern)
             wireMockServer.verify(1, WireMock.postRequestedFor(urlPathEqualTo("/inventory")));
@@ -307,17 +317,19 @@ class CacheIntegrationTest {
 
             // When: Call repository
             StepVerifier.create(inventoryRepository.getAvailability(SKU))
-                .assertNext(response -> {
-                    assertThat(response.availableQuantity()).isEqualTo(100);
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                assertThat(response.availableQuantity()).isEqualTo(100);
+                            })
+                    .verifyComplete();
 
             // Then: Cache should be updated with fresh value
             StepVerifier.create(cacheService.get(CACHE_KEY, InventoryResponse.class))
-                .assertNext(cached -> {
-                    assertThat(cached.availableQuantity()).isEqualTo(100);
-                })
-                .verifyComplete();
+                    .assertNext(
+                            cached -> {
+                                assertThat(cached.availableQuantity()).isEqualTo(100);
+                            })
+                    .verifyComplete();
         }
 
         @Test
@@ -332,11 +344,12 @@ class CacheIntegrationTest {
 
             // When: Call repository
             StepVerifier.create(inventoryRepository.getAvailability(SKU))
-                .assertNext(response -> {
-                    // Should return cached value as fallback
-                    assertThat(response.availableQuantity()).isEqualTo(25);
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                // Should return cached value as fallback
+                                assertThat(response.availableQuantity()).isEqualTo(25);
+                            })
+                    .verifyComplete();
         }
 
         @Test
@@ -347,11 +360,12 @@ class CacheIntegrationTest {
 
             // When: Call repository
             StepVerifier.create(inventoryRepository.getAvailability(SKU))
-                .assertNext(response -> {
-                    // Should return -1 for backordered
-                    assertThat(response.availableQuantity()).isEqualTo(-1);
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                // Should return -1 for backordered
+                                assertThat(response.availableQuantity()).isEqualTo(-1);
+                            })
+                    .verifyComplete();
         }
 
         @Test
@@ -362,10 +376,11 @@ class CacheIntegrationTest {
 
             // When: Call repository
             StepVerifier.create(inventoryRepository.getAvailability(SKU))
-                .assertNext(response -> {
-                    assertThat(response.availableQuantity()).isEqualTo(-1);
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                assertThat(response.availableQuantity()).isEqualTo(-1);
+                            })
+                    .verifyComplete();
         }
 
         @Test
@@ -380,32 +395,33 @@ class CacheIntegrationTest {
 
             // When: Call repository
             StepVerifier.create(inventoryRepository.getAvailability(SKU))
-                .assertNext(response -> {
-                    // Should return cached value as fallback
-                    assertThat(response.availableQuantity()).isEqualTo(75);
-                })
-                .verifyComplete();
+                    .assertNext(
+                            response -> {
+                                // Should return cached value as fallback
+                                assertThat(response.availableQuantity()).isEqualTo(75);
+                            })
+                    .verifyComplete();
         }
 
         private void stubInventorySuccess(long sku, int quantity) {
-            wireMockServer.stubFor(post(urlPathEqualTo("/inventory"))
-                .willReturn(aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "application/json")
-                    .withBody("{\"availableQuantity\":" + quantity + "}")));
+            wireMockServer.stubFor(
+                    post(urlPathEqualTo("/inventory"))
+                            .willReturn(
+                                    aResponse()
+                                            .withStatus(200)
+                                            .withHeader("Content-Type", "application/json")
+                                            .withBody("{\"availableQuantity\":" + quantity + "}")));
         }
 
         private void stubInventoryError(int status) {
-            wireMockServer.stubFor(post(urlPathEqualTo("/inventory"))
-                .willReturn(aResponse()
-                    .withStatus(status)));
+            wireMockServer.stubFor(
+                    post(urlPathEqualTo("/inventory")).willReturn(aResponse().withStatus(status)));
         }
 
         private void stubInventoryTimeout(int delayMs) {
-            wireMockServer.stubFor(post(urlPathEqualTo("/inventory"))
-                .willReturn(aResponse()
-                    .withStatus(200)
-                    .withFixedDelay(delayMs)));
+            wireMockServer.stubFor(
+                    post(urlPathEqualTo("/inventory"))
+                            .willReturn(aResponse().withStatus(200).withFixedDelay(delayMs)));
         }
     }
 
@@ -422,15 +438,17 @@ class CacheIntegrationTest {
 
             // When: Put value
             StepVerifier.create(cacheService.put(key, value, Duration.ofMinutes(1)))
-                .expectNext(true)
-                .verifyComplete();
+                    .expectNext(true)
+                    .verifyComplete();
 
             // Then: Get value
             StepVerifier.create(cacheService.get(key, MerchandiseResponse.class))
-                .assertNext(retrieved -> {
-                    assertThat(retrieved.description()).isEqualTo("Integration Test Value");
-                })
-                .verifyComplete();
+                    .assertNext(
+                            retrieved -> {
+                                assertThat(retrieved.description())
+                                        .isEqualTo("Integration Test Value");
+                            })
+                    .verifyComplete();
         }
 
         @Test
@@ -438,7 +456,7 @@ class CacheIntegrationTest {
         void shouldReturnEmptyOnMiss() {
             // When/Then
             StepVerifier.create(cacheService.get("nonexistent:key", MerchandiseResponse.class))
-                .verifyComplete();
+                    .verifyComplete();
         }
 
         @Test
@@ -446,16 +464,15 @@ class CacheIntegrationTest {
         void shouldDeleteKeys() {
             // Given: Key exists
             String key = "test:delete:key";
-            cacheService.put(key, new MerchandiseResponse("To Delete"), Duration.ofMinutes(1)).block();
+            cacheService
+                    .put(key, new MerchandiseResponse("To Delete"), Duration.ofMinutes(1))
+                    .block();
 
             // When: Delete key
-            StepVerifier.create(cacheService.delete(key))
-                .expectNext(true)
-                .verifyComplete();
+            StepVerifier.create(cacheService.delete(key)).expectNext(true).verifyComplete();
 
             // Then: Key no longer exists
-            StepVerifier.create(cacheService.get(key, MerchandiseResponse.class))
-                .verifyComplete();
+            StepVerifier.create(cacheService.get(key, MerchandiseResponse.class)).verifyComplete();
         }
 
         @Test
@@ -467,15 +484,16 @@ class CacheIntegrationTest {
 
             // When
             StepVerifier.create(cacheService.put(key, value, Duration.ofMinutes(1)))
-                .expectNext(true)
-                .verifyComplete();
+                    .expectNext(true)
+                    .verifyComplete();
 
             // Then
             StepVerifier.create(cacheService.get(key, InventoryResponse.class))
-                .assertNext(retrieved -> {
-                    assertThat(retrieved.availableQuantity()).isEqualTo(42);
-                })
-                .verifyComplete();
+                    .assertNext(
+                            retrieved -> {
+                                assertThat(retrieved.availableQuantity()).isEqualTo(42);
+                            })
+                    .verifyComplete();
         }
     }
 }

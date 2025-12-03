@@ -3,9 +3,7 @@ package org.example.platform.test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
-/**
- * Support class for Redis integration tests using Testcontainers.
- */
+/** Support class for Redis integration tests using Testcontainers. */
 public final class RedisTestSupport {
 
     private static final String REDIS_IMAGE = "redis:7-alpine";
@@ -21,7 +19,7 @@ public final class RedisTestSupport {
     @SuppressWarnings("resource")
     public static GenericContainer<?> createRedisContainer() {
         return new GenericContainer<>(DockerImageName.parse(REDIS_IMAGE))
-            .withExposedPorts(REDIS_PORT);
+                .withExposedPorts(REDIS_PORT);
     }
 
     /**

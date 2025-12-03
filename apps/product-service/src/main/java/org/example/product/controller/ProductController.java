@@ -1,10 +1,10 @@
 package org.example.product.controller;
 
-import org.example.platform.webflux.context.ContextKeys;
-import org.example.platform.webflux.context.RequestMetadata;
 import org.example.platform.logging.RequestLogData;
 import org.example.platform.logging.ResponseLogData;
 import org.example.platform.logging.StructuredLogger;
+import org.example.platform.webflux.context.ContextKeys;
+import org.example.platform.webflux.context.RequestMetadata;
 import org.example.product.domain.Product;
 import org.example.product.service.ProductService;
 import org.example.product.validation.ProductRequestValidator;
@@ -24,8 +24,10 @@ public class ProductController {
     private final StructuredLogger structuredLogger;
     private final ProductRequestValidator requestValidator;
 
-    public ProductController(ProductService productService, StructuredLogger structuredLogger,
-                             ProductRequestValidator requestValidator) {
+    public ProductController(
+            ProductService productService,
+            StructuredLogger structuredLogger,
+            ProductRequestValidator requestValidator) {
         this.productService = productService;
         this.structuredLogger = structuredLogger;
         this.requestValidator = requestValidator;
@@ -34,41 +36,46 @@ public class ProductController {
     @GetMapping("/{sku}")
     @PreAuthorize("hasAuthority('SCOPE_product:read')")
     public Mono<Product> getProduct(
-        @PathVariable long sku,
-        @RequestHeader("x-store-number") int storeNumber,
-        @RequestHeader("x-order-number") String orderNumber,
-        @RequestHeader("x-userid") String userId,
-        @RequestHeader("x-sessionid") String sessionId,
-        @AuthenticationPrincipal Jwt jwt,
-        ServerHttpRequest request
-    ) {
+            @PathVariable long sku,
+            @RequestHeader("x-store-number") int storeNumber,
+            @RequestHeader("x-order-number") String orderNumber,
+            @RequestHeader("x-userid") String userId,
+            @RequestHeader("x-sessionid") String sessionId,
+            @AuthenticationPrincipal Jwt jwt,
+            ServerHttpRequest request) {
         RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return requestValidator.validateProductRequest(sku, storeNumber, orderNumber, userId, sessionId)
-            .then(Mono.deferContextual(ctx -> {
-                // Log inbound request with authenticated subject
-                String subject = jwt != null ? jwt.getSubject() : "unknown";
-                RequestLogData requestData = new RequestLogData(
-                    "/products/{sku}",
-                    request.getURI().getPath(),
-                    request.getMethod().name(),
-                    subject
-                );
-                structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
+        return requestValidator
+                .validateProductRequest(sku, storeNumber, orderNumber, userId, sessionId)
+                .then(
+                        Mono.deferContextual(
+                                ctx -> {
+                                    // Log inbound request with authenticated subject
+                                    String subject = jwt != null ? jwt.getSubject() : "unknown";
+                                    RequestLogData requestData =
+                                            new RequestLogData(
+                                                    "/products/{sku}",
+                                                    request.getURI().getPath(),
+                                                    request.getMethod().name(),
+                                                    subject);
+                                    structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
 
-                return productService.getProduct(sku)
-                    .doOnSuccess(product -> {
-                        // Log outbound response
-                        ResponseLogData responseData = new ResponseLogData(
-                            "/products/{sku}",
-                            request.getURI().getPath(),
-                            request.getMethod().name(),
-                            200,
-                            product
-                        );
-                        structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
-                    });
-            }))
-            .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+                                    return productService
+                                            .getProduct(sku)
+                                            .doOnSuccess(
+                                                    product -> {
+                                                        // Log outbound response
+                                                        ResponseLogData responseData =
+                                                                new ResponseLogData(
+                                                                        "/products/{sku}",
+                                                                        request.getURI().getPath(),
+                                                                        request.getMethod().name(),
+                                                                        200,
+                                                                        product);
+                                                        structuredLogger.logResponse(
+                                                                ctx, LOGGER_NAME, responseData);
+                                                    });
+                                }))
+                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
     }
 }

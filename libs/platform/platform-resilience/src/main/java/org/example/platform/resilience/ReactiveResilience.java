@@ -19,11 +19,12 @@ import reactor.core.publisher.Mono;
  * Wrapper component that applies Resilience4j decorators to reactive streams.
  *
  * <p>Order of decorators (innermost to outermost):
+ *
  * <ol>
- *   <li>TimeLimiter - Timeout for the operation</li>
- *   <li>CircuitBreaker - Fail fast when service is unavailable</li>
- *   <li>Retry - Retry on transient failures</li>
- *   <li>Bulkhead - Limit concurrent calls</li>
+ *   <li>TimeLimiter - Timeout for the operation
+ *   <li>CircuitBreaker - Fail fast when service is unavailable
+ *   <li>Retry - Retry on transient failures
+ *   <li>Bulkhead - Limit concurrent calls
  * </ol>
  */
 @Component
@@ -59,8 +60,7 @@ public class ReactiveResilience {
         TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(name);
         Bulkhead bulkhead = bulkheadRegistry.bulkhead(name);
 
-        return mono
-                .transformDeferred(TimeLimiterOperator.of(timeLimiter))
+        return mono.transformDeferred(TimeLimiterOperator.of(timeLimiter))
                 .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
                 .transformDeferred(RetryOperator.of(retry))
                 .transformDeferred(BulkheadOperator.of(bulkhead));

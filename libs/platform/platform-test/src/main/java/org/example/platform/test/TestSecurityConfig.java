@@ -1,18 +1,18 @@
 package org.example.platform.test;
 
+import java.security.interfaces.RSAPublicKey;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 
-import java.security.interfaces.RSAPublicKey;
-
 /**
- * Test configuration that uses the test key pair for JWT validation.
- * Apply to integration tests that need to validate tokens.
+ * Test configuration that uses the test key pair for JWT validation. Apply to integration tests
+ * that need to validate tokens.
  *
- * Usage:
+ * <p>Usage:
+ *
  * <pre>
  * {@literal @}SpringBootTest
  * {@literal @}Import(TestSecurityConfig.class)
@@ -27,8 +27,7 @@ public class TestSecurityConfig {
     @Bean
     @Primary
     public ReactiveJwtDecoder testJwtDecoder() {
-        return NimbusReactiveJwtDecoder
-            .withPublicKey((RSAPublicKey) TestJwtBuilder.getPublicKey())
-            .build();
+        return NimbusReactiveJwtDecoder.withPublicKey((RSAPublicKey) TestJwtBuilder.getPublicKey())
+                .build();
     }
 }

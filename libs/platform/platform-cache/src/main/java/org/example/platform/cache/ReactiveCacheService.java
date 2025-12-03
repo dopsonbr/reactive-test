@@ -1,18 +1,16 @@
 package org.example.platform.cache;
 
+import java.time.Duration;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
-
 /**
- * Reactive cache service for non-blocking Redis operations.
- * Handles serialization/deserialization and Redis connection failures gracefully.
+ * Reactive cache service for non-blocking Redis operations. Handles serialization/deserialization
+ * and Redis connection failures gracefully.
  */
 public interface ReactiveCacheService {
 
     /**
-     * Get a value from cache.
-     * Returns Mono.empty() on cache miss or Redis failure.
+     * Get a value from cache. Returns Mono.empty() on cache miss or Redis failure.
      *
      * @param key the cache key
      * @param type the class type to deserialize to
@@ -22,8 +20,7 @@ public interface ReactiveCacheService {
     <T> Mono<T> get(String key, Class<T> type);
 
     /**
-     * Put a value in cache with TTL.
-     * Fails silently on Redis errors (does not propagate errors).
+     * Put a value in cache with TTL. Fails silently on Redis errors (does not propagate errors).
      *
      * @param key the cache key
      * @param value the value to cache

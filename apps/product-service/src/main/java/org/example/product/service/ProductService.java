@@ -18,11 +18,10 @@ public class ProductService {
     private final StructuredLogger structuredLogger;
 
     public ProductService(
-        MerchandiseRepository merchandiseRepository,
-        PriceRepository priceRepository,
-        InventoryRepository inventoryRepository,
-        StructuredLogger structuredLogger
-    ) {
+            MerchandiseRepository merchandiseRepository,
+            PriceRepository priceRepository,
+            InventoryRepository inventoryRepository,
+            StructuredLogger structuredLogger) {
         this.merchandiseRepository = merchandiseRepository;
         this.priceRepository = priceRepository;
         this.inventoryRepository = inventoryRepository;
@@ -30,23 +29,28 @@ public class ProductService {
     }
 
     public Mono<Product> getProduct(long sku) {
-        return Mono.deferContextual(ctx -> {
-            structuredLogger.logMessage(ctx, LOGGER_NAME, "Starting product fetch for sku: " + sku);
+        return Mono.deferContextual(
+                ctx -> {
+                    structuredLogger.logMessage(
+                            ctx, LOGGER_NAME, "Starting product fetch for sku: " + sku);
 
-            return Mono.zip(
-                merchandiseRepository.getDescription(sku),
-                priceRepository.getPrice(sku),
-                inventoryRepository.getAvailability(sku)
-            )
-            .map(tuple -> new Product(
-                sku,
-                tuple.getT1().description(),
-                tuple.getT2().price(),
-                tuple.getT3().availableQuantity()
-            ))
-            .doOnSuccess(product ->
-                structuredLogger.logMessage(ctx, LOGGER_NAME, "Product fetch complete for sku: " + sku)
-            );
-        });
+                    return Mono.zip(
+                                    merchandiseRepository.getDescription(sku),
+                                    priceRepository.getPrice(sku),
+                                    inventoryRepository.getAvailability(sku))
+                            .map(
+                                    tuple ->
+                                            new Product(
+                                                    sku,
+                                                    tuple.getT1().description(),
+                                                    tuple.getT2().price(),
+                                                    tuple.getT3().availableQuantity()))
+                            .doOnSuccess(
+                                    product ->
+                                            structuredLogger.logMessage(
+                                                    ctx,
+                                                    LOGGER_NAME,
+                                                    "Product fetch complete for sku: " + sku));
+                });
     }
 }

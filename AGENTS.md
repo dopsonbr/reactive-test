@@ -158,8 +158,35 @@ All services expect these headers for context propagation:
 
 ## When Implementing New Features
 
-1. **Create an implementation plan** in the root (e.g., `008_FEATURE_NAME.md`)
+1. **Create an implementation plan** in the root (e.g., `010_FEATURE_NAME.md`)
 2. **Determine scope**: platform library vs. application-specific
 3. **Update platform libraries** if the feature is cross-cutting
 4. **Update application(s)** to use platform features
-5. **Archive the plan** when complete (`mv 008_*.md archive/`)
+5. **Archive the plan** when complete (see below)
+
+## Implementation Plan Management
+
+**IMPORTANT: Never delete implementation plans.** Plans serve as historical documentation of design decisions.
+
+### Plan Lifecycle
+
+1. **Active plans** live in the repository root (e.g., `010_FEATURE_NAME.md`)
+2. **Completed plans** are moved to `docs/archive/`
+3. **Never delete plans** - always archive them for future reference
+
+### Archiving a Completed Plan
+
+```bash
+# Move completed plan to archive
+mv 010_FEATURE_NAME.md docs/archive/
+```
+
+### Archive Location
+
+All completed implementation plans are stored in `docs/archive/`:
+- `000_INIT_IMPLEMENTATION_PLAN.md`
+- `001_GRAFANA_STACK_IMPLEMENTATION_PLAN.md`
+- `006_AUTHN_AUTHZ.md`
+- `008_CART_SERVICE.md`
+- `009_AUDIT_DATA.md`
+- etc.

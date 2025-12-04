@@ -1,11 +1,65 @@
 spring:
   application:
     name: cart-service
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      timeout: 1000ms
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cartdb}
+    username: ${DB_USERNAME:cart_user}
+    password: ${DB_PASSWORD:cart_pass}
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cartdb}
+    user: ${DB_USERNAME:cart_user}
+    password: ${DB_PASSWORD:cart_pass}
+    locations: classpath:db/migration
+  security:
+    oauth2:
+      # Resource Server (inbound JWT validation)
+      resourceserver:
+        jwt:
+          issuer-uri: ${OAUTH_ISSUER_URI:http://localhost:8081/oauth}
+          jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
+      # Client (outbound client credentials for downstream services)
+      client:
+        registration:
+          downstream-services:
+            client-id: ${DOWNSTREAM_CLIENT_ID:cart-service}
+            client-secret: ${DOWNSTREAM_CLIENT_SECRET:cart-secret}
+            authorization-grant-type: client_credentials
+            scope: product:read,customer:read,discount:read,fulfillment:read
+            provider: downstream-auth
+        provider:
+          downstream-auth:
+            token-uri: ${DOWNSTREAM_TOKEN_URI:http://localhost:8081/downstream-oauth/token}
+
+# Application Security Configuration
+app:
+  security:
+    enabled: true
+    jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
+    allowed-issuers:
+      - ${OAUTH_ISSUER_URI:http://localhost:8081/oauth}
+      - test-issuer
+    required-audience: ${OAUTH_AUDIENCE:reactive-test-api}
+    clock-skew-seconds: 30
+
+# Audit configuration
+audit:
+  enabled: false
+
+# External service URLs
+services:
+  product:
+    base-url: ${PRODUCT_SERVICE_URL:http://localhost:8080}
+  customer:
+    base-url: ${CUSTOMER_SERVICE_URL:http://localhost:8083}
+  discount:
+    base-url: ${DISCOUNT_SERVICE_URL:http://localhost:8084}
+  fulfillment:
+    base-url: ${FULFILLMENT_SERVICE_URL:http://localhost:8085}
 
 # Logging
 logging:
@@ -17,11 +71,106 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,circuitbreakers,retries
   endpoint:
     health:
       show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
 
-# Server port (different from product-service in local dev)
+# Server port
 server:
   port: 8082
+
+# Resilience4j Configuration
+resilience4j:
+  # Circuit Breaker
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+    instances:
+      product:
+        base-config: default
+      customer:
+        base-config: default
+      discount:
+        base-config: default
+      fulfillment:
+        base-config: default
+      audit:
+        base-config: default
+        failure-rate-threshold: 80
+
+  # Retry
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientResponseException$ServiceUnavailable
+          - org.springframework.web.reactive.function.client.WebClientResponseException$GatewayTimeout
+        ignore-exceptions:
+          - org.springframework.web.reactive.function.client.WebClientResponseException$BadRequest
+          - org.springframework.web.reactive.function.client.WebClientResponseException$NotFound
+    instances:
+      product:
+        base-config: default
+      customer:
+        base-config: default
+      discount:
+        base-config: default
+      fulfillment:
+        base-config: default
+      audit:
+        max-attempts: 2
+        wait-duration: 100ms
+
+  # Timeout
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 2s
+        cancel-running-future: true
+    instances:
+      product:
+        base-config: default
+      customer:
+        base-config: default
+      discount:
+        timeout-duration: 1s
+      fulfillment:
+        base-config: default
+      audit:
+        timeout-duration: 500ms
+
+  # Bulkhead (concurrency limiting)
+  bulkhead:
+    configs:
+      default:
+        max-concurrent-calls: 25
+        max-wait-duration: 0s
+    instances:
+      product:
+        base-config: default
+      customer:
+        max-concurrent-calls: 10
+      discount:
+        max-concurrent-calls: 10
+      fulfillment:
+        max-concurrent-calls: 10
+      audit:
+        max-concurrent-calls: 50

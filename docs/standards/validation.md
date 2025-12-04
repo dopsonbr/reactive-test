@@ -4,6 +4,12 @@
 
 Reject invalid requests early with clear, actionable error messages that help clients fix their requests.
 
+## MANDATORY
+
+**All controllers MUST implement request validation.** Validation is not optional. Every endpoint that accepts input (path parameters, query parameters, headers, or request bodies) MUST validate that input before processing.
+
+Controllers that do not implement validation will fail architecture tests and code review.
+
 ## Outcomes
 
 - Fast failure for invalid requests

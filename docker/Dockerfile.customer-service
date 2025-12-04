@@ -1,0 +1,39 @@
+# Runtime image (JAR must be pre-built with ./gradlew :apps:customer-service:bootJar)
+FROM eclipse-temurin:21-jre
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+
+# Download OpenTelemetry Java agent
+ARG OTEL_VERSION=2.10.0
+ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OTEL_VERSION}/opentelemetry-javaagent.jar /app/otel-agent.jar
+RUN chmod 644 /app/otel-agent.jar
+
+# Copy pre-built JAR (build with: ./gradlew :apps:customer-service:bootJar)
+COPY apps/customer-service/build/libs/*.jar app.jar
+
+# Create logs directory
+RUN mkdir -p /app/logs && chown -R appuser:appuser /app
+
+USER appuser
+
+# OpenTelemetry configuration via environment variables
+ENV JAVA_TOOL_OPTIONS="-javaagent:/app/otel-agent.jar"
+ENV OTEL_SERVICE_NAME=customer-service
+ENV OTEL_TRACES_EXPORTER=otlp
+ENV OTEL_METRICS_EXPORTER=none
+ENV OTEL_LOGS_EXPORTER=none
+ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=5 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

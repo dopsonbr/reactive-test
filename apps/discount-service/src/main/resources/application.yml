@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: discount-service
+
+server:
+  port: 8084
+
+# Logging
+logging:
+  file:
+    name: logs/discount-service.log
+
+# Actuator & Management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always

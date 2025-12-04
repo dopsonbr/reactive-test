@@ -133,6 +133,26 @@ services:
     networks:
       - observability
 
+  # === Database Layer ===
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=cartdb
+      - POSTGRES_USER=cart_user
+      - POSTGRES_PASSWORD=cart_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cart_user -d cartdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - observability
+
   redis-exporter:
     image: oliver006/redis_exporter:v1.66.0
     container_name: redis-exporter
@@ -189,6 +209,16 @@ services:
     container_name: cart-service
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/cartdb
+      - SPRING_R2DBC_USERNAME=cart_user
+      - SPRING_R2DBC_PASSWORD=cart_pass
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/cartdb
+      - SPRING_FLYWAY_USER=cart_user
+      - SPRING_FLYWAY_PASSWORD=cart_pass
+      - PRODUCT_SERVICE_URL=http://product-service:8080
+      - CUSTOMER_SERVICE_URL=http://customer-service:8080
+      - DISCOUNT_SERVICE_URL=http://discount-service:8080
+      - FULFILLMENT_SERVICE_URL=http://fulfillment-service:8080
       - OTEL_SERVICE_NAME=cart-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
@@ -204,7 +234,102 @@ services:
     depends_on:
       tempo:
         condition: service_healthy
-      redis:
+      postgres:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      customer-service:
+        condition: service_healthy
+      discount-service:
+        condition: service_healthy
+      fulfillment-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
+  customer-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.customer-service
+    container_name: customer-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - OTEL_SERVICE_NAME=customer-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+    volumes:
+      - app-logs:/app/logs
+    ports:
+      - "8083:8080"
+    depends_on:
+      tempo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
+  discount-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.discount-service
+    container_name: discount-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - OTEL_SERVICE_NAME=discount-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+    volumes:
+      - app-logs:/app/logs
+    ports:
+      - "8084:8080"
+    depends_on:
+      tempo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
+  fulfillment-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.fulfillment-service
+    container_name: fulfillment-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - OTEL_SERVICE_NAME=fulfillment-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+    volumes:
+      - app-logs:/app/logs
+    ports:
+      - "8085:8080"
+    depends_on:
+      tempo:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
@@ -358,6 +483,7 @@ volumes:
   app-logs:
   k6-output:
   redis-data:
+  postgres-data:
 
 networks:
   observability:

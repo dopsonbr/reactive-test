@@ -3,9 +3,9 @@ package org.example.product.controller;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
+import org.example.model.product.Product;
 import org.example.platform.test.SecurityTestUtils;
 import org.example.platform.test.TestSecurityConfig;
-import org.example.product.domain.Product;
 import org.example.product.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

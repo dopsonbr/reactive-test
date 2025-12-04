@@ -1,7 +1,7 @@
 package org.example.product.service;
 
+import org.example.model.product.Product;
 import org.example.platform.logging.StructuredLogger;
-import org.example.product.domain.Product;
 import org.example.product.repository.inventory.InventoryRepository;
 import org.example.product.repository.merchandise.MerchandiseRepository;
 import org.example.product.repository.price.PriceRepository;

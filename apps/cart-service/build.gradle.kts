@@ -6,6 +6,12 @@ dependencies {
     // Platform BOM for version management
     implementation(platform(project(":libs:platform:platform-bom")))
 
+    // Shared model libraries
+    implementation(project(":libs:shared-model:shared-model-product"))
+    implementation(project(":libs:shared-model:shared-model-customer"))
+    implementation(project(":libs:shared-model:shared-model-discount"))
+    implementation(project(":libs:shared-model:shared-model-fulfillment"))
+
     // Platform libraries
     implementation(project(":libs:platform:platform-logging"))
     implementation(project(":libs:platform:platform-resilience"))
@@ -17,11 +23,21 @@ dependencies {
     // Spring Boot starters (versions from BOM)
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+
+    // R2DBC PostgreSQL driver
+    implementation("org.postgresql:r2dbc-postgresql")
+
+    // Flyway for database migrations (requires JDBC driver)
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
+    runtimeOnly("org.postgresql:postgresql")
 
     // Prometheus metrics
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     // Test dependencies
     testImplementation(project(":libs:platform:platform-test"))
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:r2dbc")
 }

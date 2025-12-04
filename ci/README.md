@@ -2,22 +2,18 @@
 
 ## Purpose
 
-Collection of scripts for building, testing, and verifying the project. Scripts are available in both **Node.js** (recommended) and **Bash** formats. All scripts support both local development (default) and CI pipeline execution via the `--ci` flag.
+Collection of scripts for building, testing, and verifying the project. All scripts support both local development (default) and CI pipeline execution via the `--ci` flag.
 
 ## Quick Start
 
 ```bash
-# Using Node.js scripts (recommended)
+# Using Node.js scripts
 node ci/verify.js           # Full pre-merge verification
 node ci/format-check.js     # Check code formatting
 node ci/build-all.js        # Build all modules
 
 # Using npm scripts
 cd ci && npm run verify
-
-# Using Bash scripts (legacy)
-./ci/verify.sh
-./ci/format-check.sh
 ```
 
 ## Node.js Scripts
@@ -57,22 +53,17 @@ All Node.js scripts support:
 | `--verbose`, `-v` | Show detailed output |
 | `--help`, `-h` | Show usage information |
 
-## Bash Scripts
+## Bash Scripts (Docker & E2E only)
 
 | Script | Description |
 |--------|-------------|
-| `verify.sh` | Pre-merge verification (format + build + arch + test + bootJar) |
-| `format-check.sh` | Check code formatting with Spotless |
-| `format-apply.sh` | Apply code formatting with Spotless |
-| `arch-check.sh` | Run architecture tests with ArchUnit |
-| `build-all.sh` | Build all modules (platform libraries + applications) |
-| `build-bootjars.sh` | Build bootable JARs for Docker deployment |
-| `test-unit.sh` | Run all unit tests |
 | `docker-up.sh` | Start Docker Compose observability stack |
 | `docker-down.sh` | Stop Docker Compose stack and clean volumes |
 | `e2e-load-test.sh` | Run k6 load test (auto-starts Docker stack) |
 | `e2e-resilience-test.sh` | Run k6 resilience/chaos test (auto-starts Docker stack) |
 | `e2e-circuit-breaker-test.sh` | Run k6 circuit breaker test (auto-starts Docker stack) |
+| `e2e-oauth-chaos-test.sh` | Run k6 OAuth chaos test |
+| `e2e-oauth-circuit-breaker-test.sh` | Run k6 OAuth circuit breaker test |
 
 ## Modes
 
@@ -89,25 +80,18 @@ All Node.js scripts support:
 ## Usage Examples
 
 ```bash
-# Local development (Node.js)
+# Local development
 node ci/verify.js
 node ci/verify.js --verbose
 node ci/format-check.js
 
-# CI pipeline (Node.js)
+# CI pipeline
 node ci/verify.js --ci
-
-# Local development (Bash)
-./ci/verify.sh
-./ci/format-check.sh
-
-# CI pipeline (Bash)
-./ci/verify.sh --ci
 ```
 
 ## Verification Pipeline
 
-The `verify.js` (and `verify.sh`) script runs 5 steps:
+The `verify.js` script runs 5 steps:
 
 1. **Code Formatting** - Spotless check (Google Java Format)
 2. **Build All Modules** - Compile platform libraries and applications

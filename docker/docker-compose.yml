@@ -166,6 +166,27 @@ services:
     networks:
       - observability
 
+  # === Database Layer ===
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: audit
+      POSTGRES_PASSWORD: audit
+      POSTGRES_DB: audit
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init-audit.sql:/docker-entrypoint-initdb.d/init-audit.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U audit -d audit"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - observability
+
   # === Applications ===
   product-service:
     build:
@@ -330,6 +351,45 @@ services:
       - "8085:8080"
     depends_on:
       tempo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
+  audit-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.audit-service
+    container_name: audit-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/audit
+      - SPRING_R2DBC_USERNAME=audit
+      - SPRING_R2DBC_PASSWORD=audit
+      - SPRING_DATA_REDIS_HOST=redis
+      - OTEL_SERVICE_NAME=audit-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_PROPAGATORS=tracecontext,baggage
+      - OTEL_INSTRUMENTATION_SPRING_WEBFLUX_ENABLED=true
+    volumes:
+      - app-logs:/app/logs
+    ports:
+      - "8086:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]

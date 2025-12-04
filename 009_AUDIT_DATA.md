@@ -1142,7 +1142,7 @@ volumes:
    - **Proposed:** Future enhancement; add WebSocket/SSE endpoint for real-time streaming
 
 6. **Cross-Service Correlation:** How to correlate events across services?
-   - **Proposed:** Use `traceId` from OpenTelemetry for distributed tracing correlation
+   - there should be multiple ways to correlate events otel traces ids are just one way. traces are stored seperately. this audit is focused events. should be able to correlate based on a cartId, trace id, sessionId if exists, customer/user ids, etc. do not create hard rules around correlation
 
 7. **Table Partitioning:** Should audit_events table be partitioned for large-scale deployments?
    - **Proposed:** Start without partitioning; add monthly partitions via PostgreSQL declarative partitioning if needed

@@ -107,6 +107,21 @@ public class GlobalErrorHandler {
         return ResponseEntity.status(status).body(response);
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(
+            NotFoundException ex, ServerWebExchange exchange) {
+        String traceId = getTraceId();
+        String path = exchange.getRequest().getPath().value();
+
+        log.warn("Resource not found for path {}: {}", path, ex.getMessage());
+
+        ErrorResponse response =
+                ErrorResponse.of(
+                        "Not Found", ex.getMessage(), path, HttpStatus.NOT_FOUND.value(), traceId);
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidationError(
             ValidationException ex, ServerWebExchange exchange) {

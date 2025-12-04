@@ -15,6 +15,7 @@ include("libs:platform:platform-error")
 include("libs:platform:platform-webflux")
 include("libs:platform:platform-security")
 include("libs:platform:platform-test")
+include("libs:platform:platform-audit")
 
 // Shared model libraries
 include("libs:shared-model:shared-model-product")
@@ -28,3 +29,4 @@ include("apps:cart-service")
 include("apps:customer-service")
 include("apps:discount-service")
 include("apps:fulfillment-service")
+include("apps:audit-service")

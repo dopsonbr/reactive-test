@@ -1,5 +1,9 @@
 # 008 Cart Service Enhancement - Granular CRUD with Shared Domain
 
+**Status: ✅ COMPLETE**
+
+---
+
 ## Overview
 
 This plan enhances the cart-service to provide granular CRUD operations for a comprehensive cart object. The cart will include products, customer information, discounts, and fulfillments. Shared domain objects will be extracted into independent platform libraries.
@@ -826,63 +830,66 @@ When 009_AUDIT_DATA is implemented, this will be replaced with a queue-based pub
 ### New Files to Create
 
 **Shared model Libraries:**
-- [ ] `libs/shared-model/shared-model-product/build.gradle.kts`
-- [ ] `libs/shared-model/shared-model-product/src/main/java/org/example/model/product/Product.java`
-- [ ] `libs/shared-model/shared-model-product/src/main/java/org/example/model/product/CartProduct.java`
-- [ ] `libs/shared-model/shared-model-customer/build.gradle.kts`
-- [ ] `libs/shared-model/shared-model-customer/src/main/java/org/example/model/customer/CartCustomer.java`
-- [ ] `libs/shared-model/shared-model-discount/build.gradle.kts`
-- [ ] `libs/shared-model/shared-model-discount/src/main/java/org/example/model/discount/Discount.java`
-- [ ] `libs/shared-model/shared-model-discount/src/main/java/org/example/model/discount/DiscountType.java`
-- [ ] `libs/shared-model/shared-model-discount/src/main/java/org/example/model/discount/AppliedDiscount.java`
-- [ ] `libs/shared-model/shared-model-fulfillment/build.gradle.kts`
-- [ ] `libs/shared-model/shared-model-fulfillment/src/main/java/org/example/model/fulfillment/Fulfillment.java`
-- [ ] `libs/shared-model/shared-model-fulfillment/src/main/java/org/example/model/fulfillment/FulfillmentType.java`
+- [x] `libs/shared-model/shared-model-product/build.gradle.kts`
+- [x] `libs/shared-model/shared-model-product/src/main/java/org/example/model/product/Product.java`
+- [x] `libs/shared-model/shared-model-product/src/main/java/org/example/model/product/CartProduct.java`
+- [x] `libs/shared-model/shared-model-customer/build.gradle.kts`
+- [x] `libs/shared-model/shared-model-customer/src/main/java/org/example/model/customer/CartCustomer.java`
+- [x] `libs/shared-model/shared-model-discount/build.gradle.kts`
+- [x] `libs/shared-model/shared-model-discount/src/main/java/org/example/model/discount/Discount.java`
+- [x] `libs/shared-model/shared-model-discount/src/main/java/org/example/model/discount/DiscountType.java`
+- [x] `libs/shared-model/shared-model-discount/src/main/java/org/example/model/discount/AppliedDiscount.java`
+- [x] `libs/shared-model/shared-model-fulfillment/build.gradle.kts`
+- [x] `libs/shared-model/shared-model-fulfillment/src/main/java/org/example/model/fulfillment/Fulfillment.java`
+- [x] `libs/shared-model/shared-model-fulfillment/src/main/java/org/example/model/fulfillment/FulfillmentType.java`
 
 **Placeholder Services:**
-- [ ] `apps/customer-service/build.gradle.kts`
-- [ ] `apps/customer-service/src/main/java/org/example/customer/CustomerServiceApplication.java`
-- [ ] `apps/customer-service/src/main/java/org/example/customer/controller/CustomerController.java`
-- [ ] `apps/customer-service/src/main/resources/application.yml`
-- [ ] `apps/discount-service/build.gradle.kts`
-- [ ] `apps/discount-service/src/main/java/org/example/discount/DiscountServiceApplication.java`
-- [ ] `apps/discount-service/src/main/java/org/example/discount/controller/DiscountController.java`
-- [ ] `apps/discount-service/src/main/resources/application.yml`
-- [ ] `apps/fulfillment-service/build.gradle.kts`
-- [ ] `apps/fulfillment-service/src/main/java/org/example/fulfillment/FulfillmentServiceApplication.java`
-- [ ] `apps/fulfillment-service/src/main/java/org/example/fulfillment/controller/FulfillmentController.java`
-- [ ] `apps/fulfillment-service/src/main/resources/application.yml`
+- [x] `apps/customer-service/build.gradle.kts`
+- [x] `apps/customer-service/src/main/java/org/example/customer/CustomerServiceApplication.java`
+- [x] `apps/customer-service/src/main/java/org/example/customer/controller/CustomerController.java`
+- [x] `apps/customer-service/src/main/resources/application.yml`
+- [x] `apps/discount-service/build.gradle.kts`
+- [x] `apps/discount-service/src/main/java/org/example/discount/DiscountServiceApplication.java`
+- [x] `apps/discount-service/src/main/java/org/example/discount/controller/DiscountController.java`
+- [x] `apps/discount-service/src/main/resources/application.yml`
+- [x] `apps/fulfillment-service/build.gradle.kts`
+- [x] `apps/fulfillment-service/src/main/java/org/example/fulfillment/FulfillmentServiceApplication.java`
+- [x] `apps/fulfillment-service/src/main/java/org/example/fulfillment/controller/FulfillmentController.java`
+- [x] `apps/fulfillment-service/src/main/resources/application.yml`
 
 **Cart Service Enhancements:**
-- [ ] `apps/cart-service/src/main/java/org/example/cart/model/Cart.java` (update)
-- [ ] `apps/cart-service/src/main/java/org/example/cart/model/CartTotals.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/repository/CartRepository.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/repository/RedisCartRepository.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/controller/CartController.java` (update)
-- [ ] `apps/cart-service/src/main/java/org/example/cart/controller/CartProductController.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/controller/CartCustomerController.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/controller/CartDiscountController.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/controller/CartFulfillmentController.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/client/ProductServiceClient.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/client/CustomerServiceClient.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/client/DiscountServiceClient.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/client/FulfillmentServiceClient.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/audit/AuditEvent.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/audit/AuditEventPublisher.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/audit/NoOpAuditEventPublisher.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/config/SecurityConfig.java`
-- [ ] `apps/cart-service/src/main/java/org/example/cart/config/WebClientConfig.java`
-- [ ] `apps/cart-service/src/main/resources/application.yml` (update)
+- [x] `apps/cart-service/src/main/java/org/example/cart/model/Cart.java` (update)
+- [x] `apps/cart-service/src/main/java/org/example/cart/model/CartTotals.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/repository/CartRepository.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/repository/PostgresCartRepository.java` (changed from Redis to Postgres)
+- [x] `apps/cart-service/src/main/java/org/example/cart/repository/CartEntity.java` (R2DBC entity)
+- [x] `apps/cart-service/src/main/java/org/example/cart/repository/CartEntityRepository.java` (Spring Data R2DBC)
+- [x] `apps/cart-service/src/main/java/org/example/cart/controller/CartController.java` (update)
+- [x] `apps/cart-service/src/main/java/org/example/cart/controller/CartProductController.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/controller/CartCustomerController.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/controller/CartDiscountController.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/controller/CartFulfillmentController.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/client/ProductServiceClient.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/client/CustomerServiceClient.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/client/DiscountServiceClient.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/client/FulfillmentServiceClient.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/audit/AuditEvent.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/audit/AuditEventPublisher.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/audit/NoOpAuditEventPublisher.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/config/SecurityConfig.java`
+- [x] `apps/cart-service/src/main/java/org/example/cart/validation/CartRequestValidator.java`
+- [x] `apps/cart-service/src/main/resources/db/migration/V1__create_carts_table.sql`
+- [x] `apps/cart-service/src/main/resources/application.yml` (update)
 
 **Configuration Updates:**
-- [ ] `settings.gradle.kts` (add new modules)
-- [ ] `docker/docker-compose.yml` (add new services)
+- [x] `settings.gradle.kts` (add new modules)
+- [x] `docker/docker-compose.yml` (add new services + PostgreSQL)
 
 ### Files to Modify
 
-- [ ] `apps/product-service/build.gradle.kts` - add shared-model-product dependency
-- [ ] `apps/product-service/src/main/java/org/example/product/model/Product.java` - remove (use shared)
-- [ ] `apps/cart-service/build.gradle.kts` - add shared-model dependencies
+- [x] `apps/product-service/build.gradle.kts` - add shared-model-product dependency
+- [x] `apps/product-service/src/main/java/org/example/product/domain/Product.java` - removed (use shared)
+- [x] `apps/cart-service/build.gradle.kts` - add shared-model dependencies + R2DBC/Postgres
 
 ---
 

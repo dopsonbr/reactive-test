@@ -133,6 +133,26 @@ services:
     networks:
       - observability
 
+  # === Database Layer ===
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=cartdb
+      - POSTGRES_USER=cart_user
+      - POSTGRES_PASSWORD=cart_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cart_user -d cartdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - observability
+
   redis-exporter:
     image: oliver006/redis_exporter:v1.66.0
     container_name: redis-exporter
@@ -189,6 +209,12 @@ services:
     container_name: cart-service
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/cartdb
+      - SPRING_R2DBC_USERNAME=cart_user
+      - SPRING_R2DBC_PASSWORD=cart_pass
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/cartdb
+      - SPRING_FLYWAY_USER=cart_user
+      - SPRING_FLYWAY_PASSWORD=cart_pass
       - PRODUCT_SERVICE_URL=http://product-service:8080
       - CUSTOMER_SERVICE_URL=http://customer-service:8080
       - DISCOUNT_SERVICE_URL=http://discount-service:8080
@@ -208,7 +234,7 @@ services:
     depends_on:
       tempo:
         condition: service_healthy
-      redis:
+      postgres:
         condition: service_healthy
       product-service:
         condition: service_healthy
@@ -457,6 +483,7 @@ volumes:
   app-logs:
   k6-output:
   redis-data:
+  postgres-data:
 
 networks:
   observability:

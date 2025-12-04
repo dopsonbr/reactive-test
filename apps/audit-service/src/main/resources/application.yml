@@ -1,0 +1,101 @@
+spring:
+  application:
+    name: audit-service
+
+  # R2DBC PostgreSQL configuration
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/audit
+    username: audit
+    password: audit
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+
+  # Redis configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 1000ms
+
+# Audit consumer configuration
+audit:
+  consumer:
+    stream-key: audit-events
+    consumer-group: audit-service
+    consumer-name: ${HOSTNAME:audit-consumer-1}
+    batch-size: 100
+    poll-interval: 100ms
+    max-retries: 3
+    retry-delay: 1s
+
+# Logging
+logging:
+  file:
+    name: logs/audit-application.log
+  level:
+    org.example.audit: DEBUG
+
+# Actuator & Management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Server port
+server:
+  port: 8086
+
+# Resilience4j configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      postgres:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+
+  retry:
+    instances:
+      postgres:
+        maxAttempts: 3
+        waitDuration: 500ms
+        exponentialBackoffMultiplier: 2
+
+  bulkhead:
+    instances:
+      consumer:
+        maxConcurrentCalls: 50
+      api:
+        maxConcurrentCalls: 100
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  r2dbc:
+    url: r2dbc:postgresql://postgres:5432/audit
+    username: audit
+    password: audit
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+server:
+  port: 8080
+
+audit:
+  consumer:
+    consumer-name: ${HOSTNAME:audit-consumer-docker}

@@ -1,11 +1,11 @@
 package org.example.product.controller;
 
+import org.example.model.product.Product;
 import org.example.platform.logging.RequestLogData;
 import org.example.platform.logging.ResponseLogData;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
-import org.example.product.domain.Product;
 import org.example.product.service.ProductService;
 import org.example.product.validation.ProductRequestValidator;
 import org.springframework.http.server.reactive.ServerHttpRequest;

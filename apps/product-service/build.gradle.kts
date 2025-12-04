@@ -6,6 +6,9 @@ dependencies {
     // Platform BOM for version management
     implementation(platform(project(":libs:platform:platform-bom")))
 
+    // Shared model libraries
+    implementation(project(":libs:shared-model:shared-model-product"))
+
     // Platform libraries
     implementation(project(":libs:platform:platform-logging"))
     implementation(project(":libs:platform:platform-resilience"))

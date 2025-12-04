@@ -3,6 +3,7 @@ rootProject.name = "reactive-platform"
 // Container projects
 include("libs")
 include("libs:platform")
+include("libs:shared-model")
 include("apps")
 
 // Platform libraries
@@ -15,6 +16,15 @@ include("libs:platform:platform-webflux")
 include("libs:platform:platform-security")
 include("libs:platform:platform-test")
 
+// Shared model libraries
+include("libs:shared-model:shared-model-product")
+include("libs:shared-model:shared-model-customer")
+include("libs:shared-model:shared-model-discount")
+include("libs:shared-model:shared-model-fulfillment")
+
 // Applications
 include("apps:product-service")
 include("apps:cart-service")
+include("apps:customer-service")
+include("apps:discount-service")
+include("apps:fulfillment-service")

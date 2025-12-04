@@ -1,11 +1,10 @@
 package org.example.cart;
 
-import org.example.platform.test.RedisTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -14,12 +13,31 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 class CartServiceApplicationTest {
 
-    @Container static GenericContainer<?> redis = RedisTestSupport.createRedisContainer();
+    @Container
+    static PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>("postgres:15-alpine")
+                    .withDatabaseName("cartdb")
+                    .withUsername("cart_user")
+                    .withPassword("cart_pass");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port", () -> RedisTestSupport.getRedisPort(redis));
+        // R2DBC configuration
+        registry.add(
+                "spring.r2dbc.url",
+                () ->
+                        String.format(
+                                "r2dbc:postgresql://%s:%d/%s",
+                                postgres.getHost(),
+                                postgres.getFirstMappedPort(),
+                                postgres.getDatabaseName()));
+        registry.add("spring.r2dbc.username", postgres::getUsername);
+        registry.add("spring.r2dbc.password", postgres::getPassword);
+
+        // Flyway configuration (uses JDBC)
+        registry.add("spring.flyway.url", postgres::getJdbcUrl);
+        registry.add("spring.flyway.user", postgres::getUsername);
+        registry.add("spring.flyway.password", postgres::getPassword);
     }
 
     @Test

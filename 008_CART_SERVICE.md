@@ -9,12 +9,23 @@ This plan enhances the cart-service to provide granular CRUD operations for a co
 
 ## Goals
 
-1. Create shared domain libraries (`shared-domain-*`) for reusable domain objects
-2. Refactor product-service to use `shared-domain-product`
+1. Create shared domain libraries (`shared-model-*`) for reusable domain objects
+2. Refactor product-service to use `shared-model-product`
 3. Create placeholder services for customer, discounts, and fulfillments
 4. Implement granular CRUD APIs for cart management
 5. Apply full resilience, logging, and security patterns
 6. Integrate audit event publishing (placeholder for 009_AUDIT_DATA)
+7. **Mandatory validation** on all controller endpoints
+
+## Mandatory Validation
+
+All controllers MUST implement request validation per `docs/standards/validation.md`. See `docs/templates/_template_controller.md` for the standard controller pattern.
+
+**Validation Requirements:**
+- Every endpoint validates all inputs (path params, query params, headers, request bodies)
+- All validation errors are collected before returning (no fail-fast)
+- Error messages are actionable with field-level details
+- CartRequestValidator handles all cart-service validation
 
 ## Architecture
 
@@ -219,29 +230,49 @@ public record CartTotals(
 
 ### 2.2 Cart Persistence
 
-**Storage:** Redis with JSON serialization
+**Storage:** PostgreSQL with R2DBC (reactive) and JSONB columns for nested collections
 
-**Key Patterns:**
-- Primary: `cart:{cartId}`
-- Store index: `cart:store:{storeNumber}` (Set of cartIds)
+**Database Schema:**
+```sql
+CREATE TABLE carts (
+    id UUID PRIMARY KEY,
+    store_number INTEGER NOT NULL,
+    customer_id VARCHAR(255),
+    customer_json JSONB,
+    products_json JSONB NOT NULL DEFAULT '[]',
+    discounts_json JSONB NOT NULL DEFAULT '[]',
+    fulfillments_json JSONB NOT NULL DEFAULT '[]',
+    totals_json JSONB NOT NULL DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
 
-**TTL:** Configurable (default 7 days for active carts)
+CREATE INDEX idx_carts_store_number ON carts(store_number);
+CREATE INDEX idx_carts_customer_id ON carts(customer_id);
+```
+
+**Why Postgres over Redis:**
+- Carts are transactional data requiring ACID guarantees
+- Complex queries needed (by store, by customer)
+- Persistent state that should survive cache eviction
+- JSONB provides flexibility for nested collections while maintaining query capability
 
 ```java
 // CartRepository.java
 public interface CartRepository {
     Mono<Cart> findById(String cartId);
     Flux<Cart> findByStoreNumber(int storeNumber);
+    Flux<Cart> findByCustomerId(String customerId);
     Mono<Cart> save(Cart cart);
     Mono<Void> deleteById(String cartId);
     Mono<Boolean> exists(String cartId);
 }
 
-// RedisCartRepository.java - Redis implementation
+// PostgresCartRepository.java - Postgres implementation via R2DBC
 @Repository
-public class RedisCartRepository implements CartRepository {
-    // Uses ReactiveRedisTemplate<String, Cart>
-    // Maintains store index via Redis Sets
+public class PostgresCartRepository implements CartRepository {
+    // Uses Spring Data R2DBC with CartEntityRepository
+    // Converts between domain Cart and CartEntity with JSON serialization
 }
 ```
 
@@ -291,24 +322,18 @@ public record UpdateProductRequest(
 
 **Product Integration:** When adding a product, cart-service calls product-service to fetch product details (description, price, availability).
 
-### 3.3 Customer Endpoints (Granular CRUD)
+### 3.3 Customer Carts Endpoint
 
 | Method | Path | Description | Request Body | Response |
 |--------|------|-------------|--------------|----------|
-| GET | `/carts/{cartId}/customer` | Get customer | - | `CartCustomer` |
-| PUT | `/carts/{cartId}/customer` | Set/update customer | `SetCustomerRequest` | `Cart` |
-| DELETE | `/carts/{cartId}/customer` | Remove customer | - | `Cart` |
+| GET | `/customers/{customerId}/carts` | Find all carts for a customer | - | `List<Cart>` |
 
-```java
-// SetCustomerRequest.java - minimal placeholder
-public record SetCustomerRequest(
-    String customerId,
-    String name,
-    String email
-) {}
-```
+**Purpose:** Retrieve all carts belonging to a specific customer. This enables:
+- Customer service representatives to view customer's carts
+- Order history and cart recovery functionality
+- Multi-device cart synchronization
 
-**Customer Integration:** When setting customer, cart-service calls customer-service (placeholder) to validate customer ID.
+**Note:** Customer data on individual carts is managed through the cart creation process and customer-service integration.
 
 ### 3.4 Discount Endpoints (Granular CRUD)
 

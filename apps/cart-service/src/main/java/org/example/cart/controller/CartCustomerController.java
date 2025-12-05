@@ -26,66 +26,61 @@ import reactor.core.publisher.Flux;
 @RequestMapping("/customers/{customerId}/carts")
 public class CartCustomerController {
 
-    private static final String LOGGER_NAME = "cartcustomercontroller";
+  private static final String LOGGER_NAME = "cartcustomercontroller";
 
-    private final CartService cartService;
-    private final CartRequestValidator validator;
-    private final StructuredLogger structuredLogger;
+  private final CartService cartService;
+  private final CartRequestValidator validator;
+  private final StructuredLogger structuredLogger;
 
-    public CartCustomerController(
-            CartService cartService,
-            CartRequestValidator validator,
-            StructuredLogger structuredLogger) {
-        this.cartService = cartService;
-        this.validator = validator;
-        this.structuredLogger = structuredLogger;
-    }
+  public CartCustomerController(
+      CartService cartService, CartRequestValidator validator, StructuredLogger structuredLogger) {
+    this.cartService = cartService;
+    this.validator = validator;
+    this.structuredLogger = structuredLogger;
+  }
 
-    /** Find all carts for a customer. */
-    @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_cart:read')")
-    public Flux<Cart> findCartsByCustomerId(
-            @PathVariable String customerId,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId,
-            ServerHttpRequest httpRequest) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** Find all carts for a customer. */
+  @GetMapping
+  @PreAuthorize("hasAuthority('SCOPE_cart:read')")
+  public Flux<Cart> findCartsByCustomerId(
+      @PathVariable String customerId,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId,
+      ServerHttpRequest httpRequest) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return Flux.deferContextual(
-                        ctx -> {
-                            logRequest(ctx, httpRequest);
-                            return validator
-                                    .validateFindCartsByCustomerId(
-                                            customerId, storeNumber, orderNumber, userId, sessionId)
-                                    .thenMany(cartService.findByCustomerId(customerId));
-                        })
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return Flux.deferContextual(
+            ctx -> {
+              logRequest(ctx, httpRequest);
+              return validator
+                  .validateFindCartsByCustomerId(
+                      customerId, storeNumber, orderNumber, userId, sessionId)
+                  .thenMany(cartService.findByCustomerId(customerId));
+            })
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    private void logRequest(reactor.util.context.ContextView ctx, ServerHttpRequest request) {
-        RequestLogData requestData =
-                new RequestLogData(
-                        request.getPath().value(),
-                        request.getURI().getPath(),
-                        request.getMethod().name(),
-                        null);
-        structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
-    }
+  private void logRequest(reactor.util.context.ContextView ctx, ServerHttpRequest request) {
+    RequestLogData requestData =
+        new RequestLogData(
+            request.getPath().value(),
+            request.getURI().getPath(),
+            request.getMethod().name(),
+            null);
+    structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
+  }
 
-    private void logResponse(
-            reactor.util.context.ContextView ctx,
-            ServerHttpRequest request,
-            int status,
-            Object body) {
-        ResponseLogData responseData =
-                new ResponseLogData(
-                        request.getPath().value(),
-                        request.getURI().getPath(),
-                        request.getMethod().name(),
-                        status,
-                        body);
-        structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
-    }
+  private void logResponse(
+      reactor.util.context.ContextView ctx, ServerHttpRequest request, int status, Object body) {
+    ResponseLogData responseData =
+        new ResponseLogData(
+            request.getPath().value(),
+            request.getURI().getPath(),
+            request.getMethod().name(),
+            status,
+            body);
+    structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
+  }
 }

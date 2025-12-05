@@ -15,7 +15,7 @@ dependencies {
 
     // Constrain non-BOM dependencies to specific versions
     constraints {
-        api(libs.resilience4j.spring.boot3)
+        api(libs.resilience4j.spring.boot)
         api(libs.resilience4j.reactor)
         api(libs.resilience4j.micrometer)
         api(libs.logstash.logback.encoder)

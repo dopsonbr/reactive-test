@@ -25,64 +25,63 @@ import reactor.core.publisher.Mono;
  */
 @Component
 public class SecurityErrorHandler
-        implements ServerAuthenticationEntryPoint, ServerAccessDeniedHandler {
+    implements ServerAuthenticationEntryPoint, ServerAccessDeniedHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(SecurityErrorHandler.class);
+  private static final Logger log = LoggerFactory.getLogger(SecurityErrorHandler.class);
 
-    private final ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
-    public SecurityErrorHandler(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+  public SecurityErrorHandler(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
+
+  @Override
+  public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException ex) {
+    return handleError(exchange, HttpStatus.UNAUTHORIZED, "Authentication required", ex);
+  }
+
+  @Override
+  public Mono<Void> handle(ServerWebExchange exchange, AccessDeniedException ex) {
+    return handleError(exchange, HttpStatus.FORBIDDEN, "Access denied", ex);
+  }
+
+  private Mono<Void> handleError(
+      ServerWebExchange exchange, HttpStatus status, String error, Exception ex) {
+    String message = ex.getMessage();
+    if (ex instanceof InvalidBearerTokenException) {
+      message = "Invalid or expired bearer token";
     }
 
-    @Override
-    public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException ex) {
-        return handleError(exchange, HttpStatus.UNAUTHORIZED, "Authentication required", ex);
+    String path = exchange.getRequest().getPath().value();
+
+    // Extract trace context
+    String traceId = null;
+    SpanContext spanContext = Span.current().getSpanContext();
+    if (spanContext.isValid()) {
+      traceId = spanContext.getTraceId();
     }
 
-    @Override
-    public Mono<Void> handle(ServerWebExchange exchange, AccessDeniedException ex) {
-        return handleError(exchange, HttpStatus.FORBIDDEN, "Access denied", ex);
+    // Log security error
+    log.warn(
+        "Security error: status={}, error={}, message={}, path={}, traceId={}",
+        status.value(),
+        error,
+        message,
+        path,
+        traceId);
+
+    ErrorResponse errorResponse = ErrorResponse.of(error, message, path, status.value(), traceId);
+
+    exchange.getResponse().setStatusCode(status);
+    exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+    try {
+      byte[] bytes = objectMapper.writeValueAsBytes(errorResponse);
+      DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
+      return exchange.getResponse().writeWith(Mono.just(buffer));
+    } catch (JsonProcessingException e) {
+      log.error("Failed to serialize error response", e);
+      return exchange.getResponse().setComplete();
     }
-
-    private Mono<Void> handleError(
-            ServerWebExchange exchange, HttpStatus status, String error, Exception ex) {
-        String message = ex.getMessage();
-        if (ex instanceof InvalidBearerTokenException) {
-            message = "Invalid or expired bearer token";
-        }
-
-        String path = exchange.getRequest().getPath().value();
-
-        // Extract trace context
-        String traceId = null;
-        SpanContext spanContext = Span.current().getSpanContext();
-        if (spanContext.isValid()) {
-            traceId = spanContext.getTraceId();
-        }
-
-        // Log security error
-        log.warn(
-                "Security error: status={}, error={}, message={}, path={}, traceId={}",
-                status.value(),
-                error,
-                message,
-                path,
-                traceId);
-
-        ErrorResponse errorResponse =
-                ErrorResponse.of(error, message, path, status.value(), traceId);
-
-        exchange.getResponse().setStatusCode(status);
-        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
-
-        try {
-            byte[] bytes = objectMapper.writeValueAsBytes(errorResponse);
-            DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
-            return exchange.getResponse().writeWith(Mono.just(buffer));
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize error response", e);
-            return exchange.getResponse().setComplete();
-        }
-    }
+  }
 }

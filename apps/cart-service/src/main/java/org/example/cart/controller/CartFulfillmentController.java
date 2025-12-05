@@ -28,108 +28,105 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/carts/{cartId}/fulfillments")
 public class CartFulfillmentController {
 
-    private final CartService cartService;
-    private final CartRequestValidator validator;
+  private final CartService cartService;
+  private final CartRequestValidator validator;
 
-    public CartFulfillmentController(CartService cartService, CartRequestValidator validator) {
-        this.cartService = cartService;
-        this.validator = validator;
-    }
+  public CartFulfillmentController(CartService cartService, CartRequestValidator validator) {
+    this.cartService = cartService;
+    this.validator = validator;
+  }
 
-    /** List all fulfillments on the cart. */
-    @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_cart:read')")
-    public Mono<List<Fulfillment>> getFulfillments(
-            @PathVariable String cartId,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** List all fulfillments on the cart. */
+  @GetMapping
+  @PreAuthorize("hasAuthority('SCOPE_cart:read')")
+  public Mono<List<Fulfillment>> getFulfillments(
+      @PathVariable String cartId,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return validator
-                .validateGetCart(cartId, storeNumber, orderNumber, userId, sessionId)
-                .then(cartService.getFulfillments(cartId))
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return validator
+        .validateGetCart(cartId, storeNumber, orderNumber, userId, sessionId)
+        .then(cartService.getFulfillments(cartId))
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    /** Add a fulfillment to the cart. */
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAuthority('SCOPE_cart:write')")
-    public Mono<Cart> addFulfillment(
-            @PathVariable String cartId,
-            @RequestBody AddFulfillmentRequest request,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** Add a fulfillment to the cart. */
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasAuthority('SCOPE_cart:write')")
+  public Mono<Cart> addFulfillment(
+      @PathVariable String cartId,
+      @RequestBody AddFulfillmentRequest request,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return validator
-                .validateAddFulfillment(
-                        cartId, request, storeNumber, orderNumber, userId, sessionId)
-                .then(cartService.addFulfillment(cartId, request.type(), request.skus()))
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return validator
+        .validateAddFulfillment(cartId, request, storeNumber, orderNumber, userId, sessionId)
+        .then(cartService.addFulfillment(cartId, request.type(), request.skus()))
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    /** Get a specific fulfillment from the cart. */
-    @GetMapping("/{fulfillmentId}")
-    @PreAuthorize("hasAuthority('SCOPE_cart:read')")
-    public Mono<Fulfillment> getFulfillment(
-            @PathVariable String cartId,
-            @PathVariable String fulfillmentId,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** Get a specific fulfillment from the cart. */
+  @GetMapping("/{fulfillmentId}")
+  @PreAuthorize("hasAuthority('SCOPE_cart:read')")
+  public Mono<Fulfillment> getFulfillment(
+      @PathVariable String cartId,
+      @PathVariable String fulfillmentId,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return validator
-                .validateFulfillmentAccess(
-                        cartId, fulfillmentId, storeNumber, orderNumber, userId, sessionId)
-                .then(cartService.getFulfillment(cartId, fulfillmentId))
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return validator
+        .validateFulfillmentAccess(
+            cartId, fulfillmentId, storeNumber, orderNumber, userId, sessionId)
+        .then(cartService.getFulfillment(cartId, fulfillmentId))
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    /** Update a fulfillment in the cart. */
-    @PutMapping("/{fulfillmentId}")
-    @PreAuthorize("hasAuthority('SCOPE_cart:write')")
-    public Mono<Cart> updateFulfillment(
-            @PathVariable String cartId,
-            @PathVariable String fulfillmentId,
-            @RequestBody UpdateFulfillmentRequest request,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** Update a fulfillment in the cart. */
+  @PutMapping("/{fulfillmentId}")
+  @PreAuthorize("hasAuthority('SCOPE_cart:write')")
+  public Mono<Cart> updateFulfillment(
+      @PathVariable String cartId,
+      @PathVariable String fulfillmentId,
+      @RequestBody UpdateFulfillmentRequest request,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return validator
-                .validateUpdateFulfillment(
-                        cartId, fulfillmentId, request, storeNumber, orderNumber, userId, sessionId)
-                .then(
-                        cartService.updateFulfillment(
-                                cartId, fulfillmentId, request.type(), request.skus()))
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return validator
+        .validateUpdateFulfillment(
+            cartId, fulfillmentId, request, storeNumber, orderNumber, userId, sessionId)
+        .then(cartService.updateFulfillment(cartId, fulfillmentId, request.type(), request.skus()))
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    /** Remove a fulfillment from the cart. */
-    @DeleteMapping("/{fulfillmentId}")
-    @PreAuthorize("hasAuthority('SCOPE_cart:write')")
-    public Mono<Cart> removeFulfillment(
-            @PathVariable String cartId,
-            @PathVariable String fulfillmentId,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** Remove a fulfillment from the cart. */
+  @DeleteMapping("/{fulfillmentId}")
+  @PreAuthorize("hasAuthority('SCOPE_cart:write')")
+  public Mono<Cart> removeFulfillment(
+      @PathVariable String cartId,
+      @PathVariable String fulfillmentId,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return validator
-                .validateFulfillmentAccess(
-                        cartId, fulfillmentId, storeNumber, orderNumber, userId, sessionId)
-                .then(cartService.removeFulfillment(cartId, fulfillmentId))
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return validator
+        .validateFulfillmentAccess(
+            cartId, fulfillmentId, storeNumber, orderNumber, userId, sessionId)
+        .then(cartService.removeFulfillment(cartId, fulfillmentId))
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 }

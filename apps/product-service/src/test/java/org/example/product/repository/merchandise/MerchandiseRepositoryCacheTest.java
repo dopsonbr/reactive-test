@@ -26,157 +26,144 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class MerchandiseRepositoryCacheTest {
 
-    @Mock private WebClient webClient;
+  @Mock private WebClient webClient;
 
-    @Mock private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
+  @Mock private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
 
-    @Mock private WebClient.RequestHeadersSpec requestHeadersSpec;
+  @Mock private WebClient.RequestHeadersSpec requestHeadersSpec;
 
-    @Mock private WebClient.ResponseSpec responseSpec;
+  @Mock private WebClient.ResponseSpec responseSpec;
 
-    @Mock private ReactiveResilience resilience;
+  @Mock private ReactiveResilience resilience;
 
-    @Mock private StructuredLogger structuredLogger;
+  @Mock private StructuredLogger structuredLogger;
 
-    @Mock private ReactiveCacheService cacheService;
+  @Mock private ReactiveCacheService cacheService;
 
-    @Mock private CacheProperties cacheProperties;
+  @Mock private CacheProperties cacheProperties;
 
-    @Mock private CacheProperties.ServiceCache serviceCache;
+  @Mock private CacheProperties.ServiceCache serviceCache;
 
-    private MerchandiseRepository repository;
+  private MerchandiseRepository repository;
 
-    @BeforeEach
-    void setUp() {
-        lenient().when(cacheProperties.getMerchandise()).thenReturn(serviceCache);
-        lenient().when(serviceCache.getTtl()).thenReturn(Duration.ofMinutes(15));
+  @BeforeEach
+  void setUp() {
+    lenient().when(cacheProperties.getMerchandise()).thenReturn(serviceCache);
+    lenient().when(serviceCache.getTtl()).thenReturn(Duration.ofMinutes(15));
 
-        repository =
-                new MerchandiseRepository(
-                        webClient, resilience, structuredLogger, cacheService, cacheProperties);
-    }
+    repository =
+        new MerchandiseRepository(
+            webClient, resilience, structuredLogger, cacheService, cacheProperties);
+  }
 
-    @Test
-    void getDescription_shouldReturnCachedValue_onCacheHit() {
-        // Given
-        long sku = 12345L;
-        String cacheKey = "merchandise:sku:" + sku;
-        MerchandiseResponse cachedResponse = new MerchandiseResponse("Cached Description");
+  @Test
+  void getDescription_shouldReturnCachedValue_onCacheHit() {
+    // Given
+    long sku = 12345L;
+    String cacheKey = "merchandise:sku:" + sku;
+    MerchandiseResponse cachedResponse = new MerchandiseResponse("Cached Description");
 
-        when(cacheService.get(eq(cacheKey), eq(MerchandiseResponse.class)))
-                .thenReturn(Mono.just(cachedResponse));
+    when(cacheService.get(eq(cacheKey), eq(MerchandiseResponse.class)))
+        .thenReturn(Mono.just(cachedResponse));
 
-        // When & Then
-        StepVerifier.create(repository.getDescription(sku))
-                .expectNext(cachedResponse)
-                .verifyComplete();
+    // When & Then
+    StepVerifier.create(repository.getDescription(sku)).expectNext(cachedResponse).verifyComplete();
 
-        // Verify no HTTP call was made
-        verify(webClient, never()).get();
-    }
+    // Verify no HTTP call was made
+    verify(webClient, never()).get();
+  }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void getDescription_shouldCallHttpAndCache_onCacheMiss() {
-        // Given
-        long sku = 12345L;
-        String cacheKey = "merchandise:sku:" + sku;
-        MerchandiseResponse httpResponse = new MerchandiseResponse("HTTP Description");
+  @Test
+  @SuppressWarnings("unchecked")
+  void getDescription_shouldCallHttpAndCache_onCacheMiss() {
+    // Given
+    long sku = 12345L;
+    String cacheKey = "merchandise:sku:" + sku;
+    MerchandiseResponse httpResponse = new MerchandiseResponse("HTTP Description");
 
-        // Cache miss
-        when(cacheService.get(eq(cacheKey), eq(MerchandiseResponse.class)))
-                .thenReturn(Mono.empty());
+    // Cache miss
+    when(cacheService.get(eq(cacheKey), eq(MerchandiseResponse.class))).thenReturn(Mono.empty());
 
-        // HTTP call setup
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), any(Object[].class)))
-                .thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(MerchandiseResponse.class))
-                .thenReturn(Mono.just(httpResponse));
+    // HTTP call setup
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), any(Object[].class)))
+        .thenReturn(requestHeadersSpec);
+    when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+    when(responseSpec.bodyToMono(MerchandiseResponse.class)).thenReturn(Mono.just(httpResponse));
 
-        // Resilience decoration returns the same mono
-        when(resilience.decorate(eq("merchandise"), any(Mono.class)))
-                .thenAnswer(invocation -> invocation.getArgument(1));
+    // Resilience decoration returns the same mono
+    when(resilience.decorate(eq("merchandise"), any(Mono.class)))
+        .thenAnswer(invocation -> invocation.getArgument(1));
 
-        // Cache put succeeds
-        when(cacheService.put(eq(cacheKey), eq(httpResponse), any(Duration.class)))
-                .thenReturn(Mono.just(true));
+    // Cache put succeeds
+    when(cacheService.put(eq(cacheKey), eq(httpResponse), any(Duration.class)))
+        .thenReturn(Mono.just(true));
 
-        // When & Then
-        StepVerifier.create(repository.getDescription(sku))
-                .expectNext(httpResponse)
-                .verifyComplete();
+    // When & Then
+    StepVerifier.create(repository.getDescription(sku)).expectNext(httpResponse).verifyComplete();
 
-        // Verify cache was populated
-        verify(cacheService).put(eq(cacheKey), eq(httpResponse), any(Duration.class));
-    }
+    // Verify cache was populated
+    verify(cacheService).put(eq(cacheKey), eq(httpResponse), any(Duration.class));
+  }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void getDescription_shouldReturnFallback_onHttpError() {
-        // Given
-        long sku = 12345L;
-        String cacheKey = "merchandise:sku:" + sku;
+  @Test
+  @SuppressWarnings("unchecked")
+  void getDescription_shouldReturnFallback_onHttpError() {
+    // Given
+    long sku = 12345L;
+    String cacheKey = "merchandise:sku:" + sku;
 
-        // Cache miss
-        when(cacheService.get(eq(cacheKey), eq(MerchandiseResponse.class)))
-                .thenReturn(Mono.empty());
+    // Cache miss
+    when(cacheService.get(eq(cacheKey), eq(MerchandiseResponse.class))).thenReturn(Mono.empty());
 
-        // HTTP call setup
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), any(Object[].class)))
-                .thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(MerchandiseResponse.class))
-                .thenReturn(Mono.just(new MerchandiseResponse("test")));
+    // HTTP call setup
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), any(Object[].class)))
+        .thenReturn(requestHeadersSpec);
+    when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+    when(responseSpec.bodyToMono(MerchandiseResponse.class))
+        .thenReturn(Mono.just(new MerchandiseResponse("test")));
 
-        // Resilience decoration throws error
-        when(resilience.decorate(eq("merchandise"), any(Mono.class)))
-                .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
+    // Resilience decoration throws error
+    when(resilience.decorate(eq("merchandise"), any(Mono.class)))
+        .thenReturn(Mono.error(new RuntimeException("Service unavailable")));
 
-        // Circuit breaker state
-        when(resilience.getCircuitBreakerState("merchandise"))
-                .thenReturn(CircuitBreaker.State.OPEN);
+    // Circuit breaker state
+    when(resilience.getCircuitBreakerState("merchandise")).thenReturn(CircuitBreaker.State.OPEN);
 
-        // When & Then
-        StepVerifier.create(repository.getDescription(sku))
-                .expectNextMatches(
-                        response -> response.description().equals("Description unavailable"))
-                .verifyComplete();
-    }
+    // When & Then
+    StepVerifier.create(repository.getDescription(sku))
+        .expectNextMatches(response -> response.description().equals("Description unavailable"))
+        .verifyComplete();
+  }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void getDescription_shouldStillWork_whenRedisUnavailable() {
-        // Given
-        long sku = 12345L;
-        String cacheKey = "merchandise:sku:" + sku;
-        MerchandiseResponse httpResponse = new MerchandiseResponse("HTTP Response");
+  @Test
+  @SuppressWarnings("unchecked")
+  void getDescription_shouldStillWork_whenRedisUnavailable() {
+    // Given
+    long sku = 12345L;
+    String cacheKey = "merchandise:sku:" + sku;
+    MerchandiseResponse httpResponse = new MerchandiseResponse("HTTP Response");
 
-        // Redis is down - cache get returns empty (graceful degradation)
-        when(cacheService.get(eq(cacheKey), eq(MerchandiseResponse.class)))
-                .thenReturn(Mono.empty());
+    // Redis is down - cache get returns empty (graceful degradation)
+    when(cacheService.get(eq(cacheKey), eq(MerchandiseResponse.class))).thenReturn(Mono.empty());
 
-        // HTTP call setup
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), any(Object[].class)))
-                .thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(MerchandiseResponse.class))
-                .thenReturn(Mono.just(httpResponse));
+    // HTTP call setup
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), any(Object[].class)))
+        .thenReturn(requestHeadersSpec);
+    when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+    when(responseSpec.bodyToMono(MerchandiseResponse.class)).thenReturn(Mono.just(httpResponse));
 
-        // Resilience decoration returns the same mono
-        when(resilience.decorate(eq("merchandise"), any(Mono.class)))
-                .thenAnswer(invocation -> invocation.getArgument(1));
+    // Resilience decoration returns the same mono
+    when(resilience.decorate(eq("merchandise"), any(Mono.class)))
+        .thenAnswer(invocation -> invocation.getArgument(1));
 
-        // Cache put fails (Redis down) but should not break the flow
-        when(cacheService.put(eq(cacheKey), eq(httpResponse), any(Duration.class)))
-                .thenReturn(Mono.just(false));
+    // Cache put fails (Redis down) but should not break the flow
+    when(cacheService.put(eq(cacheKey), eq(httpResponse), any(Duration.class)))
+        .thenReturn(Mono.just(false));
 
-        // When & Then - should still return HTTP response
-        StepVerifier.create(repository.getDescription(sku))
-                .expectNext(httpResponse)
-                .verifyComplete();
-    }
+    // When & Then - should still return HTTP response
+    StepVerifier.create(repository.getDescription(sku)).expectNext(httpResponse).verifyComplete();
+  }
 }

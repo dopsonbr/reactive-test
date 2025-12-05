@@ -19,69 +19,66 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class GraphQLExceptionResolver extends DataFetcherExceptionResolverAdapter {
 
-    private static final Logger log = LoggerFactory.getLogger(GraphQLExceptionResolver.class);
+  private static final Logger log = LoggerFactory.getLogger(GraphQLExceptionResolver.class);
 
-    @Override
-    protected GraphQLError resolveToSingleError(Throwable ex, DataFetchingEnvironment env) {
-        log.error("GraphQL exception in {}: {}", env.getField().getName(), ex.getMessage(), ex);
-        if (ex instanceof ValidationException ve) {
-            Map<String, Object> extensions =
-                    Map.of(
-                            "validationErrors",
-                            ve.getErrors().stream()
-                                    .collect(
-                                            Collectors.toMap(
-                                                    e -> e.field(),
-                                                    e -> e.message(),
-                                                    (a, b) -> a + "; " + b)));
-            return GraphqlErrorBuilder.newError(env)
-                    .message("Validation failed")
-                    .errorType(ErrorType.BAD_REQUEST)
-                    .extensions(extensions)
-                    .build();
-        }
-
-        if (ex instanceof ResponseStatusException rse) {
-            int status = rse.getStatusCode().value();
-            if (status == 404) {
-                return GraphqlErrorBuilder.newError(env)
-                        .message(rse.getReason() != null ? rse.getReason() : "Not found")
-                        .errorType(ErrorType.NOT_FOUND)
-                        .build();
-            }
-            if (status == 400) {
-                return GraphqlErrorBuilder.newError(env)
-                        .message(rse.getReason() != null ? rse.getReason() : "Bad request")
-                        .errorType(ErrorType.BAD_REQUEST)
-                        .build();
-            }
-        }
-
-        if (ex instanceof NoSuchElementException) {
-            return GraphqlErrorBuilder.newError(env)
-                    .message(ex.getMessage())
-                    .errorType(ErrorType.NOT_FOUND)
-                    .build();
-        }
-
-        if (ex instanceof IllegalArgumentException) {
-            return GraphqlErrorBuilder.newError(env)
-                    .message(ex.getMessage())
-                    .errorType(ErrorType.BAD_REQUEST)
-                    .build();
-        }
-
-        if (ex instanceof AccessDeniedException) {
-            return GraphqlErrorBuilder.newError(env)
-                    .message("Access denied")
-                    .errorType(ErrorType.FORBIDDEN)
-                    .build();
-        }
-
-        // Default: internal error (don't expose details)
-        return GraphqlErrorBuilder.newError(env)
-                .message("Internal server error")
-                .errorType(ErrorType.INTERNAL_ERROR)
-                .build();
+  @Override
+  protected GraphQLError resolveToSingleError(Throwable ex, DataFetchingEnvironment env) {
+    log.error("GraphQL exception in {}: {}", env.getField().getName(), ex.getMessage(), ex);
+    if (ex instanceof ValidationException ve) {
+      Map<String, Object> extensions =
+          Map.of(
+              "validationErrors",
+              ve.getErrors().stream()
+                  .collect(
+                      Collectors.toMap(e -> e.field(), e -> e.message(), (a, b) -> a + "; " + b)));
+      return GraphqlErrorBuilder.newError(env)
+          .message("Validation failed")
+          .errorType(ErrorType.BAD_REQUEST)
+          .extensions(extensions)
+          .build();
     }
+
+    if (ex instanceof ResponseStatusException rse) {
+      int status = rse.getStatusCode().value();
+      if (status == 404) {
+        return GraphqlErrorBuilder.newError(env)
+            .message(rse.getReason() != null ? rse.getReason() : "Not found")
+            .errorType(ErrorType.NOT_FOUND)
+            .build();
+      }
+      if (status == 400) {
+        return GraphqlErrorBuilder.newError(env)
+            .message(rse.getReason() != null ? rse.getReason() : "Bad request")
+            .errorType(ErrorType.BAD_REQUEST)
+            .build();
+      }
+    }
+
+    if (ex instanceof NoSuchElementException) {
+      return GraphqlErrorBuilder.newError(env)
+          .message(ex.getMessage())
+          .errorType(ErrorType.NOT_FOUND)
+          .build();
+    }
+
+    if (ex instanceof IllegalArgumentException) {
+      return GraphqlErrorBuilder.newError(env)
+          .message(ex.getMessage())
+          .errorType(ErrorType.BAD_REQUEST)
+          .build();
+    }
+
+    if (ex instanceof AccessDeniedException) {
+      return GraphqlErrorBuilder.newError(env)
+          .message("Access denied")
+          .errorType(ErrorType.FORBIDDEN)
+          .build();
+    }
+
+    // Default: internal error (don't expose details)
+    return GraphqlErrorBuilder.newError(env)
+        .message("Internal server error")
+        .errorType(ErrorType.INTERNAL_ERROR)
+        .build();
+  }
 }

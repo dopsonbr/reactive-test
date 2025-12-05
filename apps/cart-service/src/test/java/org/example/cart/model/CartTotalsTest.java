@@ -14,165 +14,155 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for CartTotals calculation. */
 class CartTotalsTest {
 
-    @Test
-    void empty_returnsAllZeros() {
-        CartTotals totals = CartTotals.empty();
+  @Test
+  void empty_returnsAllZeros() {
+    CartTotals totals = CartTotals.empty();
 
-        assertThat(totals.subtotal()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(totals.discountTotal()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(totals.fulfillmentTotal()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(totals.taxTotal()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(totals.grandTotal()).isEqualByComparingTo(BigDecimal.ZERO);
-    }
+    assertThat(totals.subtotal()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(totals.discountTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(totals.fulfillmentTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(totals.taxTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(totals.grandTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+  }
 
-    @Test
-    void calculate_emptyLists_returnsZeroTotals() {
-        CartTotals totals = CartTotals.calculate(List.of(), List.of(), List.of());
+  @Test
+  void calculate_emptyLists_returnsZeroTotals() {
+    CartTotals totals = CartTotals.calculate(List.of(), List.of(), List.of());
 
-        assertThat(totals.subtotal()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(totals.discountTotal()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(totals.fulfillmentTotal()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(totals.grandTotal()).isEqualByComparingTo(BigDecimal.ZERO);
-    }
+    assertThat(totals.subtotal()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(totals.discountTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(totals.fulfillmentTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(totals.grandTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+  }
 
-    @Test
-    void calculate_productsOnly_calculatesSubtotalAndGrandTotal() {
-        List<CartProduct> products =
-                List.of(
-                        new CartProduct(123456L, "Product A", "10.00", 2, 100), // 20.00
-                        new CartProduct(234567L, "Product B", "15.50", 1, 50) // 15.50
-                        );
+  @Test
+  void calculate_productsOnly_calculatesSubtotalAndGrandTotal() {
+    List<CartProduct> products =
+        List.of(
+            new CartProduct(123456L, "Product A", "10.00", 2, 100), // 20.00
+            new CartProduct(234567L, "Product B", "15.50", 1, 50) // 15.50
+            );
 
-        CartTotals totals = CartTotals.calculate(products, List.of(), List.of());
+    CartTotals totals = CartTotals.calculate(products, List.of(), List.of());
 
-        assertThat(totals.subtotal()).isEqualByComparingTo("35.50");
-        assertThat(totals.discountTotal()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(totals.fulfillmentTotal()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(totals.grandTotal()).isEqualByComparingTo("35.50");
-    }
+    assertThat(totals.subtotal()).isEqualByComparingTo("35.50");
+    assertThat(totals.discountTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(totals.fulfillmentTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(totals.grandTotal()).isEqualByComparingTo("35.50");
+  }
 
-    @Test
-    void calculate_withDiscount_subtractsFromGrandTotal() {
-        List<CartProduct> products =
-                List.of(new CartProduct(123456L, "Product A", "100.00", 1, 100));
-        List<AppliedDiscount> discounts =
-                List.of(
-                        new AppliedDiscount(
-                                "d1",
-                                "SAVE10",
-                                DiscountType.PERCENTAGE,
-                                new BigDecimal("10"),
-                                new BigDecimal("10.00"),
-                                List.of()));
+  @Test
+  void calculate_withDiscount_subtractsFromGrandTotal() {
+    List<CartProduct> products = List.of(new CartProduct(123456L, "Product A", "100.00", 1, 100));
+    List<AppliedDiscount> discounts =
+        List.of(
+            new AppliedDiscount(
+                "d1",
+                "SAVE10",
+                DiscountType.PERCENTAGE,
+                new BigDecimal("10"),
+                new BigDecimal("10.00"),
+                List.of()));
 
-        CartTotals totals = CartTotals.calculate(products, discounts, List.of());
+    CartTotals totals = CartTotals.calculate(products, discounts, List.of());
 
-        assertThat(totals.subtotal()).isEqualByComparingTo("100.00");
-        assertThat(totals.discountTotal()).isEqualByComparingTo("10.00");
-        assertThat(totals.grandTotal()).isEqualByComparingTo("90.00");
-    }
+    assertThat(totals.subtotal()).isEqualByComparingTo("100.00");
+    assertThat(totals.discountTotal()).isEqualByComparingTo("10.00");
+    assertThat(totals.grandTotal()).isEqualByComparingTo("90.00");
+  }
 
-    @Test
-    void calculate_withFulfillment_addsToGrandTotal() {
-        List<CartProduct> products =
-                List.of(new CartProduct(123456L, "Product A", "50.00", 1, 100));
-        List<Fulfillment> fulfillments =
-                List.of(
-                        new Fulfillment(
-                                "f1",
-                                FulfillmentType.DELIVERY,
-                                List.of(123456L),
-                                new BigDecimal("9.99")));
+  @Test
+  void calculate_withFulfillment_addsToGrandTotal() {
+    List<CartProduct> products = List.of(new CartProduct(123456L, "Product A", "50.00", 1, 100));
+    List<Fulfillment> fulfillments =
+        List.of(
+            new Fulfillment(
+                "f1", FulfillmentType.DELIVERY, List.of(123456L), new BigDecimal("9.99")));
 
-        CartTotals totals = CartTotals.calculate(products, List.of(), fulfillments);
+    CartTotals totals = CartTotals.calculate(products, List.of(), fulfillments);
 
-        assertThat(totals.subtotal()).isEqualByComparingTo("50.00");
-        assertThat(totals.fulfillmentTotal()).isEqualByComparingTo("9.99");
-        assertThat(totals.grandTotal()).isEqualByComparingTo("59.99");
-    }
+    assertThat(totals.subtotal()).isEqualByComparingTo("50.00");
+    assertThat(totals.fulfillmentTotal()).isEqualByComparingTo("9.99");
+    assertThat(totals.grandTotal()).isEqualByComparingTo("59.99");
+  }
 
-    @Test
-    void calculate_fullCart_calculatesCorrectly() {
-        // Products: 20.00 + 30.00 = 50.00
-        List<CartProduct> products =
-                List.of(
-                        new CartProduct(123456L, "Product A", "10.00", 2, 100),
-                        new CartProduct(234567L, "Product B", "30.00", 1, 50));
+  @Test
+  void calculate_fullCart_calculatesCorrectly() {
+    // Products: 20.00 + 30.00 = 50.00
+    List<CartProduct> products =
+        List.of(
+            new CartProduct(123456L, "Product A", "10.00", 2, 100),
+            new CartProduct(234567L, "Product B", "30.00", 1, 50));
 
-        // Discounts: 5.00 + 2.50 = 7.50
-        List<AppliedDiscount> discounts =
-                List.of(
-                        new AppliedDiscount(
-                                "d1",
-                                "SAVE5",
-                                DiscountType.FIXED_AMOUNT,
-                                new BigDecimal("5"),
-                                new BigDecimal("5.00"),
-                                List.of()),
-                        new AppliedDiscount(
-                                "d2",
-                                "EXTRA",
-                                DiscountType.PERCENTAGE,
-                                new BigDecimal("5"),
-                                new BigDecimal("2.50"),
-                                List.of()));
+    // Discounts: 5.00 + 2.50 = 7.50
+    List<AppliedDiscount> discounts =
+        List.of(
+            new AppliedDiscount(
+                "d1",
+                "SAVE5",
+                DiscountType.FIXED_AMOUNT,
+                new BigDecimal("5"),
+                new BigDecimal("5.00"),
+                List.of()),
+            new AppliedDiscount(
+                "d2",
+                "EXTRA",
+                DiscountType.PERCENTAGE,
+                new BigDecimal("5"),
+                new BigDecimal("2.50"),
+                List.of()));
 
-        // Fulfillments: 9.99 + 0.00 = 9.99
-        List<Fulfillment> fulfillments =
-                List.of(
-                        new Fulfillment(
-                                "f1",
-                                FulfillmentType.DELIVERY,
-                                List.of(123456L),
-                                new BigDecimal("9.99")),
-                        new Fulfillment(
-                                "f2", FulfillmentType.PICKUP, List.of(234567L), BigDecimal.ZERO));
+    // Fulfillments: 9.99 + 0.00 = 9.99
+    List<Fulfillment> fulfillments =
+        List.of(
+            new Fulfillment(
+                "f1", FulfillmentType.DELIVERY, List.of(123456L), new BigDecimal("9.99")),
+            new Fulfillment("f2", FulfillmentType.PICKUP, List.of(234567L), BigDecimal.ZERO));
 
-        CartTotals totals = CartTotals.calculate(products, discounts, fulfillments);
+    CartTotals totals = CartTotals.calculate(products, discounts, fulfillments);
 
-        // Grand total = 50.00 - 7.50 + 9.99 = 52.49
-        assertThat(totals.subtotal()).isEqualByComparingTo("50.00");
-        assertThat(totals.discountTotal()).isEqualByComparingTo("7.50");
-        assertThat(totals.fulfillmentTotal()).isEqualByComparingTo("9.99");
-        assertThat(totals.taxTotal()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(totals.grandTotal()).isEqualByComparingTo("52.49");
-    }
+    // Grand total = 50.00 - 7.50 + 9.99 = 52.49
+    assertThat(totals.subtotal()).isEqualByComparingTo("50.00");
+    assertThat(totals.discountTotal()).isEqualByComparingTo("7.50");
+    assertThat(totals.fulfillmentTotal()).isEqualByComparingTo("9.99");
+    assertThat(totals.taxTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(totals.grandTotal()).isEqualByComparingTo("52.49");
+  }
 
-    @Test
-    void calculate_discountExceedsSubtotal_grandTotalIsZero() {
-        List<CartProduct> products =
-                List.of(new CartProduct(123456L, "Product A", "10.00", 1, 100));
-        List<AppliedDiscount> discounts =
-                List.of(
-                        new AppliedDiscount(
-                                "d1",
-                                "HUGE",
-                                DiscountType.FIXED_AMOUNT,
-                                new BigDecimal("100"),
-                                new BigDecimal("100.00"),
-                                List.of()));
+  @Test
+  void calculate_discountExceedsSubtotal_grandTotalIsZero() {
+    List<CartProduct> products = List.of(new CartProduct(123456L, "Product A", "10.00", 1, 100));
+    List<AppliedDiscount> discounts =
+        List.of(
+            new AppliedDiscount(
+                "d1",
+                "HUGE",
+                DiscountType.FIXED_AMOUNT,
+                new BigDecimal("100"),
+                new BigDecimal("100.00"),
+                List.of()));
 
-        CartTotals totals = CartTotals.calculate(products, discounts, List.of());
+    CartTotals totals = CartTotals.calculate(products, discounts, List.of());
 
-        assertThat(totals.subtotal()).isEqualByComparingTo("10.00");
-        assertThat(totals.discountTotal()).isEqualByComparingTo("100.00");
-        // Grand total should be 0, not negative
-        assertThat(totals.grandTotal()).isEqualByComparingTo(BigDecimal.ZERO);
-    }
+    assertThat(totals.subtotal()).isEqualByComparingTo("10.00");
+    assertThat(totals.discountTotal()).isEqualByComparingTo("100.00");
+    // Grand total should be 0, not negative
+    assertThat(totals.grandTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+  }
 
-    @Test
-    void calculate_multipleProducts_sumsLineTotalsCorrectly() {
-        List<CartProduct> products =
-                List.of(
-                        new CartProduct(111111L, "A", "1.99", 3, 10), // 5.97
-                        new CartProduct(222222L, "B", "24.99", 2, 20), // 49.98
-                        new CartProduct(333333L, "C", "199.99", 1, 5) // 199.99
-                        );
+  @Test
+  void calculate_multipleProducts_sumsLineTotalsCorrectly() {
+    List<CartProduct> products =
+        List.of(
+            new CartProduct(111111L, "A", "1.99", 3, 10), // 5.97
+            new CartProduct(222222L, "B", "24.99", 2, 20), // 49.98
+            new CartProduct(333333L, "C", "199.99", 1, 5) // 199.99
+            );
 
-        CartTotals totals = CartTotals.calculate(products, List.of(), List.of());
+    CartTotals totals = CartTotals.calculate(products, List.of(), List.of());
 
-        // 5.97 + 49.98 + 199.99 = 255.94
-        assertThat(totals.subtotal()).isEqualByComparingTo("255.94");
-        assertThat(totals.grandTotal()).isEqualByComparingTo("255.94");
-    }
+    // 5.97 + 49.98 + 199.99 = 255.94
+    assertThat(totals.subtotal()).isEqualByComparingTo("255.94");
+    assertThat(totals.grandTotal()).isEqualByComparingTo("255.94");
+  }
 }

@@ -14,9 +14,9 @@ import java.time.Instant;
  * @param expiresAt when the discount expires
  */
 public record Discount(
-        String discountId,
-        String code,
-        DiscountType type,
-        BigDecimal value,
-        String description,
-        Instant expiresAt) {}
+    String discountId,
+    String code,
+    DiscountType type,
+    BigDecimal value,
+    String description,
+    Instant expiresAt) {}

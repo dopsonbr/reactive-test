@@ -16,45 +16,45 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 @EnableConfigurationProperties(AuditProperties.class)
 public class AuditAutoConfiguration {
 
-    /**
-     * Creates an ObjectMapper configured for audit events if one is not already present.
-     *
-     * @return ObjectMapper with JavaTimeModule and ISO-8601 date formatting
-     */
-    @Bean
-    @ConditionalOnMissingBean(name = "auditObjectMapper")
-    public ObjectMapper auditObjectMapper() {
-        return new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    }
+  /**
+   * Creates an ObjectMapper configured for audit events if one is not already present.
+   *
+   * @return ObjectMapper with JavaTimeModule and ISO-8601 date formatting
+   */
+  @Bean
+  @ConditionalOnMissingBean(name = "auditObjectMapper")
+  public ObjectMapper auditObjectMapper() {
+    return new ObjectMapper()
+        .registerModule(new JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+  }
 
-    /**
-     * Creates the Redis Stream audit publisher when audit is enabled and Redis is available.
-     *
-     * @param redisTemplate The reactive Redis template
-     * @param objectMapper ObjectMapper for JSON serialization
-     * @param properties Audit configuration properties
-     * @return RedisStreamAuditPublisher instance
-     */
-    @Bean
-    @ConditionalOnProperty(name = "audit.enabled", havingValue = "true")
-    @ConditionalOnBean(ReactiveRedisTemplate.class)
-    public AuditEventPublisher redisStreamAuditPublisher(
-            ReactiveRedisTemplate<String, String> redisTemplate,
-            ObjectMapper objectMapper,
-            AuditProperties properties) {
-        return new RedisStreamAuditPublisher(redisTemplate, objectMapper, properties);
-    }
+  /**
+   * Creates the Redis Stream audit publisher when audit is enabled and Redis is available.
+   *
+   * @param redisTemplate The reactive Redis template
+   * @param objectMapper ObjectMapper for JSON serialization
+   * @param properties Audit configuration properties
+   * @return RedisStreamAuditPublisher instance
+   */
+  @Bean
+  @ConditionalOnProperty(name = "audit.enabled", havingValue = "true")
+  @ConditionalOnBean(ReactiveRedisTemplate.class)
+  public AuditEventPublisher redisStreamAuditPublisher(
+      ReactiveRedisTemplate<String, String> redisTemplate,
+      ObjectMapper objectMapper,
+      AuditProperties properties) {
+    return new RedisStreamAuditPublisher(redisTemplate, objectMapper, properties);
+  }
 
-    /**
-     * Creates a no-op audit publisher when audit is disabled.
-     *
-     * @return NoOpAuditPublisher instance
-     */
-    @Bean
-    @ConditionalOnMissingBean(AuditEventPublisher.class)
-    public AuditEventPublisher noOpAuditPublisher() {
-        return new NoOpAuditPublisher();
-    }
+  /**
+   * Creates a no-op audit publisher when audit is disabled.
+   *
+   * @return NoOpAuditPublisher instance
+   */
+  @Bean
+  @ConditionalOnMissingBean(AuditEventPublisher.class)
+  public AuditEventPublisher noOpAuditPublisher() {
+    return new NoOpAuditPublisher();
+  }
 }

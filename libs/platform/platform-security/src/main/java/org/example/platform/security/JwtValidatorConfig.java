@@ -28,51 +28,50 @@ import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 @ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
 public class JwtValidatorConfig {
 
-    private final SecurityProperties securityProperties;
+  private final SecurityProperties securityProperties;
 
-    public JwtValidatorConfig(SecurityProperties securityProperties) {
-        this.securityProperties = securityProperties;
-    }
+  public JwtValidatorConfig(SecurityProperties securityProperties) {
+    this.securityProperties = securityProperties;
+  }
 
-    @Bean
-    @ConditionalOnMissingBean(ReactiveJwtDecoder.class)
-    public ReactiveJwtDecoder jwtDecoder() {
-        NimbusReactiveJwtDecoder decoder =
-                NimbusReactiveJwtDecoder.withJwkSetUri(securityProperties.getJwkSetUri()).build();
+  @Bean
+  @ConditionalOnMissingBean(ReactiveJwtDecoder.class)
+  public ReactiveJwtDecoder jwtDecoder() {
+    NimbusReactiveJwtDecoder decoder =
+        NimbusReactiveJwtDecoder.withJwkSetUri(securityProperties.getJwkSetUri()).build();
 
-        OAuth2TokenValidator<Jwt> validator =
-                new DelegatingOAuth2TokenValidator<>(
-                        // Expiration validation with clock skew tolerance
-                        new JwtTimestampValidator(
-                                Duration.ofSeconds(securityProperties.getClockSkewSeconds())),
-                        // Issuer validation
-                        issuerValidator(),
-                        // Audience validation
-                        audienceValidator());
+    OAuth2TokenValidator<Jwt> validator =
+        new DelegatingOAuth2TokenValidator<>(
+            // Expiration validation with clock skew tolerance
+            new JwtTimestampValidator(Duration.ofSeconds(securityProperties.getClockSkewSeconds())),
+            // Issuer validation
+            issuerValidator(),
+            // Audience validation
+            audienceValidator());
 
-        decoder.setJwtValidator(validator);
-        return decoder;
-    }
+    decoder.setJwtValidator(validator);
+    return decoder;
+  }
 
-    private OAuth2TokenValidator<Jwt> issuerValidator() {
-        List<String> allowedIssuers = securityProperties.getAllowedIssuers();
-        return token -> {
-            String issuer = token.getClaimAsString(JwtClaimNames.ISS);
-            if (issuer == null || !allowedIssuers.contains(issuer)) {
-                OAuth2Error error =
-                        new OAuth2Error(
-                                "invalid_token",
-                                "The iss claim is not valid. Expected one of: " + allowedIssuers,
-                                null);
-                return OAuth2TokenValidatorResult.failure(error);
-            }
-            return OAuth2TokenValidatorResult.success();
-        };
-    }
+  private OAuth2TokenValidator<Jwt> issuerValidator() {
+    List<String> allowedIssuers = securityProperties.getAllowedIssuers();
+    return token -> {
+      String issuer = token.getClaimAsString(JwtClaimNames.ISS);
+      if (issuer == null || !allowedIssuers.contains(issuer)) {
+        OAuth2Error error =
+            new OAuth2Error(
+                "invalid_token",
+                "The iss claim is not valid. Expected one of: " + allowedIssuers,
+                null);
+        return OAuth2TokenValidatorResult.failure(error);
+      }
+      return OAuth2TokenValidatorResult.success();
+    };
+  }
 
-    private OAuth2TokenValidator<Jwt> audienceValidator() {
-        String requiredAudience = securityProperties.getRequiredAudience();
-        return new JwtClaimValidator<List<String>>(
-                JwtClaimNames.AUD, aud -> aud != null && aud.contains(requiredAudience));
-    }
+  private OAuth2TokenValidator<Jwt> audienceValidator() {
+    String requiredAudience = securityProperties.getRequiredAudience();
+    return new JwtClaimValidator<List<String>>(
+        JwtClaimNames.AUD, aud -> aud != null && aud.contains(requiredAudience));
+  }
 }

@@ -39,3 +39,6 @@
 - `code-style.md` - Spotless, Google Java Format, naming conventions
 - `documentation.md` - README, AGENTS, CONTENTS file patterns
 - `validation.md` - Request validation patterns
+
+### Frontend
+- `frontend-guiding-principles.md` - React app principles (composition, routing, cross-cutting concerns, code sharing)

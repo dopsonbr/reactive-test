@@ -32,8 +32,12 @@ $ARGUMENTS
 
 4. **LLM-FRIENDLY PLANS**
    - Make each phase action-oriented with explicit file paths and outcomes
-   - Prefer concise “Files” + “Implementation” bullets over long prose
-   - Call out prerequisites/unknowns clearly (what to spike, what to clarify)
+   - Prefer concise "Files" + "Implementation" bullets over long prose
+   - **Every phase MUST have Prereqs/Blockers** - explicitly list:
+     - Files that must exist (package.json, eslint.config.js, etc.)
+     - Tools that must be installed
+     - Prior phases or plans that must complete
+     - Missing items flagged as blockers (not silently assumed)
    - Avoid large code blocks; include only essential snippets
 
 ---
@@ -103,9 +107,28 @@ Follow this structure. **Omit any section that doesn't apply.**
 | Nx lib (web)   | `@reactive-platform/{scope}-{type}` (e.g., `@reactive-platform/shared-ui`) |
 | Nx app (web)   | `apps/{app-name}` with tags `type:app`, `scope:{domain}`, `platform:web` |
 
+### Dependency Order
+
+{ASCII diagram showing execution order of phases/sub-plans. Show what can run in parallel.}
+
+```
+{Prior Plan/Phase}
+        │
+   ┌────┼────┐
+   │    │    │
+   ▼    ▼    ▼
+Phase1 Phase2 Phase3  ← Can run in parallel
+   │
+   ▼
+Phase4                ← Depends on Phase1
+```
+
 ---
 
 ## Phase 1: {Phase Name}
+
+**Prereqs:** {What must exist before this phase can start - files, tools, prior phases}
+**Blockers:** {What's missing that will prevent completion - to be resolved or flagged}
 
 ### 1.1 {Task Name}
 
@@ -203,6 +226,10 @@ These are available for reference. **Only include in the plan if directly applic
   - The parent overview lives in `030_frontend-initiative.md` and links to the sub-plans
   - Keep each sub-plan ≤ 500 lines; if a sub-plan would exceed that, split again
   - Reference each sibling plan in **Related Plans** to show dependencies/order
+  - **Parent plan MUST include Dependency Order diagram** showing:
+    - Which sub-plans can run in parallel (no dependencies between them)
+    - Which sub-plans must be sequential (one depends on another)
+    - External prerequisites (prior plans, tools, files)
 
 ### Line Counting and Split Rules
 

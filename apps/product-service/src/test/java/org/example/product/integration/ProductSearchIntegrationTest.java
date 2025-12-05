@@ -7,7 +7,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -182,7 +181,8 @@ class ProductSearchIntegrationTest {
         wireMockServer.verify(
                 postRequestedFor(urlPathEqualTo("/catalog/search"))
                         .withRequestBody(matchingJsonPath("$.customerZipCode", containing("12345")))
-                        .withRequestBody(matchingJsonPath("$.sellingLocation", containing("ONLINE"))));
+                        .withRequestBody(
+                                matchingJsonPath("$.sellingLocation", containing("ONLINE"))));
     }
 
     @Test

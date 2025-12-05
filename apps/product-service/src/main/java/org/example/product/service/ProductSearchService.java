@@ -3,11 +3,11 @@ package org.example.product.service;
 import java.util.List;
 import org.example.platform.cache.ReactiveCacheService;
 import org.example.platform.logging.StructuredLogger;
-import org.example.product.client.CatalogServiceClient;
 import org.example.product.config.SearchCacheProperties;
 import org.example.product.domain.SearchCriteria;
 import org.example.product.domain.SearchProduct;
 import org.example.product.domain.SearchResponse;
+import org.example.product.repository.catalog.CatalogSearchRepository;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -16,17 +16,17 @@ public class ProductSearchService {
 
     private static final String LOGGER_NAME = "productsearchservice";
 
-    private final CatalogServiceClient catalogServiceClient;
+    private final CatalogSearchRepository catalogSearchRepository;
     private final ReactiveCacheService cacheService;
     private final SearchCacheProperties cacheProperties;
     private final StructuredLogger structuredLogger;
 
     public ProductSearchService(
-            CatalogServiceClient catalogServiceClient,
+            CatalogSearchRepository catalogSearchRepository,
             ReactiveCacheService cacheService,
             SearchCacheProperties cacheProperties,
             StructuredLogger structuredLogger) {
-        this.catalogServiceClient = catalogServiceClient;
+        this.catalogSearchRepository = catalogSearchRepository;
         this.cacheService = cacheService;
         this.cacheProperties = cacheProperties;
         this.structuredLogger = structuredLogger;
@@ -58,7 +58,7 @@ public class ProductSearchService {
                             ctx,
                             LOGGER_NAME,
                             "Starting product search for query: " + criteria.query());
-                    return catalogServiceClient
+                    return catalogSearchRepository
                             .search(criteria)
                             .flatMap(
                                     response ->
@@ -80,7 +80,7 @@ public class ProductSearchService {
     }
 
     private Mono<List<String>> fetchAndCacheSuggestions(String prefix, int limit, String cacheKey) {
-        return catalogServiceClient
+        return catalogSearchRepository
                 .getSuggestions(prefix, limit)
                 .flatMap(
                         suggestions ->

@@ -1,4 +1,4 @@
-package org.example.product.client;
+package org.example.product.repository.catalog;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -8,21 +8,21 @@ import org.example.product.domain.SearchCriteria;
 import org.example.product.domain.SearchProduct;
 import org.example.product.domain.SearchResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-@Component
-public class CatalogServiceClientImpl implements CatalogServiceClient {
+@Repository
+public class CatalogSearchRepository {
 
     private static final String RESILIENCE_NAME = "catalog";
-    private static final String LOGGER_NAME = "catalogserviceclient";
+    private static final String LOGGER_NAME = "catalogsearchrepository";
 
     private final WebClient catalogWebClient;
     private final ReactiveResilience resilience;
     private final StructuredLogger structuredLogger;
 
-    public CatalogServiceClientImpl(
+    public CatalogSearchRepository(
             @Qualifier("catalogWebClient") WebClient catalogWebClient,
             ReactiveResilience resilience,
             StructuredLogger structuredLogger) {
@@ -31,7 +31,6 @@ public class CatalogServiceClientImpl implements CatalogServiceClient {
         this.structuredLogger = structuredLogger;
     }
 
-    @Override
     public Mono<SearchResponse<SearchProduct>> search(SearchCriteria criteria) {
         Mono<CatalogSearchResponse> call =
                 catalogWebClient
@@ -47,7 +46,6 @@ public class CatalogServiceClientImpl implements CatalogServiceClient {
                 .onErrorResume(this::handleSearchError);
     }
 
-    @Override
     public Mono<List<String>> getSuggestions(String prefix, int limit) {
         Mono<SuggestionsResponse> call =
                 catalogWebClient

@@ -47,7 +47,12 @@ class ProductSearchControllerValidationTest {
         // Setup default mock responses
         SearchProduct product =
                 new SearchProduct(
-                        123456L, "Laptop Computer", new BigDecimal("999.99"), 50, "Electronics", 0.95);
+                        123456L,
+                        "Laptop Computer",
+                        new BigDecimal("999.99"),
+                        50,
+                        "Electronics",
+                        0.95);
         SearchResponse<SearchProduct> response =
                 new SearchResponse<>(List.of(product), 1L, 1, 0, 20, "laptop", 45L);
         when(productSearchService.search(any())).thenReturn(Mono.just(response));
@@ -276,8 +281,8 @@ class ProductSearchControllerValidationTest {
                 .get()
                 .uri(
                         "/products/search?q=laptop&minPrice=100&maxPrice=1000&minAvailability=5"
-                                + "&inStockOnly=true&category=Electronics&customerZipCode=12345-6789"
-                                + "&sellingLocation=1234&sortBy=price&sortDirection=ASC&page=0&size=10")
+                            + "&inStockOnly=true&category=Electronics&customerZipCode=12345-6789"
+                            + "&sellingLocation=1234&sortBy=price&sortDirection=ASC&page=0&size=10")
                 .header("Authorization", SecurityTestUtils.bearerAuth(VALID_TOKEN))
                 .header("x-store-number", "100")
                 .header("x-order-number", VALID_ORDER_NUMBER)

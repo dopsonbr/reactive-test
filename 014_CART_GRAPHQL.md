@@ -1994,6 +1994,45 @@ window.addEventListener('beforeunload', () => eventSource.close());
 
 ---
 
+## Known Issues (Must Resolve Before Complete)
+
+### Flyway Integration Test Issue
+
+**Status:** BLOCKING - Must be resolved before feature is complete.
+
+**Problem:** GraphQL integration tests (`CartMutationControllerTest`, `CartQueryControllerTest`, `CartEventPubSubTest`) fail because Flyway database migrations don't run in the test environment. The error is:
+```
+relation "carts" does not exist
+```
+
+**Root Cause:** Spring Boot 4 with R2DBC (reactive database driver) does not automatically configure a JDBC DataSource for Flyway. Flyway requires a JDBC connection to run migrations, but the application uses R2DBC which is non-blocking.
+
+**Investigation Done:**
+1. Added `spring-boot-starter-jdbc` to test dependencies - not sufficient
+2. Added `spring.datasource.*` properties alongside `spring.r2dbc.*` - not sufficient
+3. Added explicit `spring.flyway.*` properties - not sufficient
+
+**Resolution Needed:**
+- Configure a JDBC DataSource bean specifically for Flyway in tests
+- OR use Testcontainers' JDBC URL feature to create schema before R2DBC connects
+- OR run Flyway programmatically before tests start using `@BeforeAll`
+- Verify the solution works with Spring Boot 4.0's autoconfiguration changes
+
+**Affected Tests:**
+- `CartMutationControllerTest` - All tests fail
+- `CartQueryControllerTest` - All tests fail
+- `CartEventPubSubTest` - All tests fail
+
+**Working Tests:**
+- `GraphQLInputValidatorTest` - All 24 tests pass (doesn't require database)
+- `CartServiceApplicationTest` - Context loads successfully
+
+**Files Involved:**
+- `apps/cart-service/src/test/java/org/example/cart/graphql/AbstractGraphQLIntegrationTest.java`
+- `apps/cart-service/build.gradle.kts` (test dependencies)
+
+---
+
 ## Checklist
 
 - [ ] Phase 1: Dependencies and configuration

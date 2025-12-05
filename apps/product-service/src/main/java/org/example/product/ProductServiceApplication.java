@@ -1,6 +1,7 @@
 package org.example.product;
 
 import org.example.product.config.CacheProperties;
+import org.example.product.config.SearchCacheProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -13,7 +14,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
             "org.example.platform.error",
             "org.example.platform.security"
         })
-@EnableConfigurationProperties(CacheProperties.class)
+@EnableConfigurationProperties({CacheProperties.class, SearchCacheProperties.class})
 public class ProductServiceApplication {
 
     public static void main(String[] args) {

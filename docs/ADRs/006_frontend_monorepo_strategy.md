@@ -1,6 +1,6 @@
 # Frontend Monorepo Strategy
 
-* Status: proposed
+* Status: accepted
 * Deciders: Platform Team, Frontend Team
 * Date: 2025-12-05
 
@@ -26,7 +26,7 @@ The key challenge is integrating frontend applications (likely React/TypeScript 
 
 ## Considered Options
 
-1. **Nx Polyglot Monorepo** - Use Nx as the top-level orchestrator with Gradle as a delegated build tool (leading candidate)
+1. **Nx Polyglot Monorepo** - Use Nx as the top-level orchestrator with Gradle as a delegated build tool (accepted)
 2. **Turborepo with Gradle Coexistence** - Use Turborepo for JS/TS with parallel Gradle structure
 3. **Bazel Unified Build** - Replace Gradle with Bazel for true polyglot build
 4. **Pants Build System** - Python-native polyglot build system
@@ -36,7 +36,7 @@ The key challenge is integrating frontend applications (likely React/TypeScript 
 
 ## Decision Outcome
 
-Chosen option: **Nx Polyglot Monorepo** (leading candidate)
+Chosen option: **Nx Polyglot Monorepo**
 
 Nx provides first-class support for polyglot monorepos and can orchestrate both JavaScript/TypeScript projects (native) and Java/Gradle projects (via @nx/gradle plugin). This approach:
 
@@ -209,11 +209,10 @@ nx affected -t build-ci test-ci --base=origin/main
 ## Open Questions
 
 - **Service port truth source** - Current docs disagree on cart-service (8081 vs 8082) and Docker Compose maps both discount-service and fulfillment-service to host 8085. Which port table is authoritative, and which host bindings should change to eliminate collisions?
-- **Decision status gating** - What criteria (e.g., Nx+Gradle POC, port map reconciliation) are required to move this ADR from "proposed" to "accepted"?
 
 ## Pros and Cons of the Options
 
-### 1. Nx Polyglot Monorepo (leading candidate)
+### 1. Nx Polyglot Monorepo (accepted)
 
 **Good**
 - First-class polyglot support with @nx/gradle plugin

@@ -26,85 +26,83 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/carts/{cartId}/discounts")
 public class CartDiscountController {
 
-    private final CartService cartService;
-    private final CartRequestValidator validator;
+  private final CartService cartService;
+  private final CartRequestValidator validator;
 
-    public CartDiscountController(CartService cartService, CartRequestValidator validator) {
-        this.cartService = cartService;
-        this.validator = validator;
-    }
+  public CartDiscountController(CartService cartService, CartRequestValidator validator) {
+    this.cartService = cartService;
+    this.validator = validator;
+  }
 
-    /** List all discounts on the cart. */
-    @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_cart:read')")
-    public Mono<List<AppliedDiscount>> getDiscounts(
-            @PathVariable String cartId,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** List all discounts on the cart. */
+  @GetMapping
+  @PreAuthorize("hasAuthority('SCOPE_cart:read')")
+  public Mono<List<AppliedDiscount>> getDiscounts(
+      @PathVariable String cartId,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return validator
-                .validateGetCart(cartId, storeNumber, orderNumber, userId, sessionId)
-                .then(cartService.getDiscounts(cartId))
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return validator
+        .validateGetCart(cartId, storeNumber, orderNumber, userId, sessionId)
+        .then(cartService.getDiscounts(cartId))
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    /** Apply a discount to the cart. */
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAuthority('SCOPE_cart:write')")
-    public Mono<Cart> applyDiscount(
-            @PathVariable String cartId,
-            @RequestBody ApplyDiscountRequest request,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** Apply a discount to the cart. */
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasAuthority('SCOPE_cart:write')")
+  public Mono<Cart> applyDiscount(
+      @PathVariable String cartId,
+      @RequestBody ApplyDiscountRequest request,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return validator
-                .validateApplyDiscount(cartId, request, storeNumber, orderNumber, userId, sessionId)
-                .then(cartService.applyDiscount(cartId, request.code()))
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return validator
+        .validateApplyDiscount(cartId, request, storeNumber, orderNumber, userId, sessionId)
+        .then(cartService.applyDiscount(cartId, request.code()))
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    /** Get a specific discount from the cart. */
-    @GetMapping("/{discountId}")
-    @PreAuthorize("hasAuthority('SCOPE_cart:read')")
-    public Mono<AppliedDiscount> getDiscount(
-            @PathVariable String cartId,
-            @PathVariable String discountId,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** Get a specific discount from the cart. */
+  @GetMapping("/{discountId}")
+  @PreAuthorize("hasAuthority('SCOPE_cart:read')")
+  public Mono<AppliedDiscount> getDiscount(
+      @PathVariable String cartId,
+      @PathVariable String discountId,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return validator
-                .validateDiscountAccess(
-                        cartId, discountId, storeNumber, orderNumber, userId, sessionId)
-                .then(cartService.getDiscount(cartId, discountId))
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return validator
+        .validateDiscountAccess(cartId, discountId, storeNumber, orderNumber, userId, sessionId)
+        .then(cartService.getDiscount(cartId, discountId))
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    /** Remove a discount from the cart. */
-    @DeleteMapping("/{discountId}")
-    @PreAuthorize("hasAuthority('SCOPE_cart:write')")
-    public Mono<Cart> removeDiscount(
-            @PathVariable String cartId,
-            @PathVariable String discountId,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** Remove a discount from the cart. */
+  @DeleteMapping("/{discountId}")
+  @PreAuthorize("hasAuthority('SCOPE_cart:write')")
+  public Mono<Cart> removeDiscount(
+      @PathVariable String cartId,
+      @PathVariable String discountId,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return validator
-                .validateDiscountAccess(
-                        cartId, discountId, storeNumber, orderNumber, userId, sessionId)
-                .then(cartService.removeDiscount(cartId, discountId))
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return validator
+        .validateDiscountAccess(cartId, discountId, storeNumber, orderNumber, userId, sessionId)
+        .then(cartService.removeDiscount(cartId, discountId))
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 }

@@ -5,10 +5,10 @@ package org.example.model.fulfillment;
  * omnichannel fulfillment options.
  */
 public enum FulfillmentType {
-    /** Home delivery */
-    DELIVERY,
-    /** Store pickup */
-    PICKUP,
-    /** Professional installation service */
-    INSTALLATION
+  /** Home delivery */
+  DELIVERY,
+  /** Store pickup */
+  PICKUP,
+  /** Professional installation service */
+  INSTALLATION
 }

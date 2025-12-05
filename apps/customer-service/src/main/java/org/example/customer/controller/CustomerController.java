@@ -17,36 +17,33 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/customers")
 public class CustomerController {
 
-    /**
-     * Get customer by ID (stubbed).
-     *
-     * @param customerId the customer ID
-     * @return the customer (stubbed data)
-     */
-    @GetMapping("/{customerId}")
-    public Mono<CartCustomer> getCustomer(@PathVariable String customerId) {
-        // Return stubbed customer data
-        return Mono.just(
-                new CartCustomer(
-                        customerId,
-                        "Test Customer " + customerId,
-                        "customer" + customerId + "@example.com"));
-    }
+  /**
+   * Get customer by ID (stubbed).
+   *
+   * @param customerId the customer ID
+   * @return the customer (stubbed data)
+   */
+  @GetMapping("/{customerId}")
+  public Mono<CartCustomer> getCustomer(@PathVariable String customerId) {
+    // Return stubbed customer data
+    return Mono.just(
+        new CartCustomer(
+            customerId, "Test Customer " + customerId, "customer" + customerId + "@example.com"));
+  }
 
-    /**
-     * Validate customer exists.
-     *
-     * @param customerId the customer ID
-     * @return 200 if customer exists, 404 otherwise
-     */
-    @GetMapping("/{customerId}/validate")
-    public Mono<Void> validateCustomer(@PathVariable String customerId) {
-        // Stubbed validation: accept any non-empty customerId except "INVALID"
-        if ("INVALID".equals(customerId)) {
-            return Mono.error(
-                    new ResponseStatusException(
-                            HttpStatus.NOT_FOUND, "Customer not found: " + customerId));
-        }
-        return Mono.empty();
+  /**
+   * Validate customer exists.
+   *
+   * @param customerId the customer ID
+   * @return 200 if customer exists, 404 otherwise
+   */
+  @GetMapping("/{customerId}/validate")
+  public Mono<Void> validateCustomer(@PathVariable String customerId) {
+    // Stubbed validation: accept any non-empty customerId except "INVALID"
+    if ("INVALID".equals(customerId)) {
+      return Mono.error(
+          new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found: " + customerId));
     }
+    return Mono.empty();
+  }
 }

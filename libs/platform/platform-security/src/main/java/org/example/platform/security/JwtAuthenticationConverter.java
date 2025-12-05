@@ -21,42 +21,42 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
-    private static final String SCOPE_CLAIM = "scope";
-    private static final String SCP_CLAIM = "scp";
-    private static final String SCOPES_CLAIM = "scopes";
+  private static final String SCOPE_CLAIM = "scope";
+  private static final String SCP_CLAIM = "scp";
+  private static final String SCOPES_CLAIM = "scopes";
 
-    @Override
-    public AbstractAuthenticationToken convert(Jwt jwt) {
-        Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
-        return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
-    }
+  @Override
+  public AbstractAuthenticationToken convert(Jwt jwt) {
+    Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
+    return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
+  }
 
-    private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-        return Stream.of(
-                        extractScopeAuthorities(jwt, SCOPE_CLAIM),
-                        extractScopeAuthorities(jwt, SCP_CLAIM),
-                        extractScopesArrayAuthorities(jwt))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
-    }
+  private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
+    return Stream.of(
+            extractScopeAuthorities(jwt, SCOPE_CLAIM),
+            extractScopeAuthorities(jwt, SCP_CLAIM),
+            extractScopesArrayAuthorities(jwt))
+        .flatMap(Collection::stream)
+        .collect(Collectors.toSet());
+  }
 
-    private Collection<GrantedAuthority> extractScopeAuthorities(Jwt jwt, String claimName) {
-        String scopeString = jwt.getClaimAsString(claimName);
-        if (scopeString == null || scopeString.isBlank()) {
-            return Collections.emptyList();
-        }
-        return Stream.of(scopeString.split("\\s+"))
-                .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope))
-                .collect(Collectors.toList());
+  private Collection<GrantedAuthority> extractScopeAuthorities(Jwt jwt, String claimName) {
+    String scopeString = jwt.getClaimAsString(claimName);
+    if (scopeString == null || scopeString.isBlank()) {
+      return Collections.emptyList();
     }
+    return Stream.of(scopeString.split("\\s+"))
+        .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope))
+        .collect(Collectors.toList());
+  }
 
-    private Collection<GrantedAuthority> extractScopesArrayAuthorities(Jwt jwt) {
-        List<String> scopes = jwt.getClaimAsStringList(SCOPES_CLAIM);
-        if (scopes == null) {
-            return Collections.emptyList();
-        }
-        return scopes.stream()
-                .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope))
-                .collect(Collectors.toList());
+  private Collection<GrantedAuthority> extractScopesArrayAuthorities(Jwt jwt) {
+    List<String> scopes = jwt.getClaimAsStringList(SCOPES_CLAIM);
+    if (scopes == null) {
+      return Collections.emptyList();
     }
+    return scopes.stream()
+        .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope))
+        .collect(Collectors.toList());
+  }
 }

@@ -17,67 +17,59 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class ProductServiceConfig {
 
-    /** No-op filter used when OAuth2 client is disabled (e.g., in tests). */
-    private static final ExchangeFilterFunction NO_OP_FILTER =
-            (request, next) -> next.exchange(request);
+  /** No-op filter used when OAuth2 client is disabled (e.g., in tests). */
+  private static final ExchangeFilterFunction NO_OP_FILTER =
+      (request, next) -> next.exchange(request);
 
-    @Bean
-    public WebClient merchandiseWebClient(
-            @Value("${services.merchandise.base-url}") String baseUrl,
-            WebClientLoggingFilter loggingFilter,
-            @Qualifier("oauth2Filter")
-                    ObjectProvider<ExchangeFilterFunction> oauth2FilterProvider) {
-        ExchangeFilterFunction oauth2Filter =
-                oauth2FilterProvider.getIfAvailable(() -> NO_OP_FILTER);
-        return WebClient.builder()
-                .baseUrl(baseUrl)
-                .filter(oauth2Filter)
-                .filter(loggingFilter.create("merchandiserepository"))
-                .build();
-    }
+  @Bean
+  public WebClient merchandiseWebClient(
+      @Value("${services.merchandise.base-url}") String baseUrl,
+      WebClientLoggingFilter loggingFilter,
+      @Qualifier("oauth2Filter") ObjectProvider<ExchangeFilterFunction> oauth2FilterProvider) {
+    ExchangeFilterFunction oauth2Filter = oauth2FilterProvider.getIfAvailable(() -> NO_OP_FILTER);
+    return WebClient.builder()
+        .baseUrl(baseUrl)
+        .filter(oauth2Filter)
+        .filter(loggingFilter.create("merchandiserepository"))
+        .build();
+  }
 
-    @Bean
-    public WebClient priceWebClient(
-            @Value("${services.price.base-url}") String baseUrl,
-            WebClientLoggingFilter loggingFilter,
-            @Qualifier("oauth2Filter")
-                    ObjectProvider<ExchangeFilterFunction> oauth2FilterProvider) {
-        ExchangeFilterFunction oauth2Filter =
-                oauth2FilterProvider.getIfAvailable(() -> NO_OP_FILTER);
-        return WebClient.builder()
-                .baseUrl(baseUrl)
-                .filter(oauth2Filter)
-                .filter(loggingFilter.create("pricerepository"))
-                .build();
-    }
+  @Bean
+  public WebClient priceWebClient(
+      @Value("${services.price.base-url}") String baseUrl,
+      WebClientLoggingFilter loggingFilter,
+      @Qualifier("oauth2Filter") ObjectProvider<ExchangeFilterFunction> oauth2FilterProvider) {
+    ExchangeFilterFunction oauth2Filter = oauth2FilterProvider.getIfAvailable(() -> NO_OP_FILTER);
+    return WebClient.builder()
+        .baseUrl(baseUrl)
+        .filter(oauth2Filter)
+        .filter(loggingFilter.create("pricerepository"))
+        .build();
+  }
 
-    @Bean
-    public WebClient inventoryWebClient(
-            @Value("${services.inventory.base-url}") String baseUrl,
-            WebClientLoggingFilter loggingFilter,
-            @Qualifier("oauth2Filter")
-                    ObjectProvider<ExchangeFilterFunction> oauth2FilterProvider) {
-        ExchangeFilterFunction oauth2Filter =
-                oauth2FilterProvider.getIfAvailable(() -> NO_OP_FILTER);
-        return WebClient.builder()
-                .baseUrl(baseUrl)
-                .filter(oauth2Filter)
-                .filter(loggingFilter.create("inventoryrepository"))
-                .build();
-    }
+  @Bean
+  public WebClient inventoryWebClient(
+      @Value("${services.inventory.base-url}") String baseUrl,
+      WebClientLoggingFilter loggingFilter,
+      @Qualifier("oauth2Filter") ObjectProvider<ExchangeFilterFunction> oauth2FilterProvider) {
+    ExchangeFilterFunction oauth2Filter = oauth2FilterProvider.getIfAvailable(() -> NO_OP_FILTER);
+    return WebClient.builder()
+        .baseUrl(baseUrl)
+        .filter(oauth2Filter)
+        .filter(loggingFilter.create("inventoryrepository"))
+        .build();
+  }
 
-    @Bean
-    public WebClient catalogWebClient(
-            @Value("${services.catalog.base-url}") String baseUrl,
-            WebClientLoggingFilter loggingFilter,
-            @Qualifier("oauth2Filter")
-                    ObjectProvider<ExchangeFilterFunction> oauth2FilterProvider) {
-        ExchangeFilterFunction oauth2Filter =
-                oauth2FilterProvider.getIfAvailable(() -> NO_OP_FILTER);
-        return WebClient.builder()
-                .baseUrl(baseUrl)
-                .filter(oauth2Filter)
-                .filter(loggingFilter.create("catalogserviceclient"))
-                .build();
-    }
+  @Bean
+  public WebClient catalogWebClient(
+      @Value("${services.catalog.base-url}") String baseUrl,
+      WebClientLoggingFilter loggingFilter,
+      @Qualifier("oauth2Filter") ObjectProvider<ExchangeFilterFunction> oauth2FilterProvider) {
+    ExchangeFilterFunction oauth2Filter = oauth2FilterProvider.getIfAvailable(() -> NO_OP_FILTER);
+    return WebClient.builder()
+        .baseUrl(baseUrl)
+        .filter(oauth2Filter)
+        .filter(loggingFilter.create("catalogserviceclient"))
+        .build();
+  }
 }

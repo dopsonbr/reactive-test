@@ -18,100 +18,95 @@ import reactor.core.publisher.Mono;
 @Repository
 public class R2dbcAuditRepository implements AuditRepository {
 
-    private static final Logger log = LoggerFactory.getLogger(R2dbcAuditRepository.class);
+  private static final Logger log = LoggerFactory.getLogger(R2dbcAuditRepository.class);
 
-    private final R2dbcEntityTemplate template;
-    private final ObjectMapper objectMapper;
+  private final R2dbcEntityTemplate template;
+  private final ObjectMapper objectMapper;
 
-    public R2dbcAuditRepository(R2dbcEntityTemplate template, ObjectMapper objectMapper) {
-        this.template = template;
-        this.objectMapper = objectMapper;
+  public R2dbcAuditRepository(R2dbcEntityTemplate template, ObjectMapper objectMapper) {
+    this.template = template;
+    this.objectMapper = objectMapper;
+  }
+
+  @Override
+  public Mono<AuditEvent> save(AuditEvent event) {
+    AuditRecord record = AuditRecord.fromEvent(event, objectMapper);
+    return template
+        .insert(record)
+        .map(saved -> saved.toEvent(objectMapper))
+        .doOnSuccess(
+            e ->
+                log.debug(
+                    "Saved audit event: eventId={}, eventType={}", e.eventId(), e.eventType()))
+        .doOnError(
+            e ->
+                log.error(
+                    "Failed to save audit event: eventId={}, error={}",
+                    event.eventId(),
+                    e.getMessage()));
+  }
+
+  @Override
+  public Mono<AuditEvent> findById(String eventId) {
+    return template
+        .selectOne(Query.query(Criteria.where("event_id").is(eventId)), AuditRecord.class)
+        .map(record -> record.toEvent(objectMapper));
+  }
+
+  @Override
+  public Flux<AuditEvent> findByEntity(
+      String entityType, String entityId, TimeRange timeRange, String eventType, int limit) {
+    Criteria criteria = Criteria.where("entity_type").is(entityType).and("entity_id").is(entityId);
+
+    criteria = addTimeRangeCriteria(criteria, timeRange);
+    if (eventType != null) {
+      criteria = criteria.and("event_type").is(eventType);
     }
 
-    @Override
-    public Mono<AuditEvent> save(AuditEvent event) {
-        AuditRecord record = AuditRecord.fromEvent(event, objectMapper);
-        return template.insert(record)
-                .map(saved -> saved.toEvent(objectMapper))
-                .doOnSuccess(
-                        e ->
-                                log.debug(
-                                        "Saved audit event: eventId={}, eventType={}",
-                                        e.eventId(),
-                                        e.eventType()))
-                .doOnError(
-                        e ->
-                                log.error(
-                                        "Failed to save audit event: eventId={}, error={}",
-                                        event.eventId(),
-                                        e.getMessage()));
+    return template
+        .select(
+            Query.query(criteria).sort(Sort.by(Sort.Direction.DESC, "created_at")).limit(limit),
+            AuditRecord.class)
+        .map(record -> record.toEvent(objectMapper));
+  }
+
+  @Override
+  public Flux<AuditEvent> findByUser(String userId, TimeRange timeRange, int limit) {
+    Criteria criteria = Criteria.where("user_id").is(userId);
+    criteria = addTimeRangeCriteria(criteria, timeRange);
+
+    return template
+        .select(
+            Query.query(criteria).sort(Sort.by(Sort.Direction.DESC, "created_at")).limit(limit),
+            AuditRecord.class)
+        .map(record -> record.toEvent(objectMapper));
+  }
+
+  @Override
+  public Flux<AuditEvent> findByStoreAndEntityType(
+      int storeNumber, String entityType, TimeRange timeRange, String eventType, int limit) {
+    Criteria criteria =
+        Criteria.where("store_number").is(storeNumber).and("entity_type").is(entityType);
+
+    criteria = addTimeRangeCriteria(criteria, timeRange);
+    if (eventType != null) {
+      criteria = criteria.and("event_type").is(eventType);
     }
 
-    @Override
-    public Mono<AuditEvent> findById(String eventId) {
-        return template.selectOne(
-                        Query.query(Criteria.where("event_id").is(eventId)), AuditRecord.class)
-                .map(record -> record.toEvent(objectMapper));
+    return template
+        .select(
+            Query.query(criteria).sort(Sort.by(Sort.Direction.DESC, "created_at")).limit(limit),
+            AuditRecord.class)
+        .map(record -> record.toEvent(objectMapper));
+  }
+
+  private Criteria addTimeRangeCriteria(Criteria criteria, TimeRange timeRange) {
+    if (timeRange.hasStart()) {
+      criteria = criteria.and("created_at").greaterThanOrEquals(timeRange.start());
     }
-
-    @Override
-    public Flux<AuditEvent> findByEntity(
-            String entityType, String entityId, TimeRange timeRange, String eventType, int limit) {
-        Criteria criteria =
-                Criteria.where("entity_type").is(entityType).and("entity_id").is(entityId);
-
-        criteria = addTimeRangeCriteria(criteria, timeRange);
-        if (eventType != null) {
-            criteria = criteria.and("event_type").is(eventType);
-        }
-
-        return template.select(
-                        Query.query(criteria)
-                                .sort(Sort.by(Sort.Direction.DESC, "created_at"))
-                                .limit(limit),
-                        AuditRecord.class)
-                .map(record -> record.toEvent(objectMapper));
+    if (timeRange.hasEnd()) {
+      criteria = criteria.and("created_at").lessThan(timeRange.end());
     }
-
-    @Override
-    public Flux<AuditEvent> findByUser(String userId, TimeRange timeRange, int limit) {
-        Criteria criteria = Criteria.where("user_id").is(userId);
-        criteria = addTimeRangeCriteria(criteria, timeRange);
-
-        return template.select(
-                        Query.query(criteria)
-                                .sort(Sort.by(Sort.Direction.DESC, "created_at"))
-                                .limit(limit),
-                        AuditRecord.class)
-                .map(record -> record.toEvent(objectMapper));
-    }
-
-    @Override
-    public Flux<AuditEvent> findByStoreAndEntityType(
-            int storeNumber, String entityType, TimeRange timeRange, String eventType, int limit) {
-        Criteria criteria =
-                Criteria.where("store_number").is(storeNumber).and("entity_type").is(entityType);
-
-        criteria = addTimeRangeCriteria(criteria, timeRange);
-        if (eventType != null) {
-            criteria = criteria.and("event_type").is(eventType);
-        }
-
-        return template.select(
-                        Query.query(criteria)
-                                .sort(Sort.by(Sort.Direction.DESC, "created_at"))
-                                .limit(limit),
-                        AuditRecord.class)
-                .map(record -> record.toEvent(objectMapper));
-    }
-
-    private Criteria addTimeRangeCriteria(Criteria criteria, TimeRange timeRange) {
-        if (timeRange.hasStart()) {
-            criteria = criteria.and("created_at").greaterThanOrEquals(timeRange.start());
-        }
-        if (timeRange.hasEnd()) {
-            criteria = criteria.and("created_at").lessThan(timeRange.end());
-        }
-        return criteria;
-    }
+    return criteria;
+  }
 }

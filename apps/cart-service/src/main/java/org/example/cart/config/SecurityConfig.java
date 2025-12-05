@@ -17,29 +17,29 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableReactiveMethodSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .authorizeExchange(
-                        exchanges ->
-                                exchanges
-                                        // Read operations require cart:read scope
-                                        .pathMatchers(HttpMethod.GET, "/carts/**")
-                                        .hasAuthority("SCOPE_cart:read")
-                                        // Write operations require cart:write scope
-                                        .pathMatchers(HttpMethod.POST, "/carts/**")
-                                        .hasAuthority("SCOPE_cart:write")
-                                        .pathMatchers(HttpMethod.PUT, "/carts/**")
-                                        .hasAuthority("SCOPE_cart:write")
-                                        .pathMatchers(HttpMethod.DELETE, "/carts/**")
-                                        .hasAuthority("SCOPE_cart:write")
-                                        // Actuator endpoints are public
-                                        .pathMatchers("/actuator/**")
-                                        .permitAll()
-                                        // All other requests require authentication
-                                        .anyExchange()
-                                        .authenticated())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
-                .build();
-    }
+  @Bean
+  public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+        .authorizeExchange(
+            exchanges ->
+                exchanges
+                    // Read operations require cart:read scope
+                    .pathMatchers(HttpMethod.GET, "/carts/**")
+                    .hasAuthority("SCOPE_cart:read")
+                    // Write operations require cart:write scope
+                    .pathMatchers(HttpMethod.POST, "/carts/**")
+                    .hasAuthority("SCOPE_cart:write")
+                    .pathMatchers(HttpMethod.PUT, "/carts/**")
+                    .hasAuthority("SCOPE_cart:write")
+                    .pathMatchers(HttpMethod.DELETE, "/carts/**")
+                    .hasAuthority("SCOPE_cart:write")
+                    // Actuator endpoints are public
+                    .pathMatchers("/actuator/**")
+                    .permitAll()
+                    // All other requests require authentication
+                    .anyExchange()
+                    .authenticated())
+        .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+        .build();
+  }
 }

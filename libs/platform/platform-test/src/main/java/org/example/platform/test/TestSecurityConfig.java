@@ -24,10 +24,10 @@ import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 @TestConfiguration
 public class TestSecurityConfig {
 
-    @Bean
-    @Primary
-    public ReactiveJwtDecoder testJwtDecoder() {
-        return NimbusReactiveJwtDecoder.withPublicKey((RSAPublicKey) TestJwtBuilder.getPublicKey())
-                .build();
-    }
+  @Bean
+  @Primary
+  public ReactiveJwtDecoder testJwtDecoder() {
+    return NimbusReactiveJwtDecoder.withPublicKey((RSAPublicKey) TestJwtBuilder.getPublicKey())
+        .build();
+  }
 }

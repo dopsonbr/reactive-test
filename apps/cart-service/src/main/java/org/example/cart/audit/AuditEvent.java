@@ -17,42 +17,42 @@ import java.util.Map;
  * @param data event-specific payload
  */
 public record AuditEvent(
-        String eventId,
-        String eventType,
-        String entityType,
-        String entityId,
-        int storeNumber,
-        String userId,
-        String sessionId,
-        Instant timestamp,
-        Map<String, Object> data) {
-    /**
-     * Create a new cart audit event.
-     *
-     * @param eventType the event type
-     * @param cartId the cart ID
-     * @param storeNumber the store number
-     * @param userId the user ID
-     * @param sessionId the session ID
-     * @param data the event data
-     * @return the audit event
-     */
-    public static AuditEvent cartEvent(
-            String eventType,
-            String cartId,
-            int storeNumber,
-            String userId,
-            String sessionId,
-            Map<String, Object> data) {
-        return new AuditEvent(
-                java.util.UUID.randomUUID().toString(),
-                eventType,
-                "CART",
-                cartId,
-                storeNumber,
-                userId,
-                sessionId,
-                Instant.now(),
-                data);
-    }
+    String eventId,
+    String eventType,
+    String entityType,
+    String entityId,
+    int storeNumber,
+    String userId,
+    String sessionId,
+    Instant timestamp,
+    Map<String, Object> data) {
+  /**
+   * Create a new cart audit event.
+   *
+   * @param eventType the event type
+   * @param cartId the cart ID
+   * @param storeNumber the store number
+   * @param userId the user ID
+   * @param sessionId the session ID
+   * @param data the event data
+   * @return the audit event
+   */
+  public static AuditEvent cartEvent(
+      String eventType,
+      String cartId,
+      int storeNumber,
+      String userId,
+      String sessionId,
+      Map<String, Object> data) {
+    return new AuditEvent(
+        java.util.UUID.randomUUID().toString(),
+        eventType,
+        "CART",
+        cartId,
+        storeNumber,
+        userId,
+        sessionId,
+        Instant.now(),
+        data);
+  }
 }

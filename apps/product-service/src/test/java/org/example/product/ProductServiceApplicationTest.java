@@ -14,16 +14,16 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 class ProductServiceApplicationTest {
 
-    @Container static GenericContainer<?> redis = RedisTestSupport.createRedisContainer();
+  @Container static GenericContainer<?> redis = RedisTestSupport.createRedisContainer();
 
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port", () -> RedisTestSupport.getRedisPort(redis));
-    }
+  @DynamicPropertySource
+  static void configureProperties(DynamicPropertyRegistry registry) {
+    registry.add("spring.data.redis.host", redis::getHost);
+    registry.add("spring.data.redis.port", () -> RedisTestSupport.getRedisPort(redis));
+  }
 
-    @Test
-    void contextLoads() {
-        // Verifies that the Spring application context starts successfully
-    }
+  @Test
+  void contextLoads() {
+    // Verifies that the Spring application context starts successfully
+  }
 }

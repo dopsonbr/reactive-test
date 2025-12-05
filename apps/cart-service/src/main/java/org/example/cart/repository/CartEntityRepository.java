@@ -13,9 +13,9 @@ import reactor.core.publisher.Flux;
 @Repository
 public interface CartEntityRepository extends ReactiveCrudRepository<CartEntity, UUID> {
 
-    /** Find all carts for a specific store. */
-    Flux<CartEntity> findByStoreNumber(int storeNumber);
+  /** Find all carts for a specific store. */
+  Flux<CartEntity> findByStoreNumber(int storeNumber);
 
-    /** Find all carts for a specific customer. */
-    Flux<CartEntity> findByCustomerId(String customerId);
+  /** Find all carts for a specific customer. */
+  Flux<CartEntity> findByCustomerId(String customerId);
 }

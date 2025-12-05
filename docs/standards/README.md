@@ -19,6 +19,11 @@ Implementation details live in the modules themselves (README.md files alongside
 
 ## Standard Categories
 
+Use the right section based on the ecosystem:
+- **Backend** (Spring/Gradle): patterns below
+- **Frontend** (Nx/React/Vite): see `docs/standards/frontend/` once created (per plan 021)
+- **Shared**: code-style and documentation apply to both
+
 ### Architecture
 - [architecture](./architecture.md) - Layered architecture, package structure, dependency rules
 - [models](./models.md) - Pure data objects, no business logic

@@ -13,11 +13,12 @@ $ARGUMENTS
 
 ## CRITICAL CONSTRAINTS
 
-1. **LINE LIMIT: 1000 LINES MAXIMUM**
+1. **LINE LIMIT: HARD CAP 1000, TARGET ≤ 500**
    - If the plan would exceed 1000 lines, STOP and tell the user:
      "This scope requires multiple implementation plans. Please split into smaller features."
+   - Aim for 300-500 lines; shorter is better if it remains clear
+   - Break large scopes into multiple numbered plans rather than stretching one doc
    - Count actual lines, not approximate
-   - Refuse to create oversized plans
 
 2. **REFERENCE, NEVER COPY**
    - Reference docs by path only: `per docs/standards/validation.md`
@@ -28,6 +29,12 @@ $ARGUMENTS
    - Only reference standards/templates/ADRs that directly apply
    - Omit sections entirely if they have no relevant references
    - Do NOT include exhaustive lists - be selective
+
+4. **LLM-FRIENDLY PLANS**
+   - Make each phase action-oriented with explicit file paths and outcomes
+   - Prefer concise “Files” + “Implementation” bullets over long prose
+   - Call out prerequisites/unknowns clearly (what to spike, what to clarify)
+   - Avoid large code blocks; include only essential snippets
 
 ---
 
@@ -88,11 +95,13 @@ Follow this structure. **Omit any section that doesn't apply.**
 └──────────────┘         └──────────────┘
 ```
 
-### Package Naming {omit if no new packages}
+### Package/Project Naming {omit if no new packages}
 
-| Module | Package |
-|--------|---------|
-| {module} | `org.example.{package}` |
+| Module/Project | Package/Import |
+|----------------|----------------|
+| Backend module | `org.example.{package}` |
+| Nx lib (web)   | `@reactive-platform/{scope}-{type}` (e.g., `@reactive-platform/shared-ui`) |
+| Nx app (web)   | `apps/{app-name}` with tags `type:app`, `scope:{domain}`, `platform:web` |
 
 ---
 
@@ -185,6 +194,20 @@ These are available for reference. **Only include in the plan if directly applic
 1. Check `docs/archive/` for the highest existing plan number
 2. Use the next sequential number (e.g., if 010 exists, use 011)
 3. Format: `{NNN}_{FEATURE_NAME}.md`
+
+### Sub-plan Strategy (branch-friendly)
+
+- For large initiatives, create a parent number with child letters to isolate branches:
+  - Example: `030A_frontend-standards.md`, `030B_frontend-templates.md`, `030C_frontend-linting.md`
+  - Each sub-plan should stand alone and be mergeable independently
+  - The parent overview lives in `030_frontend-initiative.md` and links to the sub-plans
+  - Keep each sub-plan ≤ 500 lines; if a sub-plan would exceed that, split again
+  - Reference each sibling plan in **Related Plans** to show dependencies/order
+
+### Line Counting and Split Rules
+
+- Before finalizing, run `wc -l {plan-file}.md` to confirm line count.
+- Split when: you exceed 500 lines, you have more than ~4 phases, or distinct workstreams can be branched independently.
 
 ---
 

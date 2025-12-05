@@ -26,6 +26,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
 
+    // GraphQL (SSE transport included by default, no WebSocket starter needed)
+    implementation("org.springframework.boot:spring-boot-starter-graphql")
+
+    // Redis reactive for Pub/Sub (subscriptions)
+    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+
     // R2DBC PostgreSQL driver
     implementation("org.postgresql:r2dbc-postgresql")
 
@@ -41,4 +47,11 @@ dependencies {
     testImplementation(project(":libs:platform:platform-test"))
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:r2dbc")
+
+    // GraphQL test dependencies
+    testImplementation("org.springframework.graphql:spring-graphql-test")
+    testImplementation("org.springframework.security:spring-security-test")
+
+    // JDBC for Flyway in tests (Flyway needs JDBC DataSource, but app uses R2DBC)
+    testImplementation("org.springframework.boot:spring-boot-starter-jdbc")
 }

@@ -1,0 +1,132 @@
+# ─────────────────────────────────────────────────────────────────────
+# Queries
+# ─────────────────────────────────────────────────────────────────────
+
+type Query {
+    """Retrieve a cart by ID"""
+    cart(id: ID!): Cart
+
+    """Find all carts for a store"""
+    cartsByStore(storeNumber: Int!): [Cart!]!
+
+    """Find all carts for a customer"""
+    cartsByCustomer(customerId: String!): [Cart!]!
+
+    """Get a specific product from a cart"""
+    cartProduct(cartId: ID!, sku: ID!): CartProduct
+
+    """Get all products in a cart"""
+    cartProducts(cartId: ID!): [CartProduct!]!
+
+    """Get a specific discount from a cart"""
+    cartDiscount(cartId: ID!, discountId: ID!): AppliedDiscount
+
+    """Get all discounts in a cart"""
+    cartDiscounts(cartId: ID!): [AppliedDiscount!]!
+
+    """Get a specific fulfillment from a cart"""
+    cartFulfillment(cartId: ID!, fulfillmentId: ID!): Fulfillment
+
+    """Get all fulfillments in a cart"""
+    cartFulfillments(cartId: ID!): [Fulfillment!]!
+
+    """Get cart customer info"""
+    cartCustomer(cartId: ID!): CartCustomer
+}
+
+# ─────────────────────────────────────────────────────────────────────
+# Mutations
+# ─────────────────────────────────────────────────────────────────────
+
+type Mutation {
+    # Cart lifecycle
+    """Create a new cart"""
+    createCart(input: CreateCartInput!): Cart!
+
+    """Delete a cart"""
+    deleteCart(id: ID!): Boolean!
+
+    # Product operations
+    """Add a product to the cart"""
+    addProduct(cartId: ID!, input: AddProductInput!): Cart!
+
+    """Update product quantity in cart"""
+    updateProduct(cartId: ID!, sku: ID!, input: UpdateProductInput!): Cart!
+
+    """Remove a product from cart"""
+    removeProduct(cartId: ID!, sku: ID!): Cart!
+
+    # Discount operations
+    """Apply a discount code to cart"""
+    applyDiscount(cartId: ID!, input: ApplyDiscountInput!): Cart!
+
+    """Remove a discount from cart"""
+    removeDiscount(cartId: ID!, discountId: ID!): Cart!
+
+    # Fulfillment operations
+    """Add fulfillment to cart"""
+    addFulfillment(cartId: ID!, input: AddFulfillmentInput!): Cart!
+
+    """Update fulfillment in cart"""
+    updateFulfillment(cartId: ID!, fulfillmentId: ID!, input: UpdateFulfillmentInput!): Cart!
+
+    """Remove fulfillment from cart"""
+    removeFulfillment(cartId: ID!, fulfillmentId: ID!): Cart!
+
+    # Customer operations (not in REST but available in service)
+    """Set customer on cart"""
+    setCustomer(cartId: ID!, input: SetCustomerInput!): Cart!
+
+    """Remove customer from cart"""
+    removeCustomer(cartId: ID!): Cart!
+}
+
+# ─────────────────────────────────────────────────────────────────────
+# Subscriptions
+# ─────────────────────────────────────────────────────────────────────
+
+type Subscription {
+    """Subscribe to real-time updates for a specific cart"""
+    cartUpdated(cartId: ID!): CartEvent!
+
+    """Subscribe to all cart events for a store (admin use)"""
+    storeCartEvents(storeNumber: Int!): CartEvent!
+}
+
+# ─────────────────────────────────────────────────────────────────────
+# Input Types
+# ─────────────────────────────────────────────────────────────────────
+
+input CreateCartInput {
+    storeNumber: Int!
+    customerId: String
+}
+
+input AddProductInput {
+    sku: ID!
+    quantity: Int!
+}
+
+input UpdateProductInput {
+    quantity: Int!
+}
+
+input ApplyDiscountInput {
+    code: String!
+}
+
+input AddFulfillmentInput {
+    type: FulfillmentType!
+    skus: [ID!]!
+}
+
+input UpdateFulfillmentInput {
+    type: FulfillmentType!
+    skus: [ID!]!
+}
+
+input SetCustomerInput {
+    customerId: String!
+    name: String!
+    email: String!
+}

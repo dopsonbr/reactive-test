@@ -1,0 +1,98 @@
+# ─────────────────────────────────────────────────────────────────────
+# Core Types
+# ─────────────────────────────────────────────────────────────────────
+
+type Cart {
+    id: ID!
+    storeNumber: Int!
+    customerId: String
+    customer: CartCustomer
+    products: [CartProduct!]!
+    discounts: [AppliedDiscount!]!
+    fulfillments: [Fulfillment!]!
+    totals: CartTotals!
+    itemCount: Int!
+    createdAt: String!
+    updatedAt: String!
+}
+
+type CartCustomer {
+    customerId: String!
+    name: String!
+    email: String!
+}
+
+type CartProduct {
+    sku: ID!
+    description: String!
+    unitPrice: String!
+    quantity: Int!
+    availableQuantity: Int!
+    lineTotal: String!
+}
+
+type AppliedDiscount {
+    discountId: ID!
+    code: String!
+    type: DiscountType!
+    originalValue: String!
+    appliedSavings: String!
+    applicableSkus: [ID!]!
+}
+
+type Fulfillment {
+    fulfillmentId: ID!
+    type: FulfillmentType!
+    skus: [ID!]!
+    cost: String!
+}
+
+type CartTotals {
+    subtotal: String!
+    discountTotal: String!
+    fulfillmentTotal: String!
+    taxTotal: String!
+    grandTotal: String!
+}
+
+# ─────────────────────────────────────────────────────────────────────
+# Enums
+# ─────────────────────────────────────────────────────────────────────
+
+enum DiscountType {
+    PERCENTAGE
+    FIXED_AMOUNT
+    BUY_X_GET_Y
+}
+
+enum FulfillmentType {
+    DELIVERY
+    PICKUP
+    INSTALLATION
+}
+
+enum CartEventType {
+    CART_CREATED
+    CART_DELETED
+    PRODUCT_ADDED
+    PRODUCT_UPDATED
+    PRODUCT_REMOVED
+    DISCOUNT_APPLIED
+    DISCOUNT_REMOVED
+    FULFILLMENT_ADDED
+    FULFILLMENT_UPDATED
+    FULFILLMENT_REMOVED
+    CUSTOMER_SET
+    CUSTOMER_REMOVED
+}
+
+# ─────────────────────────────────────────────────────────────────────
+# Event Types (for subscriptions)
+# ─────────────────────────────────────────────────────────────────────
+
+type CartEvent {
+    eventType: CartEventType!
+    cartId: ID!
+    cart: Cart!
+    timestamp: String!
+}

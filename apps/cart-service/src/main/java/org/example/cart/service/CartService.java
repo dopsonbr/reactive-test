@@ -12,7 +12,10 @@ import org.example.cart.client.CustomerServiceClient;
 import org.example.cart.client.DiscountServiceClient;
 import org.example.cart.client.FulfillmentServiceClient;
 import org.example.cart.client.ProductServiceClient;
+import org.example.cart.event.CartEvent;
+import org.example.cart.event.CartEventType;
 import org.example.cart.model.Cart;
+import org.example.cart.pubsub.CartEventPublisher;
 import org.example.cart.repository.CartRepository;
 import org.example.model.customer.CartCustomer;
 import org.example.model.discount.AppliedDiscount;
@@ -40,6 +43,7 @@ public class CartService {
     private final DiscountServiceClient discountServiceClient;
     private final FulfillmentServiceClient fulfillmentServiceClient;
     private final AuditEventPublisher auditEventPublisher;
+    private final CartEventPublisher cartEventPublisher;
     private final StructuredLogger structuredLogger;
 
     public CartService(
@@ -49,6 +53,7 @@ public class CartService {
             DiscountServiceClient discountServiceClient,
             FulfillmentServiceClient fulfillmentServiceClient,
             AuditEventPublisher auditEventPublisher,
+            CartEventPublisher cartEventPublisher,
             StructuredLogger structuredLogger) {
         this.cartRepository = cartRepository;
         this.productServiceClient = productServiceClient;
@@ -56,6 +61,7 @@ public class CartService {
         this.discountServiceClient = discountServiceClient;
         this.fulfillmentServiceClient = fulfillmentServiceClient;
         this.auditEventPublisher = auditEventPublisher;
+        this.cartEventPublisher = cartEventPublisher;
         this.structuredLogger = structuredLogger;
     }
 
@@ -88,6 +94,10 @@ public class CartService {
                                                                     customerId != null
                                                                             ? customerId
                                                                             : "anonymous"))
+                                                    .then(
+                                                            publishCartEvent(
+                                                                    CartEventType.CART_CREATED,
+                                                                    savedCart))
                                                     .thenReturn(savedCart));
                 });
     }
@@ -139,6 +149,10 @@ public class CartService {
                                                     ctx, LOGGER_NAME, "Deleting cart: " + cartId);
                                             return publishAuditEvent(
                                                             ctx, "CART_DELETED", cart, Map.of())
+                                                    .then(
+                                                            publishCartEvent(
+                                                                    CartEventType.CART_DELETED,
+                                                                    cart))
                                                     .then(cartRepository.deleteById(cartId));
                                         }));
     }
@@ -209,6 +223,11 @@ public class CartService {
                                                                                                                         "unitPrice",
                                                                                                                         product
                                                                                                                                 .price()))
+                                                                                                .then(
+                                                                                                        publishCartEvent(
+                                                                                                                CartEventType
+                                                                                                                        .PRODUCT_ADDED,
+                                                                                                                savedCart))
                                                                                                 .thenReturn(
                                                                                                         savedCart));
                                                             }));
@@ -265,6 +284,11 @@ public class CartService {
                                                                                             oldQuantity,
                                                                                             "newQuantity",
                                                                                             quantity))
+                                                                            .then(
+                                                                                    publishCartEvent(
+                                                                                            CartEventType
+                                                                                                    .PRODUCT_UPDATED,
+                                                                                            savedCart))
                                                                             .thenReturn(savedCart));
                                         }));
     }
@@ -307,6 +331,11 @@ public class CartService {
                                                                                     Map.of(
                                                                                             "sku",
                                                                                             sku))
+                                                                            .then(
+                                                                                    publishCartEvent(
+                                                                                            CartEventType
+                                                                                                    .PRODUCT_REMOVED,
+                                                                                            savedCart))
                                                                             .thenReturn(savedCart));
                                         }));
     }
@@ -386,6 +415,11 @@ public class CartService {
                                                                                                                 .of(
                                                                                                                         "customerId",
                                                                                                                         customerId))
+                                                                                                .then(
+                                                                                                        publishCartEvent(
+                                                                                                                CartEventType
+                                                                                                                        .CUSTOMER_SET,
+                                                                                                                savedCart))
                                                                                                 .thenReturn(
                                                                                                         savedCart));
                                                             });
@@ -436,6 +470,11 @@ public class CartService {
                                                                                                             != null
                                                                                                     ? oldCustomerId
                                                                                                     : ""))
+                                                                            .then(
+                                                                                    publishCartEvent(
+                                                                                            CartEventType
+                                                                                                    .CUSTOMER_REMOVED,
+                                                                                            savedCart))
                                                                             .thenReturn(savedCart));
                                         }));
     }
@@ -499,6 +538,11 @@ public class CartService {
                                                                                                                         "savings",
                                                                                                                         appliedDiscount
                                                                                                                                 .appliedSavings()))
+                                                                                                .then(
+                                                                                                        publishCartEvent(
+                                                                                                                CartEventType
+                                                                                                                        .DISCOUNT_APPLIED,
+                                                                                                                savedCart))
                                                                                                 .thenReturn(
                                                                                                         savedCart));
                                                             });
@@ -565,6 +609,11 @@ public class CartService {
                                                                                     Map.of(
                                                                                             "discountId",
                                                                                             discountId))
+                                                                            .then(
+                                                                                    publishCartEvent(
+                                                                                            CartEventType
+                                                                                                    .DISCOUNT_REMOVED,
+                                                                                            savedCart))
                                                                             .thenReturn(savedCart));
                                         }));
     }
@@ -626,6 +675,11 @@ public class CartService {
                                                                                                                                     .name(),
                                                                                                                             "cost",
                                                                                                                             cost))
+                                                                                                    .then(
+                                                                                                            publishCartEvent(
+                                                                                                                    CartEventType
+                                                                                                                            .FULFILLMENT_ADDED,
+                                                                                                                    savedCart))
                                                                                                     .thenReturn(
                                                                                                             savedCart));
                                                                 })));
@@ -724,6 +778,11 @@ public class CartService {
                                                                                                                 .of(
                                                                                                                         "fulfillmentId",
                                                                                                                         fulfillmentId))
+                                                                                                .then(
+                                                                                                        publishCartEvent(
+                                                                                                                CartEventType
+                                                                                                                        .FULFILLMENT_UPDATED,
+                                                                                                                savedCart))
                                                                                                 .thenReturn(
                                                                                                         savedCart));
                                                             });
@@ -771,6 +830,11 @@ public class CartService {
                                                                                     Map.of(
                                                                                             "fulfillmentId",
                                                                                             fulfillmentId))
+                                                                            .then(
+                                                                                    publishCartEvent(
+                                                                                            CartEventType
+                                                                                                    .FULFILLMENT_REMOVED,
+                                                                                            savedCart))
                                                                             .thenReturn(savedCart));
                                         }));
     }
@@ -800,5 +864,25 @@ public class CartService {
                         eventType, cart.id(), cart.storeNumber(), userId, sessionId, data);
 
         return auditEventPublisher.publish(event);
+    }
+
+    /**
+     * Publish a cart event to GraphQL subscriptions via Redis Pub/Sub. Fire-and-forget: failures
+     * don't break mutations.
+     */
+    private Mono<Void> publishCartEvent(CartEventType eventType, Cart cart) {
+        CartEvent event = CartEvent.of(eventType, cart);
+        return cartEventPublisher
+                .publish(event)
+                .then(cartEventPublisher.publishToStore(event, cart.storeNumber()))
+                .onErrorResume(
+                        e -> {
+                            // Log error but don't fail the main operation
+                            structuredLogger.logMessage(
+                                    reactor.util.context.Context.empty(),
+                                    LOGGER_NAME,
+                                    "Failed to publish cart event: " + e.getMessage());
+                            return Mono.empty();
+                        });
     }
 }

@@ -54,4 +54,7 @@ dependencies {
 
     // JDBC for Flyway in tests (Flyway needs JDBC DataSource, but app uses R2DBC)
     testImplementation("org.springframework.boot:spring-boot-starter-jdbc")
+
+    // H2 for in-memory database in unit tests (pub/sub tests don't need PostgreSQL)
+    testImplementation("io.r2dbc:r2dbc-h2")
 }

@@ -17,83 +17,83 @@ import reactor.core.publisher.Mono;
 @Service
 public class MarkdownService {
 
-    private final MarkdownRepository repository;
-    private final UserServiceClient userClient;
+  private final MarkdownRepository repository;
+  private final UserServiceClient userClient;
 
-    public MarkdownService(MarkdownRepository repository, UserServiceClient userClient) {
-        this.repository = repository;
-        this.userClient = userClient;
-    }
+  public MarkdownService(MarkdownRepository repository, UserServiceClient userClient) {
+    this.repository = repository;
+    this.userClient = userClient;
+  }
 
-    /**
-     * Apply a markdown (employee only).
-     *
-     * @param request the markdown request
-     * @param userId the user ID applying the markdown
-     * @return the applied markdown
-     * @throws UnauthorizedMarkdownException if user is not authorized
-     */
-    public Mono<Markdown> applyMarkdown(ApplyMarkdownRequest request, String userId) {
-        return validateEmployeePermission(userId).then(createMarkdown(request, userId));
-    }
+  /**
+   * Apply a markdown (employee only).
+   *
+   * @param request the markdown request
+   * @param userId the user ID applying the markdown
+   * @return the applied markdown
+   * @throws UnauthorizedMarkdownException if user is not authorized
+   */
+  public Mono<Markdown> applyMarkdown(ApplyMarkdownRequest request, String userId) {
+    return validateEmployeePermission(userId).then(createMarkdown(request, userId));
+  }
 
-    private Mono<Void> validateEmployeePermission(String userId) {
-        return userClient
-                .getUser(userId)
-                .filter(UserContext::canApplyMarkdown)
-                .switchIfEmpty(
-                        Mono.error(
-                                new UnauthorizedMarkdownException(
-                                        "Markdown requires EMPLOYEE user with ADMIN permission")))
-                .then();
-    }
+  private Mono<Void> validateEmployeePermission(String userId) {
+    return userClient
+        .getUser(userId)
+        .filter(UserContext::canApplyMarkdown)
+        .switchIfEmpty(
+            Mono.error(
+                new UnauthorizedMarkdownException(
+                    "Markdown requires EMPLOYEE user with ADMIN permission")))
+        .then();
+  }
 
-    private Mono<Markdown> createMarkdown(ApplyMarkdownRequest request, String userId) {
-        Markdown markdown =
-                new Markdown(
-                        UUID.randomUUID().toString(),
-                        request.storeNumber(),
-                        request.sku(),
-                        request.type(),
-                        request.value(),
-                        request.reason(),
-                        userId,
-                        request.customerId(),
-                        request.cartId(),
-                        Instant.now(),
-                        Instant.now().plus(4, ChronoUnit.HOURS)); // 4-hour session expiry
-        return repository.save(markdown);
-    }
+  private Mono<Markdown> createMarkdown(ApplyMarkdownRequest request, String userId) {
+    Markdown markdown =
+        new Markdown(
+            UUID.randomUUID().toString(),
+            request.storeNumber(),
+            request.sku(),
+            request.type(),
+            request.value(),
+            request.reason(),
+            userId,
+            request.customerId(),
+            request.cartId(),
+            Instant.now(),
+            Instant.now().plus(4, ChronoUnit.HOURS)); // 4-hour session expiry
+    return repository.save(markdown);
+  }
 
-    /**
-     * Void/cancel a markdown (employee only).
-     *
-     * @param markdownId the markdown ID
-     * @param userId the user ID voiding the markdown
-     * @return completion signal
-     * @throws UnauthorizedMarkdownException if user is not authorized
-     */
-    public Mono<Void> voidMarkdown(String markdownId, String userId) {
-        return validateEmployeePermission(userId).then(repository.delete(markdownId));
-    }
+  /**
+   * Void/cancel a markdown (employee only).
+   *
+   * @param markdownId the markdown ID
+   * @param userId the user ID voiding the markdown
+   * @return completion signal
+   * @throws UnauthorizedMarkdownException if user is not authorized
+   */
+  public Mono<Void> voidMarkdown(String markdownId, String userId) {
+    return validateEmployeePermission(userId).then(repository.delete(markdownId));
+  }
 
-    /**
-     * Get all active markdowns for a cart.
-     *
-     * @param cartId the cart ID
-     * @return stream of active markdowns
-     */
-    public Flux<Markdown> getMarkdownsForCart(String cartId) {
-        return repository.findActiveByCart(cartId);
-    }
+  /**
+   * Get all active markdowns for a cart.
+   *
+   * @param cartId the cart ID
+   * @return stream of active markdowns
+   */
+  public Flux<Markdown> getMarkdownsForCart(String cartId) {
+    return repository.findActiveByCart(cartId);
+  }
 
-    /**
-     * Find a markdown by ID.
-     *
-     * @param markdownId the markdown ID
-     * @return the markdown if found
-     */
-    public Mono<Markdown> findById(String markdownId) {
-        return repository.findById(markdownId);
-    }
+  /**
+   * Find a markdown by ID.
+   *
+   * @param markdownId the markdown ID
+   * @return the markdown if found
+   */
+  public Mono<Markdown> findById(String markdownId) {
+    return repository.findById(markdownId);
+  }
 }

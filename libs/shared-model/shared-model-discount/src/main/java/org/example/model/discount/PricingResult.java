@@ -19,18 +19,18 @@ import java.util.List;
  * @param calculatedAt when the pricing was calculated
  */
 public record PricingResult(
-        String cartId,
-        BigDecimal originalSubtotal,
-        BigDecimal finalSubtotal,
-        BigDecimal totalSavings,
-        BigDecimal shippingCost,
-        BigDecimal shippingDiscount,
-        List<ItemPricing> items,
-        List<AppliedPromotion> appliedPromotions,
-        LoyaltySummary loyaltySummary,
-        Instant calculatedAt) {
+    String cartId,
+    BigDecimal originalSubtotal,
+    BigDecimal finalSubtotal,
+    BigDecimal totalSavings,
+    BigDecimal shippingCost,
+    BigDecimal shippingDiscount,
+    List<ItemPricing> items,
+    List<AppliedPromotion> appliedPromotions,
+    LoyaltySummary loyaltySummary,
+    Instant calculatedAt) {
 
-    public BigDecimal getTotal() {
-        return finalSubtotal.add(shippingCost).subtract(shippingDiscount);
-    }
+  public BigDecimal getTotal() {
+    return finalSubtotal.add(shippingCost).subtract(shippingDiscount);
+  }
 }

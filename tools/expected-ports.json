@@ -1,0 +1,9 @@
+{
+  "product-service": 8080,
+  "cart-service": 8081,
+  "wiremock": 8082,
+  "customer-service": 8083,
+  "discount-service": 8084,
+  "fulfillment-service": 8085,
+  "audit-service": 8086
+}

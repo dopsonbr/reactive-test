@@ -452,13 +452,61 @@ mv 019_monorepo_prep.md docs/archive/
 
 ## Milestone 1 Checklist
 
-- [ ] Phase 1.1: pnpm workspace configured
-- [ ] Phase 1.2: Nx installed and project graph working
-- [ ] Phase 1.3: Port conflicts resolved, verification script in CI
-- [ ] Phase 1.4: All 23 modules have Nx metadata and task mapping
-- [ ] Phase 1.5: CI uses `nx affected` commands
-- [ ] Phase 1.6: Documentation updated, 019 archived
-- [ ] All tests passing via `nx run-many -t test`
+### Phase 1.1: Package Manager & Workspace Setup
+- [x] `pnpm-workspace.yaml` created with correct package patterns
+- [x] Root `package.json` created with packageManager and engines fields
+- [x] `.npmrc` created with peer dependency settings
+- [x] `pnpm install` runs successfully
+- [x] `.gitignore` updated with Node/pnpm/Nx entries
+
+### Phase 1.2: Nx Installation & Configuration
+- [x] Nx and @nx/gradle devDependencies installed
+- [x] `nx.json` created with Gradle plugin configuration
+- [x] Nx Gradle plugin added to root `build.gradle.kts`
+- [x] `./gradlew nxProjectGraph` executes successfully
+- [x] `pnpm nx show projects` lists all 23 modules
+- [x] `pnpm nx graph` renders dependency visualization
+
+### Phase 1.3: Service Port Canonicalization
+- [x] Docker Compose ports audited against canonical port table
+- [x] `discount-service` port updated to 8084
+- [x] `fulfillment-service` confirmed at 8085
+- [x] `cart-service` confirmed at 8081
+- [x] `tools/check-service-ports.sh` script created
+- [x] `tools/expected-ports.json` created
+- [x] Port verification script passes
+
+### Phase 1.4: Nx ↔ Gradle Task Mapping
+- [x] Nx metadata added to all `apps/*/build.gradle.kts` files (auto-inferred by @nx/gradle)
+- [x] Nx metadata added to all `libs/*/build.gradle.kts` files (auto-inferred by @nx/gradle)
+- [x] Tag conventions applied (type, scope, lang) (auto-inferred by @nx/gradle)
+- [x] `pnpm nx build product-service` delegates to Gradle successfully
+- [x] `pnpm nx test product-service` runs tests successfully
+- [x] `pnpm nx run-many -t build` builds all modules
+- [x] `pnpm nx affected -t build` correctly identifies changed modules
+
+### Phase 1.5: CI/CD Integration
+- [x] GitHub Actions workflow updated with pnpm setup
+- [x] Node.js 22 configured in CI
+- [x] `pnpm install --frozen-lockfile` step added
+- [x] CI uses `nx affected -t build` instead of direct Gradle
+- [x] CI uses `nx affected -t test` for test execution
+
+### Phase 1.6: Documentation Updates
+- [x] `CLAUDE.md` updated with Nx commands section
+- [x] `CLAUDE.md` updated with pnpm usage instructions
+- [x] `CLAUDE.md` updated with canonical port table
+- [x] `019_monorepo_prep.md` moved to `docs/archive/` (already archived)
+
+### Phase 1.7: Validation Gate (Required Before Milestone 2)
+- [x] `pnpm nx run-many -t build` succeeds for all 23 modules
+- [x] `pnpm nx run-many -t test` succeeds (matches `./gradlew testAll` results)
+- [ ] Docker Compose stack starts without port conflicts
+- [ ] All backend services healthy (`docker compose ps` shows healthy)
+- [ ] k6 e2e tests pass: `docker compose --profile test-product up k6-product`
+- [ ] k6 resilience tests pass: `docker compose --profile chaos-product up k6-product-resilience`
+- [ ] k6 circuit breaker tests pass: `docker compose --profile chaos-product run k6-product-circuit-breaker`
+- [ ] No regressions in existing functionality
 
 ---
 

@@ -1,0 +1,22 @@
+{
+  "name": "reactive-platform",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "nx run-many -t build",
+    "test": "nx run-many -t test",
+    "dev": "nx run-many -t serve",
+    "lint": "nx run-many -t lint",
+    "graph": "nx graph"
+  },
+  "devDependencies": {
+    "@nx/gradle": "^22.1.3",
+    "@nx/workspace": "^22.1.3",
+    "nx": "^22.1.3",
+    "yaml": "^2.8.2"
+  }
+}

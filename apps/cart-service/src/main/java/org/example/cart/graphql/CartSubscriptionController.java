@@ -26,38 +26,38 @@ import reactor.core.publisher.Flux;
 @Controller
 public class CartSubscriptionController {
 
-    private final CartEventSubscriber eventSubscriber;
-    private final GraphQLInputValidator validator;
+  private final CartEventSubscriber eventSubscriber;
+  private final GraphQLInputValidator validator;
 
-    public CartSubscriptionController(
-            CartEventSubscriber eventSubscriber, GraphQLInputValidator validator) {
-        this.eventSubscriber = eventSubscriber;
-        this.validator = validator;
-    }
+  public CartSubscriptionController(
+      CartEventSubscriber eventSubscriber, GraphQLInputValidator validator) {
+    this.eventSubscriber = eventSubscriber;
+    this.validator = validator;
+  }
 
-    /**
-     * Subscribe to updates for a specific cart.
-     *
-     * @param cartId the cart ID to subscribe to
-     * @return Flux of cart events
-     */
-    @SubscriptionMapping
-    @PreAuthorize("hasAuthority('SCOPE_cart:read')")
-    public Flux<CartEvent> cartUpdated(@Argument String cartId) {
-        return validator.validateCartId(cartId).thenMany(eventSubscriber.subscribe(cartId));
-    }
+  /**
+   * Subscribe to updates for a specific cart.
+   *
+   * @param cartId the cart ID to subscribe to
+   * @return Flux of cart events
+   */
+  @SubscriptionMapping
+  @PreAuthorize("hasAuthority('SCOPE_cart:read')")
+  public Flux<CartEvent> cartUpdated(@Argument String cartId) {
+    return validator.validateCartId(cartId).thenMany(eventSubscriber.subscribe(cartId));
+  }
 
-    /**
-     * Subscribe to all cart events for a store (admin use).
-     *
-     * @param storeNumber the store number
-     * @return Flux of cart events for all carts in the store
-     */
-    @SubscriptionMapping
-    @PreAuthorize("hasAuthority('SCOPE_cart:admin')")
-    public Flux<CartEvent> storeCartEvents(@Argument int storeNumber) {
-        return validator
-                .validateStoreNumber(storeNumber)
-                .thenMany(eventSubscriber.subscribeToStore(storeNumber));
-    }
+  /**
+   * Subscribe to all cart events for a store (admin use).
+   *
+   * @param storeNumber the store number
+   * @return Flux of cart events for all carts in the store
+   */
+  @SubscriptionMapping
+  @PreAuthorize("hasAuthority('SCOPE_cart:admin')")
+  public Flux<CartEvent> storeCartEvents(@Argument int storeNumber) {
+    return validator
+        .validateStoreNumber(storeNumber)
+        .thenMany(eventSubscriber.subscribeToStore(storeNumber));
+  }
 }

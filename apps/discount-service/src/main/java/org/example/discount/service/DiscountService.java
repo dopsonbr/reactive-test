@@ -11,55 +11,55 @@ import reactor.core.publisher.Mono;
 @Service
 public class DiscountService {
 
-    private final DiscountRepository repository;
+  private final DiscountRepository repository;
 
-    public DiscountService(DiscountRepository repository) {
-        this.repository = repository;
-    }
+  public DiscountService(DiscountRepository repository) {
+    this.repository = repository;
+  }
 
-    /**
-     * Validate a promo code for a store.
-     *
-     * @param code the promo code
-     * @param storeNumber the store number
-     * @return the discount if valid
-     * @throws InvalidDiscountException if code is invalid or expired
-     */
-    public Mono<Discount> validateCode(String code, int storeNumber) {
-        return repository
-                .findByCode(code)
-                .filter(Discount::isValid)
-                .filter(d -> d.appliesTo(storeNumber))
-                .switchIfEmpty(Mono.error(new InvalidDiscountException(code)));
-    }
+  /**
+   * Validate a promo code for a store.
+   *
+   * @param code the promo code
+   * @param storeNumber the store number
+   * @return the discount if valid
+   * @throws InvalidDiscountException if code is invalid or expired
+   */
+  public Mono<Discount> validateCode(String code, int storeNumber) {
+    return repository
+        .findByCode(code)
+        .filter(Discount::isValid)
+        .filter(d -> d.appliesTo(storeNumber))
+        .switchIfEmpty(Mono.error(new InvalidDiscountException(code)));
+  }
 
-    /**
-     * Get all auto-apply discounts for a store.
-     *
-     * @param storeNumber the store number
-     * @return stream of auto-apply discounts
-     */
-    public Flux<Discount> getAutoApplyDiscounts(int storeNumber) {
-        return repository.findAutoApplyByStore(storeNumber);
-    }
+  /**
+   * Get all auto-apply discounts for a store.
+   *
+   * @param storeNumber the store number
+   * @return stream of auto-apply discounts
+   */
+  public Flux<Discount> getAutoApplyDiscounts(int storeNumber) {
+    return repository.findAutoApplyByStore(storeNumber);
+  }
 
-    /**
-     * Get all active discounts for a store.
-     *
-     * @param storeNumber the store number
-     * @return stream of active discounts
-     */
-    public Flux<Discount> getActiveDiscounts(int storeNumber) {
-        return repository.findActiveByStore(storeNumber);
-    }
+  /**
+   * Get all active discounts for a store.
+   *
+   * @param storeNumber the store number
+   * @return stream of active discounts
+   */
+  public Flux<Discount> getActiveDiscounts(int storeNumber) {
+    return repository.findActiveByStore(storeNumber);
+  }
 
-    /**
-     * Find a discount by ID.
-     *
-     * @param discountId the discount ID
-     * @return the discount if found
-     */
-    public Mono<Discount> findById(String discountId) {
-        return repository.findById(discountId);
-    }
+  /**
+   * Find a discount by ID.
+   *
+   * @param discountId the discount ID
+   * @return the discount if found
+   */
+  public Mono<Discount> findById(String discountId) {
+    return repository.findById(discountId);
+  }
 }

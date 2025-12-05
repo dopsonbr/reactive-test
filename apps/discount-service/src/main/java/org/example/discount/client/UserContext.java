@@ -11,28 +11,28 @@ import java.util.Set;
  */
 public record UserContext(UserType userType, Set<Permission> permissions, Integer storeNumber) {
 
-    public static UserContext anonymous() {
-        return new UserContext(UserType.CUSTOMER, Set.of(Permission.READ), null);
-    }
+  public static UserContext anonymous() {
+    return new UserContext(UserType.CUSTOMER, Set.of(Permission.READ), null);
+  }
 
-    public boolean isEmployee() {
-        return userType == UserType.EMPLOYEE;
-    }
+  public boolean isEmployee() {
+    return userType == UserType.EMPLOYEE;
+  }
 
-    public boolean canApplyMarkdown() {
-        return isEmployee() && permissions.contains(Permission.ADMIN);
-    }
+  public boolean canApplyMarkdown() {
+    return isEmployee() && permissions.contains(Permission.ADMIN);
+  }
 
-    public enum UserType {
-        SERVICE_ACCOUNT,
-        CUSTOMER,
-        EMPLOYEE
-    }
+  public enum UserType {
+    SERVICE_ACCOUNT,
+    CUSTOMER,
+    EMPLOYEE
+  }
 
-    public enum Permission {
-        READ,
-        WRITE,
-        ADMIN,
-        CUSTOMER_SEARCH
-    }
+  public enum Permission {
+    READ,
+    WRITE,
+    ADMIN,
+    CUSTOMER_SEARCH
+  }
 }

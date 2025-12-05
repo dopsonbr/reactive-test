@@ -14,6 +14,7 @@ import org.example.cart.client.ProductServiceClient;
 import org.example.model.customer.CartCustomer;
 import org.example.model.discount.AppliedDiscount;
 import org.example.model.discount.Discount;
+import org.example.model.discount.DiscountScope;
 import org.example.model.discount.DiscountType;
 import org.example.model.fulfillment.FulfillmentType;
 import org.example.model.product.Product;
@@ -111,7 +112,13 @@ public abstract class AbstractGraphQLIntegrationTest {
                       DiscountType.PERCENTAGE,
                       BigDecimal.valueOf(10),
                       "10% off test discount",
-                      null));
+                      null,
+                      DiscountScope.CART,
+                      true,
+                      BigDecimal.ZERO,
+                      List.of(),
+                      List.of(),
+                      false));
             });
     when(discountServiceClient.calculateDiscount(any(), any(), any()))
         .thenAnswer(

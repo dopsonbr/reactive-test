@@ -15,10 +15,10 @@ import java.util.List;
  * @param appliedDiscountIds list of discount IDs applied to this item
  */
 public record ItemPricing(
-        Long sku,
-        int quantity,
-        BigDecimal unitPrice,
-        BigDecimal originalTotal,
-        BigDecimal discountedTotal,
-        BigDecimal itemSavings,
-        List<String> appliedDiscountIds) {}
+    Long sku,
+    int quantity,
+    BigDecimal unitPrice,
+    BigDecimal originalTotal,
+    BigDecimal discountedTotal,
+    BigDecimal itemSavings,
+    List<String> appliedDiscountIds) {}

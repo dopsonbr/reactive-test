@@ -1,0 +1,6 @@
+packages:
+  - 'apps/*-web'
+  - 'libs/shared-ui/*'
+  - 'libs/shared-data/*'
+  - 'libs/shared-utils/*'
+  - 'tools/*'

@@ -1,8 +1,7 @@
-package org.example.product.security;
+package org.example.customer.security;
 
 import org.example.platform.security.JwtAuthenticationConverter;
 import org.example.platform.security.SecurityErrorHandler;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -12,15 +11,11 @@ import org.springframework.security.oauth2.server.resource.authentication.Reacti
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 /**
- * Main security configuration for OAuth2 resource server. Configures JWT validation for inbound
- * requests and authorization rules.
- *
- * <p>This configuration is disabled when app.security.enabled=false (e.g., for load testing).
+ * Security configuration for customer-service. Configures JWT validation and authorization rules.
  */
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
-@ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
 public class SecurityConfig {
 
   private final JwtAuthenticationConverter jwtAuthenticationConverter;

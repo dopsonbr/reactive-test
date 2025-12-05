@@ -12,8 +12,8 @@ import java.math.BigDecimal;
  * @param scope the scope of the promotion
  */
 public record AppliedPromotion(
-        String promotionId,
-        String source,
-        String description,
-        BigDecimal savingsAmount,
-        DiscountScope scope) {}
+    String promotionId,
+    String source,
+    String description,
+    BigDecimal savingsAmount,
+    DiscountScope scope) {}

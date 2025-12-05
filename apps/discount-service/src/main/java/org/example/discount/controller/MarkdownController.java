@@ -22,72 +22,72 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/markdowns")
 public class MarkdownController {
 
-    private final MarkdownService markdownService;
+  private final MarkdownService markdownService;
 
-    public MarkdownController(MarkdownService markdownService) {
-        this.markdownService = markdownService;
-    }
+  public MarkdownController(MarkdownService markdownService) {
+    this.markdownService = markdownService;
+  }
 
-    /**
-     * Apply a markdown to a cart (employee only).
-     *
-     * @param request the markdown request
-     * @param userId the user ID from header
-     * @return the applied markdown
-     */
-    @PostMapping
-    public Mono<ResponseEntity<Markdown>> applyMarkdown(
-            @RequestBody ApplyMarkdownRequest request, @RequestHeader("x-userid") String userId) {
+  /**
+   * Apply a markdown to a cart (employee only).
+   *
+   * @param request the markdown request
+   * @param userId the user ID from header
+   * @return the applied markdown
+   */
+  @PostMapping
+  public Mono<ResponseEntity<Markdown>> applyMarkdown(
+      @RequestBody ApplyMarkdownRequest request, @RequestHeader("x-userid") String userId) {
 
-        return markdownService
-                .applyMarkdown(request, userId)
-                .map(ResponseEntity::ok)
-                .onErrorResume(
-                        UnauthorizedMarkdownException.class,
-                        e -> Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build()));
-    }
+    return markdownService
+        .applyMarkdown(request, userId)
+        .map(ResponseEntity::ok)
+        .onErrorResume(
+            UnauthorizedMarkdownException.class,
+            e -> Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build()));
+  }
 
-    /**
-     * Get all active markdowns for a cart.
-     *
-     * @param cartId the cart ID
-     * @return stream of active markdowns
-     */
-    @GetMapping("/cart/{cartId}")
-    public Flux<Markdown> getMarkdownsForCart(@PathVariable String cartId) {
-        return markdownService.getMarkdownsForCart(cartId);
-    }
+  /**
+   * Get all active markdowns for a cart.
+   *
+   * @param cartId the cart ID
+   * @return stream of active markdowns
+   */
+  @GetMapping("/cart/{cartId}")
+  public Flux<Markdown> getMarkdownsForCart(@PathVariable String cartId) {
+    return markdownService.getMarkdownsForCart(cartId);
+  }
 
-    /**
-     * Get a markdown by ID.
-     *
-     * @param id the markdown ID
-     * @return the markdown if found
-     */
-    @GetMapping("/{id}")
-    public Mono<ResponseEntity<Markdown>> getMarkdown(@PathVariable String id) {
-        return markdownService
-                .findById(id)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.notFound().build());
-    }
+  /**
+   * Get a markdown by ID.
+   *
+   * @param id the markdown ID
+   * @return the markdown if found
+   */
+  @GetMapping("/{id}")
+  public Mono<ResponseEntity<Markdown>> getMarkdown(@PathVariable String id) {
+    return markdownService
+        .findById(id)
+        .map(ResponseEntity::ok)
+        .defaultIfEmpty(ResponseEntity.notFound().build());
+  }
 
-    /**
-     * Void/cancel a markdown (employee only).
-     *
-     * @param id the markdown ID
-     * @param userId the user ID from header
-     * @return no content on success
-     */
-    @DeleteMapping("/{id}")
-    public Mono<ResponseEntity<Void>> voidMarkdown(
-            @PathVariable String id, @RequestHeader("x-userid") String userId) {
+  /**
+   * Void/cancel a markdown (employee only).
+   *
+   * @param id the markdown ID
+   * @param userId the user ID from header
+   * @return no content on success
+   */
+  @DeleteMapping("/{id}")
+  public Mono<ResponseEntity<Void>> voidMarkdown(
+      @PathVariable String id, @RequestHeader("x-userid") String userId) {
 
-        return markdownService
-                .voidMarkdown(id, userId)
-                .then(Mono.just(ResponseEntity.noContent().<Void>build()))
-                .onErrorResume(
-                        UnauthorizedMarkdownException.class,
-                        e -> Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build()));
-    }
+    return markdownService
+        .voidMarkdown(id, userId)
+        .then(Mono.just(ResponseEntity.noContent().<Void>build()))
+        .onErrorResume(
+            UnauthorizedMarkdownException.class,
+            e -> Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build()));
+  }
 }

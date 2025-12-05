@@ -1,6 +1,11 @@
 spring:
   application:
     name: cart-service
+
+  # Jackson 2 compatibility for Spring Boot 4.0
+  jackson:
+    use-jackson2-defaults: true
+
   r2dbc:
     url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cartdb}
     username: ${DB_USERNAME:cart_user}

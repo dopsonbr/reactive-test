@@ -1,6 +1,6 @@
 [versions]
 # Spring Boot provides most versions via BOM - only declare non-BOM deps here
-spring-boot = "3.5.8"
+spring-boot = "4.0.0"
 spring-dependency-management = "1.1.7"
 resilience4j = "2.2.0"
 logstash-logback = "8.0"

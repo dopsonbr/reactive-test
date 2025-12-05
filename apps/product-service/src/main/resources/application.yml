@@ -1,6 +1,11 @@
 spring:
   application:
     name: product-service
+
+  # Jackson 2 compatibility for Spring Boot 4.0
+  jackson:
+    use-jackson2-defaults: true
+
   data:
     redis:
       host: localhost

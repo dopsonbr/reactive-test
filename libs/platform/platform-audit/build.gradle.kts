@@ -9,8 +9,8 @@ dependencies {
     // Core dependencies
     api("org.springframework.boot:spring-boot-starter-webflux")
     api("org.springframework.boot:spring-boot-starter-data-redis-reactive")
-    api("com.fasterxml.jackson.core:jackson-databind")
-    api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    // Jackson 2 compatibility for Spring Boot 4.0 (includes JSR-310 support)
+    api("org.springframework.boot:spring-boot-jackson2")
 
     // Platform libraries
     api(project(":libs:platform:platform-logging"))

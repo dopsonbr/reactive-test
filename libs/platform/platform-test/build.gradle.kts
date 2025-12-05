@@ -6,6 +6,8 @@ dependencies {
     api(platform(project(":libs:platform:platform-bom")))
 
     api("org.springframework.boot:spring-boot-starter-test")
+    // WebFlux test support for @WebFluxTest annotation
+    api("org.springframework.boot:spring-boot-starter-webflux-test")
     api("io.projectreactor:reactor-test")
     api(libs.testcontainers.core)
     api(libs.testcontainers.junit.jupiter)
@@ -18,7 +20,7 @@ dependencies {
     api(libs.bundles.jjwt)
 
     // OAuth2 JWT decoder for TestSecurityConfig
-    api("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    api("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")
 
     // Access to platform modules for test helpers
     implementation(project(":libs:platform:platform-logging"))

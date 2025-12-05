@@ -6,7 +6,8 @@ dependencies {
     api(platform(project(":libs:platform:platform-bom")))
 
     api("org.springframework.boot:spring-boot-starter-data-redis-reactive")
-    api("com.fasterxml.jackson.core:jackson-databind")
+    // Jackson 2 compatibility for Spring Boot 4.0
+    api("org.springframework.boot:spring-boot-jackson2")
 
     // Logging integration
     implementation(project(":libs:platform:platform-logging"))

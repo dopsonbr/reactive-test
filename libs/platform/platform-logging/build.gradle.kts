@@ -7,7 +7,8 @@ dependencies {
 
     // Core dependencies
     api("org.springframework.boot:spring-boot-starter-webflux")
-    api("com.fasterxml.jackson.core:jackson-databind")
+    // Jackson 2 compatibility for Spring Boot 4.0
+    api("org.springframework.boot:spring-boot-jackson2")
     api(libs.logstash.logback.encoder)
     api(libs.opentelemetry.api)
 

@@ -10,6 +10,11 @@ With the Nx polyglot monorepo strategy accepted (ADR-006), we must now select th
 
 This decision will establish the foundation for all frontend development, affecting developer experience, performance, hiring, and long-term maintainability.
 
+## Constraints
+
+- **Client-only runtime in production**: Frontends must ship as static assets (SPA/MPA) with no dedicated Node.js server/BFF in production. Backend responsibilities stay in Spring services.
+- **Strict separation**: Clear boundary between frontend (static bundle + browser APIs) and backend (Spring services); avoid full-stack coupling that requires server runtimes for pages/routes.
+
 ## Guiding Principles
 
 These principles inform the evaluation criteria and final decision, listed in priority order:
@@ -47,15 +52,21 @@ These principles inform the evaluation criteria and final decision, listed in pr
 
 ### React Ecosystem Options (if React chosen)
 
-3. **React + Vite (Vanilla)** - Minimal setup, client-side SPA
-4. **React + TanStack Query** - Server state management focus
-5. **Next.js** - Full-stack React framework with SSR/SSG
-6. **Remix** - Full-stack with nested routing and progressive enhancement
-7. **React + Vite + TanStack Router** - Modern SPA with type-safe routing
+3. **React + Vite (Vanilla SPA)** - Minimal setup, client-side only
+4. **React + Vite + React Router** - SPA with the most mature React router
+5. **React + Vite + TanStack Router (+ Query)** - Modern SPA with type-safe routing + server-state
+6. **Next.js** - Full-stack React framework with SSR/SSG
+7. **Remix** - Full-stack with nested routing and progressive enhancement
 
 ## Decision Outcome
 
-*(To be determined after evaluation)*
+Chosen option: **React + Vite + TanStack Router + TanStack Query (SPA, client-only)**
+
+Rationale:
+- Strong type safety and routing ergonomics without requiring a server runtime.
+- TanStack Query covers server-state concerns; avoids heavy client stores.
+- Vite delivers fast DX and small bundles; deploys as static assets with no Node server.
+- Aligns with strict frontend/backend separation while remaining flexible for multiple apps (e-commerce, POS, admin).
 
 ## Pros and Cons of the Options
 
@@ -134,7 +145,26 @@ Minimal React setup with Vite bundler, client-side only.
 
 **Best For**: Internal tools, admin dashboards, POS
 
-### 4. React + TanStack Query (+ Vite + TanStack Router)
+### 4. React + Vite + React Router (+ TanStack Query)
+
+SPA using React Router for navigation and TanStack Query for server state.
+
+**Good**
+- Most battle-tested React router; large ecosystem and docs
+- Declarative nested routing and data APIs (loaders/actions) available but optional
+- Works entirely client-side; no Node runtime required
+- TanStack Query handles caching/deduping for server data
+- Minimal lock-in; easy to host as static assets
+
+**Bad**
+- No SSR/SSG out of the box
+- Must assemble styling/build/testing conventions
+- Loader/action patterns are less type-safe than TanStack Router
+- Query + Router are separate concerns to wire together
+
+**Best For**: SPAs where SEO is less critical (POS, dashboards) but stability and community size matter
+
+### 5. React + Vite + TanStack Router (+ TanStack Query)
 
 Modern React SPA stack focused on server state management.
 
@@ -155,7 +185,7 @@ Modern React SPA stack focused on server state management.
 
 **Best For**: Data-heavy SPAs, dashboards, POS
 
-### 5. Next.js (App Router)
+### 6. Next.js (App Router)
 
 Full-stack React framework with SSR, SSG, and API routes.
 
@@ -178,7 +208,7 @@ Full-stack React framework with SSR, SSG, and API routes.
 
 **Best For**: E-commerce, marketing pages, SEO-required content
 
-### 6. Remix
+### 7. Remix
 
 Full-stack React framework with nested routing and progressive enhancement.
 
@@ -199,41 +229,29 @@ Full-stack React framework with nested routing and progressive enhancement.
 
 **Best For**: Form-heavy apps, progressive enhancement needs
 
-### 7. React + Vite + TanStack Router
+## React Router vs TanStack Router (SPA)
 
-Modern SPA with type-safe file-based routing, without full-stack framework.
-
-**Good**
-- Full type safety from routes to loaders
-- File-based routing similar to Next.js
-- Search params as first-class state
-- No framework lock-in
-- Fast Vite dev experience
-- Pairs well with TanStack Query
-
-**Bad**
-- No SSR (requires additional setup)
-- Newest option - less proven
-- Smaller community than React Router
-- Must assemble multiple pieces
-
-**Best For**: Type-safety focused SPAs, complex routing needs
+- **Maturity/community**: React Router is older with more docs/examples; TanStack Router is newer but rapidly iterating.
+- **Type safety**: TanStack Router provides stronger end-to-end typing (params/search/loaders) and first-class search params; React Router relies more on manual typing.
+- **Data APIs**: Both offer loaders/actions; TanStack Router emphasizes co-located route loaders with type inference. Neither requires a server runtime.
+- **Hosting model**: Both work as client-only SPAs with static asset hosting (no Node server needed). SSR is optional and not required for deployment.
+- **Ecosystem**: React Router has broader third-party integration; TanStack Router pairs tightly with TanStack Query for server-state patterns.
 
 ## Evaluation Matrix
 
-| Criterion | Angular | React+Vite | React+TanStack | Next.js | Remix |
-|-----------|---------|------------|----------------|---------|-------|
-| **LLM/AI Support** | Fair | Excellent | Excellent | Excellent | Good |
-| **SEO/SSR** | SSR possible | No | No | Excellent | Excellent |
-| **Dev Speed** | Medium | Fast | Fast | Medium | Medium |
-| **Bundle Size** | Large | Small | Small | Medium | Medium |
-| **Learning Curve** | Low (team exp) | Medium | Medium | Medium | Medium |
-| **Nx Support** | Excellent | Good | Good | Excellent | Fair |
-| **Mobile Path** | Ionic | React Native | React Native | React Native | React Native |
-| **Type Safety** | Excellent | Good | Excellent | Good | Good |
-| **Hiring Pool** | Medium | Large | Large | Large | Small |
-| **E-commerce Fit** | Good | Poor | Fair | Excellent | Good |
-| **POS Fit** | Good | Good | Excellent | Overkill | Good |
+| Criterion | Angular | React+Vite (vanilla) | React+Vite+React Router | React+Vite+TanStack Router | Next.js | Remix |
+|-----------|---------|-----------------------|--------------------------|----------------------------|---------|-------|
+| **LLM/AI Support** | Fair | Excellent | Excellent | Excellent | Excellent | Good |
+| **SEO/SSR** *(not a deciding factor)* | SSR possible | No | No | No | Excellent | Excellent |
+| **Dev Speed** | Medium | Fast | Fast | Fast | Medium | Medium |
+| **Bundle Size** | Large | Small | Small | Small | Medium | Medium |
+| **Learning Curve** | Low (team exp) | Medium | Medium | Medium | Medium | Medium |
+| **Nx Support** | Excellent | Good | Good | Good | Excellent | Fair |
+| **Mobile Path** | Ionic | React Native | React Native | React Native | React Native | React Native |
+| **Type Safety** | Excellent | Good | Good | Excellent | Good | Good |
+| **Hiring Pool** | Medium | Large | Large | Large | Large | Small |
+| **E-commerce Fit** | Good | Poor | Fair | Fair | Excellent | Good |
+| **POS Fit** | Good | Good | Excellent | Excellent | Overkill | Good |
 
 ## Recommended Approach
 

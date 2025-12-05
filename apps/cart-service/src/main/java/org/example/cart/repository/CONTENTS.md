@@ -6,3 +6,4 @@
 | `PostgresCartRepository.java` | Postgres implementation with domain-entity mapping and JSONB handling |
 | `CartEntityRepository.java` | Spring Data R2DBC repository for database operations |
 | `CartEntity.java` | Database entity record mapping to 'carts' table with JSONB columns |
+| `JsonValue.java` | Wrapper type for distinguishing JSONB columns from VARCHAR in R2DBC converters |

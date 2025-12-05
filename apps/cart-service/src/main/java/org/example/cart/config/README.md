@@ -1,11 +1,12 @@
 # Config
 
 ## Purpose
-Configures OAuth2 resource server security for cart-service API endpoints.
+Configures security and database connectivity for cart-service.
 
 ## Behavior
-Enforces JWT-based authentication and scope-based authorization, requiring cart:read for GET operations and cart:write for modifications, while allowing public access to actuator endpoints.
+SecurityConfig enforces JWT-based OAuth2 authentication with scope-based authorization; R2dbcConfiguration registers custom converters for PostgreSQL JSONB column mapping.
 
 ## Quirks
-- CSRF protection is disabled (stateless JWT authentication).
-- Scope authorities are prefixed with "SCOPE_" by Spring Security.
+- CSRF protection disabled for stateless JWT authentication
+- Scope authorities prefixed with "SCOPE_" by Spring Security
+- JsonValue wrapper prevents converter from applying to non-JSON VARCHAR columns

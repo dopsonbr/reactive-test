@@ -52,7 +52,19 @@ public class PostgresCartRepository implements CartRepository {
 
   @Override
   public Mono<Cart> save(Cart cart) {
-    return toEntity(cart).flatMap(entityRepository::save).flatMap(this::toDomain);
+    // Check if cart exists to determine INSERT vs UPDATE
+    return entityRepository
+        .existsById(UUID.fromString(cart.id()))
+        .flatMap(
+            exists -> {
+              if (exists) {
+                return toEntity(cart, false); // Existing entity - UPDATE
+              } else {
+                return toEntity(cart, true); // New entity - INSERT
+              }
+            })
+        .flatMap(entityRepository::save)
+        .flatMap(this::toDomain);
   }
 
   @Override
@@ -71,15 +83,25 @@ public class PostgresCartRepository implements CartRepository {
     return Mono.fromCallable(
         () -> {
           CartCustomer customer =
-              deserialize(entity.customerJson(), new TypeReference<CartCustomer>() {});
+              deserialize(
+                  JsonValue.unwrap(entity.customerJson()), new TypeReference<CartCustomer>() {});
           List<CartProduct> products =
-              deserialize(entity.productsJson(), new TypeReference<List<CartProduct>>() {});
+              deserialize(
+                  JsonValue.unwrap(entity.productsJson()),
+                  new TypeReference<List<CartProduct>>() {});
           List<AppliedDiscount> discounts =
-              deserialize(entity.discountsJson(), new TypeReference<List<AppliedDiscount>>() {});
+              deserialize(
+                  JsonValue.unwrap(entity.discountsJson()),
+                  new TypeReference<List<AppliedDiscount>>() {});
           List<Fulfillment> fulfillments =
-              deserialize(entity.fulfillmentsJson(), new TypeReference<List<Fulfillment>>() {});
-          CartTotals totals = deserialize(entity.totalsJson(), new TypeReference<CartTotals>() {});
+              deserialize(
+                  JsonValue.unwrap(entity.fulfillmentsJson()),
+                  new TypeReference<List<Fulfillment>>() {});
+          CartTotals totals =
+              deserialize(
+                  JsonValue.unwrap(entity.totalsJson()), new TypeReference<CartTotals>() {});
 
+          // Note: Cart domain object doesn't need isNew tracking - that's handled by CartEntity
           return new Cart(
               entity.id().toString(),
               entity.storeNumber(),
@@ -94,10 +116,11 @@ public class PostgresCartRepository implements CartRepository {
         });
   }
 
-  private Mono<CartEntity> toEntity(Cart cart) {
+  private Mono<CartEntity> toEntity(Cart cart, boolean isNew) {
     return Mono.fromCallable(
-        () ->
-            new CartEntity(
+        () -> {
+          if (isNew) {
+            return CartEntity.createNew(
                 UUID.fromString(cart.id()),
                 cart.storeNumber(),
                 cart.customerId(),
@@ -107,7 +130,21 @@ public class PostgresCartRepository implements CartRepository {
                 serialize(cart.fulfillments()),
                 serialize(cart.totals()),
                 cart.createdAt(),
-                cart.updatedAt()));
+                cart.updatedAt());
+          } else {
+            return CartEntity.existing(
+                UUID.fromString(cart.id()),
+                cart.storeNumber(),
+                cart.customerId(),
+                serialize(cart.customer()),
+                serialize(cart.products()),
+                serialize(cart.discounts()),
+                serialize(cart.fulfillments()),
+                serialize(cart.totals()),
+                cart.createdAt(),
+                cart.updatedAt());
+          }
+        });
   }
 
   private <T> T deserialize(String json, TypeReference<T> typeRef) throws JsonProcessingException {

@@ -5,6 +5,8 @@ Shopping cart management service with PostgreSQL persistence and granular CRUD o
 ## Features
 
 - **Cart Management**: Full CRUD for carts, products, discounts, and fulfillments
+- **Dual API**: REST and GraphQL interfaces with full parity
+- **Real-Time Subscriptions**: GraphQL subscriptions via SSE + Redis Pub/Sub
 - **PostgreSQL Persistence**: R2DBC reactive database with JSONB columns for nested data
 - **OAuth2 Security**: Resource server with JWT validation and scope-based authorization
 - **Validation**: Comprehensive request validation with error aggregation
@@ -144,19 +146,142 @@ Authorization: Bearer <jwt-token>
 }
 ```
 
+## GraphQL API
+
+The GraphQL API provides full parity with REST plus real-time subscriptions.
+
+### Endpoint
+
+- **URL**: `/graphql`
+- **Method**: `POST` (queries/mutations), `GET` (subscriptions with SSE)
+- **Interactive Explorer**: `/graphiql` (development only)
+
+### Authentication
+
+| Operation Type | Required Scope |
+|----------------|----------------|
+| Queries | cart:read |
+| Mutations | cart:write |
+| Store Subscriptions | cart:admin |
+
+### Queries
+
+```graphql
+# Get a single cart
+query GetCart($id: ID!) {
+  cart(id: $id) {
+    id
+    storeNumber
+    customer { name email }
+    products { sku description quantity lineTotal }
+    discounts { code appliedSavings }
+    fulfillments { type cost }
+    totals { subtotal discountTotal grandTotal }
+    itemCount
+  }
+}
+
+# Find carts by store or customer
+query { cartsByStore(storeNumber: 100) { id itemCount } }
+query { cartsByCustomer(customerId: "cust-123") { id itemCount } }
+```
+
+### Mutations
+
+```graphql
+# Create cart
+mutation CreateCart($input: CreateCartInput!) {
+  createCart(input: $input) { id storeNumber }
+}
+
+# Add product
+mutation AddProduct($cartId: ID!, $input: AddProductInput!) {
+  addProduct(cartId: $cartId, input: $input) {
+    id
+    products { sku quantity }
+    totals { grandTotal }
+  }
+}
+
+# Apply discount
+mutation ApplyDiscount($cartId: ID!, $input: ApplyDiscountInput!) {
+  applyDiscount(cartId: $cartId, input: $input) {
+    discounts { code appliedSavings }
+    totals { discountTotal grandTotal }
+  }
+}
+```
+
+### Subscriptions (Real-Time Updates)
+
+Subscriptions use Server-Sent Events (SSE) with Redis Pub/Sub for cross-instance fan-out.
+
+```graphql
+# Subscribe to cart updates
+subscription CartUpdated($cartId: ID!) {
+  cartUpdated(cartId: $cartId) {
+    eventType
+    cart { id itemCount totals { grandTotal } }
+    timestamp
+  }
+}
+
+# Subscribe to all carts in a store (admin)
+subscription StoreCartEvents($storeNumber: Int!) {
+  storeCartEvents(storeNumber: $storeNumber) {
+    eventType
+    cartId
+    timestamp
+  }
+}
+```
+
+### SSE Client Example
+
+```javascript
+const cartId = "550e8400-e29b-41d4-a716-446655440000";
+const query = `subscription { cartUpdated(cartId: "${cartId}") { eventType cart { id itemCount } } }`;
+const eventSource = new EventSource(`/graphql?query=${encodeURIComponent(query)}`);
+
+eventSource.onmessage = (event) => {
+  const { data: { cartUpdated } } = JSON.parse(event.data);
+  console.log('Cart updated:', cartUpdated.eventType);
+};
+```
+
+### GraphQL Error Response
+
+```json
+{
+  "errors": [{
+    "message": "Validation failed",
+    "extensions": {
+      "classification": "BAD_REQUEST",
+      "validationErrors": {
+        "storeNumber": "Must be between 1 and 2000"
+      }
+    }
+  }]
+}
+```
+
 ## Architecture
 
 ```
-CartController / CartProductController / CartDiscountController / CartFulfillmentController
-                                    ↓
-                                CartService
-                                    ↓
-         ┌──────────────────────────┼──────────────────────────┐
-         ↓                          ↓                          ↓
-PostgresCartRepository      ProductServiceClient      DiscountServiceClient
-         ↓                    (with Resilience4j)      (with Resilience4j)
-   PostgreSQL                      ↓                          ↓
-  (JSONB columns)           product-service            discount-service
+     REST Controllers                              GraphQL Controllers
+CartController / CartProductController      CartQueryController / CartMutationController
+CartDiscountController / CartFulfillmentController    CartSubscriptionController
+                          ↓                                    ↓
+                          └──────────────┬─────────────────────┘
+                                         ↓
+                                    CartService ──────────────→ CartEventPublisher
+                                         ↓                            ↓
+         ┌───────────────────────────────┼────────────────────┐  Redis Pub/Sub
+         ↓                               ↓                    ↓       ↓
+PostgresCartRepository        ProductServiceClient    DiscountServiceClient
+         ↓                     (with Resilience4j)    (with Resilience4j)
+   PostgreSQL                         ↓                       ↓
+  (JSONB columns)              product-service         discount-service
 ```
 
 ## Data Model
@@ -278,20 +403,43 @@ GET /actuator/circuitbreakers
 org.example.cart/
 ├── CartServiceApplication.java
 ├── config/
-│   └── SecurityConfig.java
-├── controller/
+│   ├── SecurityConfig.java
+│   └── R2dbcConfiguration.java
+├── controller/                          # REST Controllers
 │   ├── CartController.java
 │   ├── CartProductController.java
 │   ├── CartDiscountController.java
 │   ├── CartFulfillmentController.java
 │   └── CartCustomerController.java
+├── graphql/                             # GraphQL Layer
+│   ├── CartQueryController.java
+│   ├── CartMutationController.java
+│   ├── CartSubscriptionController.java
+│   ├── GraphQLExceptionResolver.java
+│   ├── input/
+│   │   ├── CreateCartInput.java
+│   │   ├── AddProductInput.java
+│   │   ├── UpdateProductInput.java
+│   │   ├── ApplyDiscountInput.java
+│   │   ├── AddFulfillmentInput.java
+│   │   ├── UpdateFulfillmentInput.java
+│   │   └── SetCustomerInput.java
+│   └── validation/
+│       └── GraphQLInputValidator.java
+├── event/                               # Event Infrastructure
+│   ├── CartEvent.java
+│   └── CartEventType.java
+├── pubsub/                              # Redis Pub/Sub
+│   ├── CartEventPublisher.java
+│   └── CartEventSubscriber.java
 ├── service/
 │   └── CartService.java
 ├── repository/
 │   ├── CartRepository.java
 │   ├── PostgresCartRepository.java
 │   ├── CartEntity.java
-│   └── CartEntityRepository.java
+│   ├── CartEntityRepository.java
+│   └── JsonValue.java
 ├── model/
 │   ├── Cart.java
 │   └── CartTotals.java

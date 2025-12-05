@@ -23,9 +23,6 @@ dependencies {
     // PostgreSQL R2DBC driver
     implementation("org.postgresql:r2dbc-postgresql")
 
-    // Jackson for JSON processing
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-
     // Prometheus metrics
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 

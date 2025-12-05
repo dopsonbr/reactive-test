@@ -6,7 +6,7 @@ dependencies {
     api(platform(project(":libs:platform:platform-bom")))
 
     api("org.springframework.boot:spring-boot-starter-webflux")
-    api("org.springframework.boot:spring-boot-starter-aop")
+    api("org.springframework.boot:spring-boot-starter-aspectj")
     api("org.springframework.boot:spring-boot-starter-actuator")
     api(libs.bundles.resilience4j)
 

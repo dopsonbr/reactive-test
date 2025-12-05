@@ -6,6 +6,26 @@ spring:
   jackson:
     use-jackson2-defaults: true
 
+  # GraphQL configuration
+  graphql:
+    graphiql:
+      enabled: true  # Disable in production
+      path: /graphiql
+    schema:
+      locations: classpath:graphql/
+      printer:
+        enabled: true
+    # SSE settings (Spring GraphQL 2.0)
+    sse:
+      timeout: 30m
+      keep-alive: 30s
+
+  # Redis for Pub/Sub (subscriptions)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   r2dbc:
     url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cartdb}
     username: ${DB_USERNAME:cart_user}

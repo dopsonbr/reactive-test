@@ -33,6 +33,13 @@ public class SecurityConfig {
                     .hasAuthority("SCOPE_cart:write")
                     .pathMatchers(HttpMethod.DELETE, "/carts/**")
                     .hasAuthority("SCOPE_cart:write")
+                    // GraphQL endpoint requires authentication
+                    // (method-level security handles scope checks)
+                    .pathMatchers("/graphql")
+                    .authenticated()
+                    // GraphiQL explorer (disable in production)
+                    .pathMatchers("/graphiql")
+                    .permitAll()
                     // Actuator endpoints are public
                     .pathMatchers("/actuator/**")
                     .permitAll()

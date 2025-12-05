@@ -262,18 +262,28 @@ services:
     container_name: customer-service
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/customerdb
+      - SPRING_R2DBC_USERNAME=customer_user
+      - SPRING_R2DBC_PASSWORD=customer_pass
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/customerdb
+      - SPRING_FLYWAY_USER=customer_user
+      - SPRING_FLYWAY_PASSWORD=customer_pass
       - OTEL_SERVICE_NAME=customer-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
       - OTEL_TRACES_EXPORTER=otlp
       - OTEL_METRICS_EXPORTER=none
       - OTEL_LOGS_EXPORTER=none
+      - OTEL_PROPAGATORS=tracecontext,baggage
+      - OTEL_INSTRUMENTATION_SPRING_WEBFLUX_ENABLED=true
     volumes:
       - app-logs:/app/logs
     ports:
       - "8083:8083"
     depends_on:
       tempo:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]

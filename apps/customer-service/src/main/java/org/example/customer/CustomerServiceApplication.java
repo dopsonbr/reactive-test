@@ -7,7 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
     scanBasePackages = {
       "org.example.customer",
       "org.example.platform.logging",
-      "org.example.platform.error"
+      "org.example.platform.error",
+      "org.example.platform.security"
     })
 public class CustomerServiceApplication {
 

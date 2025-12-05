@@ -31,9 +31,9 @@ ENV OTEL_LOGS_EXPORTER=none
 ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
 ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 
-EXPOSE 8080
+EXPOSE 8083
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=5 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
+  CMD curl -f http://localhost:8083/actuator/health || exit 1
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

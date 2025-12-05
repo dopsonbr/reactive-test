@@ -5,15 +5,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Duration;
 import org.example.cart.event.CartEvent;
 import org.example.cart.event.CartEventType;
-import org.example.cart.graphql.AbstractGraphQLIntegrationTest;
 import org.example.cart.model.Cart;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @WithMockUser(authorities = {"SCOPE_cart:read", "SCOPE_cart:write"})
-class CartEventPubSubTest extends AbstractGraphQLIntegrationTest {
+class CartEventPubSubTest extends AbstractPubSubTest {
 
   @Autowired private CartEventPublisher publisher;
 
@@ -30,8 +30,11 @@ class CartEventPubSubTest extends AbstractGraphQLIntegrationTest {
                 .subscribe(cartId)
                 .doOnSubscribe(
                     s ->
-                        // Publish after subscription established
-                        publisher.publish(event).subscribe())
+                        // Publish after subscription established with delay to ensure listener is
+                        // ready
+                        Mono.delay(Duration.ofMillis(100))
+                            .then(publisher.publish(event))
+                            .subscribe())
                 .take(1)
                 .timeout(Duration.ofSeconds(5)))
         .assertNext(
@@ -53,7 +56,12 @@ class CartEventPubSubTest extends AbstractGraphQLIntegrationTest {
     StepVerifier.create(
             subscriber
                 .subscribeToStore(storeNumber)
-                .doOnSubscribe(s -> publisher.publishToStore(event, storeNumber).subscribe())
+                .doOnSubscribe(
+                    s ->
+                        // Delay to ensure listener is ready
+                        Mono.delay(Duration.ofMillis(100))
+                            .then(publisher.publishToStore(event, storeNumber))
+                            .subscribe())
                 .take(1)
                 .timeout(Duration.ofSeconds(5)))
         .assertNext(
@@ -75,7 +83,12 @@ class CartEventPubSubTest extends AbstractGraphQLIntegrationTest {
     StepVerifier.create(
             subscriber
                 .subscribe(cartId1)
-                .doOnSubscribe(s -> publisher.publish(event).subscribe())
+                .doOnSubscribe(
+                    s ->
+                        // Delay to ensure listener is ready before publishing
+                        Mono.delay(Duration.ofMillis(100))
+                            .then(publisher.publish(event))
+                            .subscribe())
                 .take(1)
                 .timeout(Duration.ofMillis(500)))
         .expectTimeout(Duration.ofMillis(500))

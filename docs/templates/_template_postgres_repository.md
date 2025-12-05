@@ -2,6 +2,8 @@
 
 This template defines the standard structure for reactive Postgres repositories using R2DBC.
 
+Replace `{Entity}`, `{entity}`, `{entities}`, and `{domain}` with your domain-specific names (e.g., `Cart`/`cart`/`carts`/`cart`, `Order`/`order`/`orders`/`order`).
+
 ## When to Use Postgres
 
 Use Postgres for:
@@ -41,52 +43,50 @@ dependencies {
 ```yaml
 spring:
   r2dbc:
-    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cartdb}
-    username: ${DB_USERNAME:cart_user}
-    password: ${DB_PASSWORD:cart_pass}
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:{entity}db}
+    username: ${DB_USERNAME:{entity}_user}
+    password: ${DB_PASSWORD:{entity}_pass}
     pool:
       initial-size: 5
       max-size: 20
       max-idle-time: 30m
   flyway:
     enabled: true
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cartdb}
-    user: ${DB_USERNAME:cart_user}
-    password: ${DB_PASSWORD:cart_pass}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:{entity}db}
+    user: ${DB_USERNAME:{entity}_user}
+    password: ${DB_PASSWORD:{entity}_pass}
     locations: classpath:db/migration
 ```
 
 ## Database Schema
 
-`src/main/resources/db/migration/V1__create_carts_table.sql`:
+`src/main/resources/db/migration/V1__create_{entities}_table.sql`:
 
 ```sql
-CREATE TABLE IF NOT EXISTS carts (
+CREATE TABLE IF NOT EXISTS {entities} (
     id UUID PRIMARY KEY,
     store_number INTEGER NOT NULL,
-    customer_id VARCHAR(255),
-    products JSONB NOT NULL DEFAULT '[]',
-    discounts JSONB NOT NULL DEFAULT '[]',
-    fulfillments JSONB NOT NULL DEFAULT '[]',
-    totals JSONB NOT NULL DEFAULT '{}',
+    -- Add domain-specific columns here
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+    data JSONB NOT NULL DEFAULT '{}',       -- For nested/flexible data
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Index for finding carts by store
-CREATE INDEX idx_carts_store_number ON carts(store_number);
+-- Index for finding {entities} by store
+CREATE INDEX idx_{entities}_store_number ON {entities}(store_number);
 
--- Index for finding carts by customer
-CREATE INDEX idx_carts_customer_id ON carts(customer_id);
+-- Index for finding {entities} by status
+CREATE INDEX idx_{entities}_status ON {entities}(status);
 
--- Index for finding active/recent carts
-CREATE INDEX idx_carts_updated_at ON carts(updated_at DESC);
+-- Index for finding recent {entities}
+CREATE INDEX idx_{entities}_updated_at ON {entities}(updated_at DESC);
 ```
 
 ## Entity Class
 
 ```java
-package org.example.cart.repository;
+package org.example.{domain}.repository;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -95,20 +95,17 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
- * Database entity for Cart.
+ * Database entity for {Entity}.
  *
- * <p>This entity maps to the 'carts' table and uses JSONB columns
+ * <p>This entity maps to the '{entities}' table and uses JSONB columns
  * for nested collections to maintain flexibility while using Postgres.
  */
-@Table("carts")
-public record CartEntity(
+@Table("{entities}")
+public record {Entity}Entity(
         @Id UUID id,
         @Column("store_number") int storeNumber,
-        @Column("customer_id") String customerId,
-        @Column("products") String productsJson,      // JSONB stored as String
-        @Column("discounts") String discountsJson,    // JSONB stored as String
-        @Column("fulfillments") String fulfillmentsJson, // JSONB stored as String
-        @Column("totals") String totalsJson,          // JSONB stored as String
+        @Column("status") String status,
+        @Column("data") String dataJson,          // JSONB stored as String
         @Column("created_at") Instant createdAt,
         @Column("updated_at") Instant updatedAt
 ) {}
@@ -117,7 +114,7 @@ public record CartEntity(
 ## Repository Interface
 
 ```java
-package org.example.cart.repository;
+package org.example.{domain}.repository;
 
 import java.util.UUID;
 import org.springframework.data.r2dbc.repository.Query;
@@ -126,147 +123,146 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
 /**
- * Reactive repository for Cart entities.
+ * Reactive repository for {Entity} entities.
  *
  * <p>Uses Spring Data R2DBC for non-blocking Postgres access.
  */
 @Repository
-public interface CartEntityRepository extends ReactiveCrudRepository<CartEntity, UUID> {
+public interface {Entity}EntityRepository extends ReactiveCrudRepository<{Entity}Entity, UUID> {
 
     /**
-     * Find all carts for a specific store.
+     * Find all {entities} for a specific store.
      */
-    Flux<CartEntity> findByStoreNumber(int storeNumber);
+    Flux<{Entity}Entity> findByStoreNumber(int storeNumber);
 
     /**
-     * Find all carts for a specific customer.
+     * Find all {entities} by status.
      */
-    Flux<CartEntity> findByCustomerId(String customerId);
+    Flux<{Entity}Entity> findByStatus(String status);
 
     /**
-     * Find carts with custom query.
+     * Find {entities} with custom query.
      */
-    @Query("SELECT * FROM carts WHERE store_number = :storeNumber AND customer_id IS NOT NULL")
-    Flux<CartEntity> findActiveCartsByStore(int storeNumber);
+    @Query("SELECT * FROM {entities} WHERE store_number = :storeNumber AND status = 'ACTIVE'")
+    Flux<{Entity}Entity> findActiveByStore(int storeNumber);
+}
+```
+
+## Domain Repository Interface
+
+```java
+package org.example.{domain}.repository;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+/**
+ * Domain repository interface for {Entity}.
+ *
+ * <p>Defines operations in terms of domain objects, not database entities.
+ */
+public interface {Entity}Repository {
+
+    Mono<{Entity}> findById(String id);
+
+    Flux<{Entity}> findByStoreNumber(int storeNumber);
+
+    Mono<{Entity}> save({Entity} {entity});
+
+    Mono<Void> deleteById(String id);
+
+    Mono<Boolean> exists(String id);
 }
 ```
 
 ## Domain Repository Implementation
 
 ```java
-package org.example.cart.repository;
+package org.example.{domain}.repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
-import org.example.cart.model.Cart;
-import org.example.cart.model.CartTotals;
-import org.example.model.customer.CartCustomer;
-import org.example.model.discount.AppliedDiscount;
-import org.example.model.fulfillment.Fulfillment;
-import org.example.model.product.CartProduct;
+import org.example.{domain}.model.{Entity};
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * Postgres implementation of CartRepository.
+ * Postgres implementation of {Entity}Repository.
  *
- * <p>Converts between domain Cart objects and CartEntity database records,
+ * <p>Converts between domain {Entity} objects and {Entity}Entity database records,
  * handling JSON serialization for nested collections.
  */
 @Repository
-public class PostgresCartRepository implements CartRepository {
+public class Postgres{Entity}Repository implements {Entity}Repository {
 
-    private final CartEntityRepository entityRepository;
+    private final {Entity}EntityRepository entityRepository;
     private final ObjectMapper objectMapper;
 
-    public PostgresCartRepository(CartEntityRepository entityRepository, ObjectMapper objectMapper) {
+    public Postgres{Entity}Repository({Entity}EntityRepository entityRepository, ObjectMapper objectMapper) {
         this.entityRepository = entityRepository;
         this.objectMapper = objectMapper;
     }
 
     @Override
-    public Mono<Cart> findById(String cartId) {
-        return entityRepository.findById(UUID.fromString(cartId))
+    public Mono<{Entity}> findById(String id) {
+        return entityRepository.findById(UUID.fromString(id))
                 .flatMap(this::toDomain);
     }
 
     @Override
-    public Flux<Cart> findByStoreNumber(int storeNumber) {
+    public Flux<{Entity}> findByStoreNumber(int storeNumber) {
         return entityRepository.findByStoreNumber(storeNumber)
                 .flatMap(this::toDomain);
     }
 
     @Override
-    public Flux<Cart> findByCustomerId(String customerId) {
-        return entityRepository.findByCustomerId(customerId)
-                .flatMap(this::toDomain);
-    }
-
-    @Override
-    public Mono<Cart> save(Cart cart) {
-        return toEntity(cart)
+    public Mono<{Entity}> save({Entity} {entity}) {
+        return toEntity({entity})
                 .flatMap(entityRepository::save)
                 .flatMap(this::toDomain);
     }
 
     @Override
-    public Mono<Void> deleteById(String cartId) {
-        return entityRepository.deleteById(UUID.fromString(cartId));
+    public Mono<Void> deleteById(String id) {
+        return entityRepository.deleteById(UUID.fromString(id));
     }
 
     @Override
-    public Mono<Boolean> exists(String cartId) {
-        return entityRepository.existsById(UUID.fromString(cartId));
+    public Mono<Boolean> exists(String id) {
+        return entityRepository.existsById(UUID.fromString(id));
     }
 
     // ==================== Mapping Methods ====================
 
-    private Mono<Cart> toDomain(CartEntity entity) {
+    private Mono<{Entity}> toDomain({Entity}Entity entity) {
         return Mono.fromCallable(() -> {
-            List<CartProduct> products = deserialize(entity.productsJson(),
-                    new TypeReference<List<CartProduct>>() {});
-            List<AppliedDiscount> discounts = deserialize(entity.discountsJson(),
-                    new TypeReference<List<AppliedDiscount>>() {});
-            List<Fulfillment> fulfillments = deserialize(entity.fulfillmentsJson(),
-                    new TypeReference<List<Fulfillment>>() {});
-            CartTotals totals = deserialize(entity.totalsJson(),
-                    new TypeReference<CartTotals>() {});
+            // Deserialize JSONB columns
+            {Entity}Data data = deserialize(entity.dataJson(),
+                    new TypeReference<{Entity}Data>() {});
 
-            // Reconstruct customer if customerId exists
-            CartCustomer customer = entity.customerId() != null
-                    ? new CartCustomer(entity.customerId(), null, null)
-                    : null;
-
-            return new Cart(
+            return new {Entity}(
                     entity.id().toString(),
                     entity.storeNumber(),
-                    entity.customerId(),
-                    customer,
-                    products,
-                    discounts,
-                    fulfillments,
-                    totals != null ? totals : CartTotals.empty(),
+                    entity.status(),
+                    data,
                     entity.createdAt(),
                     entity.updatedAt()
             );
         });
     }
 
-    private Mono<CartEntity> toEntity(Cart cart) {
-        return Mono.fromCallable(() -> new CartEntity(
-                UUID.fromString(cart.id()),
-                cart.storeNumber(),
-                cart.customerId(),
-                serialize(cart.products()),
-                serialize(cart.discounts()),
-                serialize(cart.fulfillments()),
-                serialize(cart.totals()),
-                cart.createdAt(),
-                cart.updatedAt()
+    private Mono<{Entity}Entity> toEntity({Entity} {entity}) {
+        return Mono.fromCallable(() -> new {Entity}Entity(
+                UUID.fromString({entity}.id()),
+                {entity}.storeNumber(),
+                {entity}.status(),
+                serialize({entity}.data()),
+                {entity}.createdAt(),
+                Instant.now()  // Update timestamp on save
         ));
     }
 
@@ -286,30 +282,15 @@ public class PostgresCartRepository implements CartRepository {
 ## Configuration Class
 
 ```java
-package org.example.cart.config;
+package org.example.{domain}.config;
 
-import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
-import io.r2dbc.postgresql.PostgresqlConnectionFactory;
-import io.r2dbc.postgresql.codec.Json;
-import io.r2dbc.spi.ConnectionFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 
 @Configuration
-@EnableR2dbcRepositories(basePackages = "org.example.cart.repository")
+@EnableR2dbcRepositories(basePackages = "org.example.{domain}.repository")
 public class DatabaseConfig extends AbstractR2dbcConfiguration {
-
-    @Value("${spring.r2dbc.url}")
-    private String url;
-
-    @Value("${spring.r2dbc.username}")
-    private String username;
-
-    @Value("${spring.r2dbc.password}")
-    private String password;
 
     @Override
     public ConnectionFactory connectionFactory() {
@@ -322,7 +303,7 @@ public class DatabaseConfig extends AbstractR2dbcConfiguration {
 ## Testing
 
 ```java
-package org.example.cart.repository;
+package org.example.{domain}.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -336,7 +317,7 @@ import reactor.test.StepVerifier;
 
 @DataR2dbcTest
 @Testcontainers
-class PostgresCartRepositoryTest {
+class Postgres{Entity}RepositoryTest {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
@@ -359,20 +340,88 @@ class PostgresCartRepositoryTest {
     }
 
     @Autowired
-    private PostgresCartRepository repository;
+    private Postgres{Entity}Repository repository;
 
     @Test
-    void shouldSaveAndFindCart() {
-        Cart cart = Cart.create("test-id", 100, null);
+    void shouldSaveAndFind() {
+        {Entity} {entity} = {Entity}.create("test-id", 100);
 
-        StepVerifier.create(repository.save(cart))
-                .expectNextMatches(saved -> saved.id().equals(cart.id()))
+        StepVerifier.create(repository.save({entity}))
+                .expectNextMatches(saved -> saved.id().equals({entity}.id()))
                 .verifyComplete();
 
         StepVerifier.create(repository.findById("test-id"))
                 .expectNextMatches(found -> found.storeNumber() == 100)
                 .verifyComplete();
     }
+
+    @Test
+    void shouldFindByStoreNumber() {
+        {Entity} {entity}1 = {Entity}.create("id-1", 100);
+        {Entity} {entity}2 = {Entity}.create("id-2", 100);
+        {Entity} {entity}3 = {Entity}.create("id-3", 200);
+
+        repository.save({entity}1).block();
+        repository.save({entity}2).block();
+        repository.save({entity}3).block();
+
+        StepVerifier.create(repository.findByStoreNumber(100))
+                .expectNextCount(2)
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldDeleteById() {
+        {Entity} {entity} = {Entity}.create("delete-id", 100);
+        repository.save({entity}).block();
+
+        StepVerifier.create(repository.deleteById("delete-id"))
+                .verifyComplete();
+
+        StepVerifier.create(repository.exists("delete-id"))
+                .expectNext(false)
+                .verifyComplete();
+    }
+}
+```
+
+## Optimistic Locking (Optional)
+
+For concurrent update scenarios, add version-based optimistic locking:
+
+```java
+@Table("{entities}")
+public record {Entity}Entity(
+        @Id UUID id,
+        @Version Long version,  // Add version field
+        @Column("store_number") int storeNumber,
+        // ... other fields
+) {}
+```
+
+```sql
+-- Add version column to migration
+ALTER TABLE {entities} ADD COLUMN version BIGINT NOT NULL DEFAULT 0;
+```
+
+## Pagination
+
+```java
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.r2dbc.repository.Query;
+
+@Repository
+public interface {Entity}EntityRepository extends ReactiveCrudRepository<{Entity}Entity, UUID> {
+
+    /**
+     * Find {entities} with pagination.
+     */
+    Flux<{Entity}Entity> findByStoreNumber(int storeNumber, Pageable pageable);
+
+    /**
+     * Count {entities} by store for pagination metadata.
+     */
+    Mono<Long> countByStoreNumber(int storeNumber);
 }
 ```
 
@@ -382,14 +431,14 @@ class PostgresCartRepositoryTest {
 
 ```java
 // DON'T - blocking call in reactive chain
-public Mono<Cart> save(Cart cart) {
-    CartEntity entity = toEntity(cart);  // This might block!
-    return entityRepository.save(entity).map(this::toDomain);
+public Mono<{Entity}> save({Entity} {entity}) {
+    {Entity}Entity dbEntity = toEntity({entity});  // This might block!
+    return entityRepository.save(dbEntity).map(this::toDomain);
 }
 
 // DO - use Mono.fromCallable for potentially blocking operations
-public Mono<Cart> save(Cart cart) {
-    return Mono.fromCallable(() -> toEntity(cart))
+public Mono<{Entity}> save({Entity} {entity}) {
+    return Mono.fromCallable(() -> toEntity({entity}))
             .flatMap(entityRepository::save)
             .flatMap(this::toDomain);
 }
@@ -399,16 +448,54 @@ public Mono<Cart> save(Cart cart) {
 
 ```java
 // DON'T - exceptions propagate poorly
-private Cart toDomain(CartEntity entity) {
-    return objectMapper.readValue(entity.json(), Cart.class);  // Throws!
+private {Entity} toDomain({Entity}Entity entity) {
+    return objectMapper.readValue(entity.json(), {Entity}.class);  // Throws!
 }
 
 // DO - wrap in Mono for proper error propagation
-private Mono<Cart> toDomain(CartEntity entity) {
+private Mono<{Entity}> toDomain({Entity}Entity entity) {
     return Mono.fromCallable(() ->
-        objectMapper.readValue(entity.json(), Cart.class)
+        objectMapper.readValue(entity.json(), {Entity}.class)
     ).onErrorMap(JsonProcessingException.class,
-        e -> new RuntimeException("Failed to deserialize cart", e));
+        e -> new RuntimeException("Failed to deserialize {entity}", e));
+}
+```
+
+### N+1 Query Problem
+
+```java
+// DON'T - N+1 queries when fetching related data
+public Flux<{Entity}WithDetails> findAllWithDetails() {
+    return repository.findAll()
+            .flatMap({entity} ->
+                detailsRepository.findBy{Entity}Id({entity}.id())
+                        .map(details -> new {Entity}WithDetails({entity}, details)));
+}
+
+// DO - use join query or batch fetch
+@Query("""
+    SELECT e.*, d.* FROM {entities} e
+    LEFT JOIN {entity}_details d ON e.id = d.{entity}_id
+    WHERE e.store_number = :storeNumber
+    """)
+Flux<{Entity}WithDetailsProjection> findAllWithDetailsByStore(int storeNumber);
+```
+
+### UUID String Conversion
+
+```java
+// DON'T - repeated UUID parsing without validation
+public Mono<{Entity}> findById(String id) {
+    return entityRepository.findById(UUID.fromString(id));  // Throws on invalid UUID!
+}
+
+// DO - validate and handle gracefully
+public Mono<{Entity}> findById(String id) {
+    return Mono.fromCallable(() -> UUID.fromString(id))
+            .onErrorMap(IllegalArgumentException.class,
+                e -> new InvalidIdException("Invalid {entity} ID: " + id))
+            .flatMap(entityRepository::findById)
+            .flatMap(this::toDomain);
 }
 ```
 
@@ -421,5 +508,12 @@ Before using this template, verify:
 - [ ] Added database configuration to application.yml
 - [ ] Created entity class with proper column mappings
 - [ ] Created repository interface extending ReactiveCrudRepository
-- [ ] Created domain repository with JSON serialization
+- [ ] Created domain repository interface (abstracts persistence details)
+- [ ] Created domain repository implementation with JSON serialization
+- [ ] Added proper error handling in mapping methods
 - [ ] Added Testcontainers for integration tests
+
+## Related Templates
+
+- `_template_redis_cache.md` - For caching frequently accessed data
+- `_template_redis_pubsub.md` - For real-time notifications after mutations

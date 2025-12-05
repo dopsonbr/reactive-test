@@ -1,0 +1,70 @@
+oauth
+
+multi module refactoring
+    restore docs
+     > looks like all the markdown files with documenation were removed. add them back. review git history if needed
+
+orthgonal packages (logs, metrics, traces, resilency)
+
+== =>
+cart pattern
+    graphql
+    postgres
+    discounts
+    tax
+
+archunit and checkstyle
+rules for controllers, services, and repostories
+
+micrometer
+
+templates
+
+enhance model rules
+refactors
+    shared api clients
+    look at audit service and see if it can be more stream based instead of polling
+docs
+    template agents
+    markdown linters
+    openapi-specs
+
+claude
+    claude hooks and common commands; im having to approve too many commands
+    create a rule that allows all git commands besides switching branches when on a work tree
+    create naming conventions work a worktree
+
+instructions service
+    stop sale
+    age prompt
+
+checkout service
+order management service
+list service
+projects service
+notes service
+
+then make documentation implementation agnostic
+then implement B2C, assisted selling
+data admin
+reporting
+tasking
+mobile
+
+
+cart service needs a graphql interface. review the ADR to see key architecture decisions
+it must expose, reads, subsriptions (see adr for exact details). the client will be in the browser not other java services
+
+
+discount service. create additional stubs allowing markdowns and finding the best price for a customer based on the entire cart and loyalty information. markdowns are functionality that can only be used when the user is an employee (in store or contact center). reference the implemenation plan for the customer service
+
+fulfillments service expansion. we are only creating stubs to assist the checkout service implementation. create methods for creating fulfillment plans, reservations, validating address, ect 
+
+
+checkout service. purpose is to set fulfilments: in store immediate transactions, will calls for a later date, and deliveries. reservations should be made. discounts applied and validated. payment collected. the result of the transaction should be stored in a new order data base. this is a seperate postgres instance. it should not be fully normalized. it is a fast transactional store. analytics data will be extracted and relpicated to a future data lake. all aspects of the cart should be validated. 
+
+order service. purpose is to view, update and modify sold orders. it uses the order data store created from the checkout implementation. Implement order search endpoints. then both a graphql and REST endpoint for viewing. updates to the order should be done via grahql mutations similar to cart service.
+
+
+audit events. update all the services to emit audit events
+

@@ -1,6 +1,6 @@
 # 017_DISCOUNT_SERVICE
 
-**Status: DRAFT**
+**Status: IMPLEMENTED**
 
 ---
 
@@ -938,13 +938,13 @@ Add discount-service with port 8085.
 
 ## Checklist
 
-- [ ] Phase 1: Domain models extended/created
-- [ ] Phase 2: Mock repositories implemented
-- [ ] Phase 3: Service layer implemented
-- [ ] Phase 4: Controller layer implemented
-- [ ] Phase 5: Service clients created
-- [ ] Phase 6: Configuration complete
-- [ ] Phase 7: Exception handling added
-- [ ] Employee-only markdown authorization verified
+- [x] Phase 1: Domain models extended/created
+- [x] Phase 2: Mock repositories implemented
+- [x] Phase 3: Service layer implemented
+- [x] Phase 4: Controller layer implemented
+- [x] Phase 5: Service clients created
+- [x] Phase 6: Configuration complete
+- [x] Phase 7: Exception handling added
+- [x] Employee-only markdown authorization verified
 - [ ] Best price calculation tested with loyalty tiers
-- [ ] Documentation updated
+- [x] Documentation updated

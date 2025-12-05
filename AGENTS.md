@@ -98,6 +98,7 @@ docker compose logs -f cart-service
 |-------------|------|-------------|
 | `product-service` | 8080 | Product aggregation from merchandise, price, inventory |
 | `cart-service` | 8082 (local) / 8080 (docker) | Shopping cart management |
+| `discount-service` | 8085 | Discount pricing engine with promo codes, markdowns, and loyalty |
 
 ## Key Patterns
 
@@ -149,6 +150,7 @@ All services expect these headers for context propagation:
 |---------|------|-------------|
 | product-service | 8080 | Product aggregation service |
 | cart-service | 8081 | Shopping cart service |
+| discount-service | 8085 | Discount pricing engine |
 | wiremock | 8082 | Mock external services |
 | redis | 6379 | Cache backend |
 | grafana | 3000 | Dashboards (admin/admin) |

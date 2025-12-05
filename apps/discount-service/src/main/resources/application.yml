@@ -7,7 +7,14 @@ spring:
     use-jackson2-defaults: true
 
 server:
-  port: 8084
+  port: 8085
+
+# External service URLs
+services:
+  customer-service:
+    url: ${CUSTOMER_SERVICE_URL:http://localhost:8083}
+  user-service:
+    url: ${USER_SERVICE_URL:http://localhost:8084}
 
 # Logging
 logging:

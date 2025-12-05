@@ -13,27 +13,27 @@ import java.util.List;
  * @param salesRepId assigned sales representative ID
  */
 public record B2BInfo(
-        String parentCustomerId,
-        CompanyInfo companyInfo,
-        List<String> childAccountIds,
-        AccountTier accountTier,
-        String salesRepId) {
+    String parentCustomerId,
+    CompanyInfo companyInfo,
+    List<String> childAccountIds,
+    AccountTier accountTier,
+    String salesRepId) {
 
-    /**
-     * Check if this is a root B2B account (no parent).
-     *
-     * @return true if this account has no parent
-     */
-    public boolean isRootAccount() {
-        return parentCustomerId == null;
-    }
+  /**
+   * Check if this is a root B2B account (no parent).
+   *
+   * @return true if this account has no parent
+   */
+  public boolean isRootAccount() {
+    return parentCustomerId == null;
+  }
 
-    /**
-     * Check if this account has sub-accounts.
-     *
-     * @return true if this account has child accounts
-     */
-    public boolean hasSubAccounts() {
-        return childAccountIds != null && !childAccountIds.isEmpty();
-    }
+  /**
+   * Check if this account has sub-accounts.
+   *
+   * @return true if this account has child accounts
+   */
+  public boolean hasSubAccounts() {
+    return childAccountIds != null && !childAccountIds.isEmpty();
+  }
 }

@@ -14,4 +14,4 @@ import java.util.List;
  * @param cost the cost of this fulfillment option
  */
 public record Fulfillment(
-        String fulfillmentId, FulfillmentType type, List<Long> skus, BigDecimal cost) {}
+    String fulfillmentId, FulfillmentType type, List<Long> skus, BigDecimal cost) {}

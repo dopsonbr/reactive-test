@@ -38,7 +38,7 @@ dependencies {
 spotless {
     java {
         target("src/**/*.java")
-        googleJavaFormat("1.19.2").aosp().reflowLongStrings()
+        googleJavaFormat("1.19.2").reflowLongStrings()
         trimTrailingWhitespace()
         endWithNewline()
     }

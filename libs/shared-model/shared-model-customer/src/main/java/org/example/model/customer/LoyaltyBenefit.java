@@ -16,27 +16,26 @@ import java.time.LocalDate;
  * @param usageCount current number of times used
  */
 public record LoyaltyBenefit(
-        String benefitId,
-        BenefitType type,
-        String description,
-        BigDecimal value,
-        LocalDate validFrom,
-        LocalDate validUntil,
-        Integer usageLimit,
-        Integer usageCount) {
+    String benefitId,
+    BenefitType type,
+    String description,
+    BigDecimal value,
+    LocalDate validFrom,
+    LocalDate validUntil,
+    Integer usageLimit,
+    Integer usageCount) {
 
-    /**
-     * Check if this benefit is currently active.
-     *
-     * @return true if the benefit is within its validity period and has remaining uses
-     */
-    public boolean isActive() {
-        LocalDate today = LocalDate.now();
-        boolean withinDateRange =
-                (validFrom == null || !today.isBefore(validFrom))
-                        && (validUntil == null || !today.isAfter(validUntil));
-        boolean hasRemainingUses =
-                usageLimit == null || usageCount == null || usageCount < usageLimit;
-        return withinDateRange && hasRemainingUses;
-    }
+  /**
+   * Check if this benefit is currently active.
+   *
+   * @return true if the benefit is within its validity period and has remaining uses
+   */
+  public boolean isActive() {
+    LocalDate today = LocalDate.now();
+    boolean withinDateRange =
+        (validFrom == null || !today.isBefore(validFrom))
+            && (validUntil == null || !today.isAfter(validUntil));
+    boolean hasRemainingUses = usageLimit == null || usageCount == null || usageCount < usageLimit;
+    return withinDateRange && hasRemainingUses;
+  }
 }

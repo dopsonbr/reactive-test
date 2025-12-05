@@ -24,120 +24,114 @@ import java.util.Optional;
  * @param updatedAt timestamp when customer was last updated
  */
 public record Customer(
-        String customerId,
-        int storeNumber,
-        String name,
-        String email,
-        String phone,
-        CustomerType type,
-        CustomerStatus status,
-        List<Address> addresses,
-        WalletReference wallet,
-        CommunicationPreferences communicationPreferences,
-        LoyaltyInfo loyalty,
-        B2BInfo b2bInfo,
-        Instant createdAt,
-        Instant updatedAt) {
+    String customerId,
+    int storeNumber,
+    String name,
+    String email,
+    String phone,
+    CustomerType type,
+    CustomerStatus status,
+    List<Address> addresses,
+    WalletReference wallet,
+    CommunicationPreferences communicationPreferences,
+    LoyaltyInfo loyalty,
+    B2BInfo b2bInfo,
+    Instant createdAt,
+    Instant updatedAt) {
 
-    /**
-     * Check if this is a B2B (business) customer.
-     *
-     * @return true if customer type is BUSINESS
-     */
-    public boolean isB2B() {
-        return type == CustomerType.BUSINESS;
-    }
+  /**
+   * Check if this is a B2B (business) customer.
+   *
+   * @return true if customer type is BUSINESS
+   */
+  public boolean isB2B() {
+    return type == CustomerType.BUSINESS;
+  }
 
-    /**
-     * Check if this is a D2C (consumer) customer.
-     *
-     * @return true if customer type is CONSUMER
-     */
-    public boolean isD2C() {
-        return type == CustomerType.CONSUMER;
-    }
+  /**
+   * Check if this is a D2C (consumer) customer.
+   *
+   * @return true if customer type is CONSUMER
+   */
+  public boolean isD2C() {
+    return type == CustomerType.CONSUMER;
+  }
 
-    /**
-     * Get the billing address if available.
-     *
-     * @return the billing address, or empty if not set
-     */
-    public Optional<Address> getBillingAddress() {
-        if (addresses == null) {
-            return Optional.empty();
-        }
-        return addresses.stream().filter(a -> a.type() == AddressType.BILLING).findFirst();
+  /**
+   * Get the billing address if available.
+   *
+   * @return the billing address, or empty if not set
+   */
+  public Optional<Address> getBillingAddress() {
+    if (addresses == null) {
+      return Optional.empty();
     }
+    return addresses.stream().filter(a -> a.type() == AddressType.BILLING).findFirst();
+  }
 
-    /**
-     * Get the primary shipping address if available.
-     *
-     * @return the primary shipping address, or empty if not set
-     */
-    public Optional<Address> getShippingAddress() {
-        if (addresses == null) {
-            return Optional.empty();
-        }
-        return addresses.stream()
-                .filter(a -> a.type() == AddressType.SHIPPING && a.isPrimary())
-                .findFirst()
-                .or(
-                        () ->
-                                addresses.stream()
-                                        .filter(a -> a.type() == AddressType.SHIPPING)
-                                        .findFirst());
+  /**
+   * Get the primary shipping address if available.
+   *
+   * @return the primary shipping address, or empty if not set
+   */
+  public Optional<Address> getShippingAddress() {
+    if (addresses == null) {
+      return Optional.empty();
     }
+    return addresses.stream()
+        .filter(a -> a.type() == AddressType.SHIPPING && a.isPrimary())
+        .findFirst()
+        .or(() -> addresses.stream().filter(a -> a.type() == AddressType.SHIPPING).findFirst());
+  }
 
-    /**
-     * Check if the customer has a specific loyalty benefit.
-     *
-     * @param benefit the benefit type to check
-     * @return true if the customer has the active benefit
-     */
-    public boolean hasLoyaltyBenefit(BenefitType benefit) {
-        return loyalty != null && loyalty.hasBenefit(benefit);
-    }
+  /**
+   * Check if the customer has a specific loyalty benefit.
+   *
+   * @param benefit the benefit type to check
+   * @return true if the customer has the active benefit
+   */
+  public boolean hasLoyaltyBenefit(BenefitType benefit) {
+    return loyalty != null && loyalty.hasBenefit(benefit);
+  }
 
-    /**
-     * Create a new Customer with updated fields.
-     *
-     * @param name updated name
-     * @param email updated email
-     * @param phone updated phone
-     * @param status updated status
-     * @param addresses updated addresses
-     * @param wallet updated wallet
-     * @param communicationPreferences updated communication preferences
-     * @param loyalty updated loyalty info
-     * @param b2bInfo updated B2B info
-     * @return a new Customer instance with updated fields
-     */
-    public Customer withUpdates(
-            String name,
-            String email,
-            String phone,
-            CustomerStatus status,
-            List<Address> addresses,
-            WalletReference wallet,
-            CommunicationPreferences communicationPreferences,
-            LoyaltyInfo loyalty,
-            B2BInfo b2bInfo) {
-        return new Customer(
-                this.customerId,
-                this.storeNumber,
-                name != null ? name : this.name,
-                email != null ? email : this.email,
-                phone != null ? phone : this.phone,
-                this.type,
-                status != null ? status : this.status,
-                addresses != null ? addresses : this.addresses,
-                wallet != null ? wallet : this.wallet,
-                communicationPreferences != null
-                        ? communicationPreferences
-                        : this.communicationPreferences,
-                loyalty != null ? loyalty : this.loyalty,
-                b2bInfo != null ? b2bInfo : this.b2bInfo,
-                this.createdAt,
-                Instant.now());
-    }
+  /**
+   * Create a new Customer with updated fields.
+   *
+   * @param name updated name
+   * @param email updated email
+   * @param phone updated phone
+   * @param status updated status
+   * @param addresses updated addresses
+   * @param wallet updated wallet
+   * @param communicationPreferences updated communication preferences
+   * @param loyalty updated loyalty info
+   * @param b2bInfo updated B2B info
+   * @return a new Customer instance with updated fields
+   */
+  public Customer withUpdates(
+      String name,
+      String email,
+      String phone,
+      CustomerStatus status,
+      List<Address> addresses,
+      WalletReference wallet,
+      CommunicationPreferences communicationPreferences,
+      LoyaltyInfo loyalty,
+      B2BInfo b2bInfo) {
+    return new Customer(
+        this.customerId,
+        this.storeNumber,
+        name != null ? name : this.name,
+        email != null ? email : this.email,
+        phone != null ? phone : this.phone,
+        this.type,
+        status != null ? status : this.status,
+        addresses != null ? addresses : this.addresses,
+        wallet != null ? wallet : this.wallet,
+        communicationPreferences != null ? communicationPreferences : this.communicationPreferences,
+        loyalty != null ? loyalty : this.loyalty,
+        b2bInfo != null ? b2bInfo : this.b2bInfo,
+        this.createdAt,
+        Instant.now());
+  }
 }

@@ -11,62 +11,56 @@ import reactor.core.publisher.Mono;
  */
 @Component
 public class WebClientLoggingFilter {
-    private final StructuredLogger structuredLogger;
+  private final StructuredLogger structuredLogger;
 
-    public WebClientLoggingFilter(StructuredLogger structuredLogger) {
-        this.structuredLogger = structuredLogger;
-    }
+  public WebClientLoggingFilter(StructuredLogger structuredLogger) {
+    this.structuredLogger = structuredLogger;
+  }
 
-    /**
-     * Creates an ExchangeFilterFunction that logs requests and responses.
-     *
-     * @param repositoryName the name to use as the logger name
-     * @return an ExchangeFilterFunction for WebClient
-     */
-    public ExchangeFilterFunction create(String repositoryName) {
-        return (request, next) ->
-                Mono.deferContextual(
-                        ctx -> {
-                            logRequest(ctx, repositoryName, request);
-                            return next.exchange(request)
-                                    .doOnNext(
-                                            response ->
-                                                    logResponse(
-                                                            ctx,
-                                                            repositoryName,
-                                                            request,
-                                                            response));
-                        });
-    }
+  /**
+   * Creates an ExchangeFilterFunction that logs requests and responses.
+   *
+   * @param repositoryName the name to use as the logger name
+   * @return an ExchangeFilterFunction for WebClient
+   */
+  public ExchangeFilterFunction create(String repositoryName) {
+    return (request, next) ->
+        Mono.deferContextual(
+            ctx -> {
+              logRequest(ctx, repositoryName, request);
+              return next.exchange(request)
+                  .doOnNext(response -> logResponse(ctx, repositoryName, request, response));
+            });
+  }
 
-    private void logRequest(
-            reactor.util.context.ContextView ctx, String repositoryName, ClientRequest request) {
-        String path = request.url().getPath();
-        String host = request.url().getHost() + ":" + request.url().getPort();
-        String uri = request.url().getPath();
-        String method = request.method().name();
+  private void logRequest(
+      reactor.util.context.ContextView ctx, String repositoryName, ClientRequest request) {
+    String path = request.url().getPath();
+    String host = request.url().getHost() + ":" + request.url().getPort();
+    String uri = request.url().getPath();
+    String method = request.method().name();
 
-        RequestLogData data = new RequestLogData(path, host, uri, method, extractBody(request));
-        structuredLogger.logRequest(ctx, repositoryName, data);
-    }
+    RequestLogData data = new RequestLogData(path, host, uri, method, extractBody(request));
+    structuredLogger.logRequest(ctx, repositoryName, data);
+  }
 
-    private void logResponse(
-            reactor.util.context.ContextView ctx,
-            String repositoryName,
-            ClientRequest request,
-            ClientResponse response) {
-        String path = request.url().getPath();
-        String host = request.url().getHost() + ":" + request.url().getPort();
-        String uri = request.url().getPath();
-        String method = request.method().name();
-        int status = response.statusCode().value();
+  private void logResponse(
+      reactor.util.context.ContextView ctx,
+      String repositoryName,
+      ClientRequest request,
+      ClientResponse response) {
+    String path = request.url().getPath();
+    String host = request.url().getHost() + ":" + request.url().getPort();
+    String uri = request.url().getPath();
+    String method = request.method().name();
+    int status = response.statusCode().value();
 
-        ResponseLogData data = new ResponseLogData(path, host, uri, method, status, null);
-        structuredLogger.logResponse(ctx, repositoryName, data);
-    }
+    ResponseLogData data = new ResponseLogData(path, host, uri, method, status, null);
+    structuredLogger.logResponse(ctx, repositoryName, data);
+  }
 
-    private Object extractBody(ClientRequest request) {
-        // Body extraction from ClientRequest is complex; return null for now
-        return null;
-    }
+  private Object extractBody(ClientRequest request) {
+    // Body extraction from ClientRequest is complex; return null for now
+    return null;
+  }
 }

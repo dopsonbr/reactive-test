@@ -10,4 +10,4 @@ package org.example.model.customer;
  * @param employeeCount approximate number of employees
  */
 public record CompanyInfo(
-        String companyName, String taxId, String industry, String dunsNumber, int employeeCount) {}
+    String companyName, String taxId, String industry, String dunsNumber, int employeeCount) {}

@@ -13,30 +13,28 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public abstract class AbstractIntegrationTest {
 
-    @Container
-    static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:15-alpine")
-                    .withDatabaseName("cartdb")
-                    .withUsername("cart_user")
-                    .withPassword("cart_pass");
+  @Container
+  static PostgreSQLContainer<?> postgres =
+      new PostgreSQLContainer<>("postgres:15-alpine")
+          .withDatabaseName("cartdb")
+          .withUsername("cart_user")
+          .withPassword("cart_pass");
 
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        // R2DBC configuration
-        registry.add(
-                "spring.r2dbc.url",
-                () ->
-                        String.format(
-                                "r2dbc:postgresql://%s:%d/%s",
-                                postgres.getHost(),
-                                postgres.getFirstMappedPort(),
-                                postgres.getDatabaseName()));
-        registry.add("spring.r2dbc.username", postgres::getUsername);
-        registry.add("spring.r2dbc.password", postgres::getPassword);
+  @DynamicPropertySource
+  static void configureProperties(DynamicPropertyRegistry registry) {
+    // R2DBC configuration
+    registry.add(
+        "spring.r2dbc.url",
+        () ->
+            String.format(
+                "r2dbc:postgresql://%s:%d/%s",
+                postgres.getHost(), postgres.getFirstMappedPort(), postgres.getDatabaseName()));
+    registry.add("spring.r2dbc.username", postgres::getUsername);
+    registry.add("spring.r2dbc.password", postgres::getPassword);
 
-        // Flyway configuration (uses JDBC)
-        registry.add("spring.flyway.url", postgres::getJdbcUrl);
-        registry.add("spring.flyway.user", postgres::getUsername);
-        registry.add("spring.flyway.password", postgres::getPassword);
-    }
+    // Flyway configuration (uses JDBC)
+    registry.add("spring.flyway.url", postgres::getJdbcUrl);
+    registry.add("spring.flyway.user", postgres::getUsername);
+    registry.add("spring.flyway.password", postgres::getPassword);
+  }
 }

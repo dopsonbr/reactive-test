@@ -30,147 +30,132 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/carts")
 public class CartController {
 
-    private static final String LOGGER_NAME = "cartcontroller";
+  private static final String LOGGER_NAME = "cartcontroller";
 
-    private final CartService cartService;
-    private final CartRequestValidator validator;
-    private final StructuredLogger structuredLogger;
+  private final CartService cartService;
+  private final CartRequestValidator validator;
+  private final StructuredLogger structuredLogger;
 
-    public CartController(
-            CartService cartService,
-            CartRequestValidator validator,
-            StructuredLogger structuredLogger) {
-        this.cartService = cartService;
-        this.validator = validator;
-        this.structuredLogger = structuredLogger;
-    }
+  public CartController(
+      CartService cartService, CartRequestValidator validator, StructuredLogger structuredLogger) {
+    this.cartService = cartService;
+    this.validator = validator;
+    this.structuredLogger = structuredLogger;
+  }
 
-    /** Create a new cart. */
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAuthority('SCOPE_cart:write')")
-    public Mono<Cart> createCart(
-            @RequestBody CreateCartRequest request,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId,
-            ServerHttpRequest httpRequest) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** Create a new cart. */
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasAuthority('SCOPE_cart:write')")
+  public Mono<Cart> createCart(
+      @RequestBody CreateCartRequest request,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId,
+      ServerHttpRequest httpRequest) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return Mono.deferContextual(
-                        ctx -> {
-                            logRequest(ctx, httpRequest);
-                            return validator
-                                    .validateCreateCart(
-                                            request, storeNumber, orderNumber, userId, sessionId)
-                                    .then(
-                                            cartService.createCart(
-                                                    request.storeNumber(), request.customerId()))
-                                    .doOnSuccess(cart -> logResponse(ctx, httpRequest, 201, cart));
-                        })
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return Mono.deferContextual(
+            ctx -> {
+              logRequest(ctx, httpRequest);
+              return validator
+                  .validateCreateCart(request, storeNumber, orderNumber, userId, sessionId)
+                  .then(cartService.createCart(request.storeNumber(), request.customerId()))
+                  .doOnSuccess(cart -> logResponse(ctx, httpRequest, 201, cart));
+            })
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    /** Get a cart by ID. */
-    @GetMapping("/{cartId}")
-    @PreAuthorize("hasAuthority('SCOPE_cart:read')")
-    public Mono<Cart> getCart(
-            @PathVariable String cartId,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId,
-            ServerHttpRequest httpRequest) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** Get a cart by ID. */
+  @GetMapping("/{cartId}")
+  @PreAuthorize("hasAuthority('SCOPE_cart:read')")
+  public Mono<Cart> getCart(
+      @PathVariable String cartId,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId,
+      ServerHttpRequest httpRequest) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return Mono.deferContextual(
-                        ctx -> {
-                            logRequest(ctx, httpRequest);
-                            return validator
-                                    .validateGetCart(
-                                            cartId, storeNumber, orderNumber, userId, sessionId)
-                                    .then(cartService.getCart(cartId))
-                                    .doOnSuccess(cart -> logResponse(ctx, httpRequest, 200, cart));
-                        })
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return Mono.deferContextual(
+            ctx -> {
+              logRequest(ctx, httpRequest);
+              return validator
+                  .validateGetCart(cartId, storeNumber, orderNumber, userId, sessionId)
+                  .then(cartService.getCart(cartId))
+                  .doOnSuccess(cart -> logResponse(ctx, httpRequest, 200, cart));
+            })
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    /** Find carts by store number. */
-    @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_cart:read')")
-    public Flux<Cart> findCarts(
-            @RequestParam int storeNumber,
-            @RequestHeader("x-store-number") int headerStoreNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId,
-            ServerHttpRequest httpRequest) {
-        RequestMetadata metadata =
-                new RequestMetadata(headerStoreNumber, orderNumber, userId, sessionId);
+  /** Find carts by store number. */
+  @GetMapping
+  @PreAuthorize("hasAuthority('SCOPE_cart:read')")
+  public Flux<Cart> findCarts(
+      @RequestParam int storeNumber,
+      @RequestHeader("x-store-number") int headerStoreNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId,
+      ServerHttpRequest httpRequest) {
+    RequestMetadata metadata =
+        new RequestMetadata(headerStoreNumber, orderNumber, userId, sessionId);
 
-        return Flux.deferContextual(
-                        ctx -> {
-                            logRequest(ctx, httpRequest);
-                            return validator
-                                    .validateFindCarts(
-                                            storeNumber,
-                                            headerStoreNumber,
-                                            orderNumber,
-                                            userId,
-                                            sessionId)
-                                    .thenMany(cartService.findByStoreNumber(storeNumber));
-                        })
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return Flux.deferContextual(
+            ctx -> {
+              logRequest(ctx, httpRequest);
+              return validator
+                  .validateFindCarts(storeNumber, headerStoreNumber, orderNumber, userId, sessionId)
+                  .thenMany(cartService.findByStoreNumber(storeNumber));
+            })
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    /** Delete a cart. */
-    @DeleteMapping("/{cartId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAuthority('SCOPE_cart:write')")
-    public Mono<Void> deleteCart(
-            @PathVariable String cartId,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId,
-            ServerHttpRequest httpRequest) {
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+  /** Delete a cart. */
+  @DeleteMapping("/{cartId}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @PreAuthorize("hasAuthority('SCOPE_cart:write')")
+  public Mono<Void> deleteCart(
+      @PathVariable String cartId,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId,
+      ServerHttpRequest httpRequest) {
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
-        return Mono.deferContextual(
-                        ctx -> {
-                            logRequest(ctx, httpRequest);
-                            return validator
-                                    .validateGetCart(
-                                            cartId, storeNumber, orderNumber, userId, sessionId)
-                                    .then(cartService.deleteCart(cartId))
-                                    .doOnSuccess(v -> logResponse(ctx, httpRequest, 204, null));
-                        })
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
+    return Mono.deferContextual(
+            ctx -> {
+              logRequest(ctx, httpRequest);
+              return validator
+                  .validateGetCart(cartId, storeNumber, orderNumber, userId, sessionId)
+                  .then(cartService.deleteCart(cartId))
+                  .doOnSuccess(v -> logResponse(ctx, httpRequest, 204, null));
+            })
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
 
-    private void logRequest(reactor.util.context.ContextView ctx, ServerHttpRequest request) {
-        RequestLogData requestData =
-                new RequestLogData(
-                        request.getPath().value(),
-                        request.getURI().getPath(),
-                        request.getMethod().name(),
-                        null);
-        structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
-    }
+  private void logRequest(reactor.util.context.ContextView ctx, ServerHttpRequest request) {
+    RequestLogData requestData =
+        new RequestLogData(
+            request.getPath().value(),
+            request.getURI().getPath(),
+            request.getMethod().name(),
+            null);
+    structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
+  }
 
-    private void logResponse(
-            reactor.util.context.ContextView ctx,
-            ServerHttpRequest request,
-            int status,
-            Object body) {
-        ResponseLogData responseData =
-                new ResponseLogData(
-                        request.getPath().value(),
-                        request.getURI().getPath(),
-                        request.getMethod().name(),
-                        status,
-                        body);
-        structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
-    }
+  private void logResponse(
+      reactor.util.context.ContextView ctx, ServerHttpRequest request, int status, Object body) {
+    ResponseLogData responseData =
+        new ResponseLogData(
+            request.getPath().value(),
+            request.getURI().getPath(),
+            request.getMethod().name(),
+            status,
+            body);
+    structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
+  }
 }

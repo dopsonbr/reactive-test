@@ -11,22 +11,22 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface CustomerEntityRepository extends ReactiveCrudRepository<CustomerEntity, UUID> {
 
-    Mono<CustomerEntity> findByCustomerId(String customerId);
+  Mono<CustomerEntity> findByCustomerId(String customerId);
 
-    Flux<CustomerEntity> findByStoreNumber(int storeNumber);
+  Flux<CustomerEntity> findByStoreNumber(int storeNumber);
 
-    Flux<CustomerEntity> findByStoreNumberAndCustomerType(int storeNumber, String customerType);
+  Flux<CustomerEntity> findByStoreNumberAndCustomerType(int storeNumber, String customerType);
 
-    Mono<CustomerEntity> findByStoreNumberAndEmail(int storeNumber, String email);
+  Mono<CustomerEntity> findByStoreNumberAndEmail(int storeNumber, String email);
 
-    @Query("SELECT * FROM customers WHERE store_number = :storeNumber AND phone = :phone")
-    Mono<CustomerEntity> findByStoreNumberAndPhone(int storeNumber, String phone);
+  @Query("SELECT * FROM customers WHERE store_number = :storeNumber AND phone = :phone")
+  Mono<CustomerEntity> findByStoreNumberAndPhone(int storeNumber, String phone);
 
-    @Query("SELECT * FROM customers WHERE parent_customer_id = :parentId")
-    Flux<CustomerEntity> findByParentCustomerId(String parentId);
+  @Query("SELECT * FROM customers WHERE parent_customer_id = :parentId")
+  Flux<CustomerEntity> findByParentCustomerId(String parentId);
 
-    @Query(
-            """
+  @Query(
+      """
         SELECT * FROM customers
         WHERE store_number = :storeNumber
         AND (
@@ -35,29 +35,29 @@ public interface CustomerEntityRepository extends ReactiveCrudRepository<Custome
             OR phone = :searchTerm
         )
         """)
-    Flux<CustomerEntity> searchByIdEmailOrPhone(int storeNumber, String searchTerm);
+  Flux<CustomerEntity> searchByIdEmailOrPhone(int storeNumber, String searchTerm);
 
-    @Query(
-            """
+  @Query(
+      """
         SELECT * FROM customers
         WHERE store_number = :storeNumber
         AND status = 'ACTIVE'
         ORDER BY updated_at DESC
         LIMIT :limit OFFSET :offset
         """)
-    Flux<CustomerEntity> findActiveByStorePaginated(int storeNumber, int limit, int offset);
+  Flux<CustomerEntity> findActiveByStorePaginated(int storeNumber, int limit, int offset);
 
-    Mono<Long> countByStoreNumber(int storeNumber);
+  Mono<Long> countByStoreNumber(int storeNumber);
 
-    Mono<Long> countByStoreNumberAndCustomerType(int storeNumber, String customerType);
+  Mono<Long> countByStoreNumberAndCustomerType(int storeNumber, String customerType);
 
-    @Query(
-            """
+  @Query(
+      """
         SELECT * FROM customers
         WHERE store_number = :storeNumber
         AND loyalty_json ->> 'tier' = :tier
         """)
-    Flux<CustomerEntity> findByStoreNumberAndLoyaltyTier(int storeNumber, String tier);
+  Flux<CustomerEntity> findByStoreNumberAndLoyaltyTier(int storeNumber, String tier);
 
-    Mono<Boolean> existsByStoreNumberAndEmail(int storeNumber, String email);
+  Mono<Boolean> existsByStoreNumberAndEmail(int storeNumber, String email);
 }

@@ -13,40 +13,40 @@ import reactor.core.publisher.Mono;
 @Component
 public class FulfillmentServiceClient {
 
-    private static final String RESILIENCE_NAME = "fulfillment";
+  private static final String RESILIENCE_NAME = "fulfillment";
 
-    private final WebClient webClient;
-    private final ReactiveResilience reactiveResilience;
+  private final WebClient webClient;
+  private final ReactiveResilience reactiveResilience;
 
-    public FulfillmentServiceClient(
-            WebClient.Builder webClientBuilder,
-            @Value("${services.fulfillment.base-url:http://localhost:8085}") String baseUrl,
-            ReactiveResilience reactiveResilience) {
-        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
-        this.reactiveResilience = reactiveResilience;
-    }
+  public FulfillmentServiceClient(
+      WebClient.Builder webClientBuilder,
+      @Value("${services.fulfillment.base-url:http://localhost:8085}") String baseUrl,
+      ReactiveResilience reactiveResilience) {
+    this.webClient = webClientBuilder.baseUrl(baseUrl).build();
+    this.reactiveResilience = reactiveResilience;
+  }
 
-    /**
-     * Calculate fulfillment cost.
-     *
-     * @param type the fulfillment type
-     * @param skus the SKUs for this fulfillment
-     * @return the calculated cost
-     */
-    public Mono<BigDecimal> calculateFulfillmentCost(FulfillmentType type, List<Long> skus) {
-        Mono<BigDecimal> request =
-                webClient
-                        .post()
-                        .uri("/fulfillments/calculate")
-                        .bodyValue(new FulfillmentCostRequest(type, skus))
-                        .retrieve()
-                        .bodyToMono(FulfillmentCostResponse.class)
-                        .map(response -> new BigDecimal(response.cost()));
+  /**
+   * Calculate fulfillment cost.
+   *
+   * @param type the fulfillment type
+   * @param skus the SKUs for this fulfillment
+   * @return the calculated cost
+   */
+  public Mono<BigDecimal> calculateFulfillmentCost(FulfillmentType type, List<Long> skus) {
+    Mono<BigDecimal> request =
+        webClient
+            .post()
+            .uri("/fulfillments/calculate")
+            .bodyValue(new FulfillmentCostRequest(type, skus))
+            .retrieve()
+            .bodyToMono(FulfillmentCostResponse.class)
+            .map(response -> new BigDecimal(response.cost()));
 
-        return reactiveResilience.decorate(RESILIENCE_NAME, request);
-    }
+    return reactiveResilience.decorate(RESILIENCE_NAME, request);
+  }
 
-    private record FulfillmentCostRequest(FulfillmentType type, List<Long> skus) {}
+  private record FulfillmentCostRequest(FulfillmentType type, List<Long> skus) {}
 
-    private record FulfillmentCostResponse(String cost) {}
+  private record FulfillmentCostResponse(String cost) {}
 }

@@ -11,24 +11,22 @@ import reactor.core.publisher.Mono;
  */
 public class NoOpAuditPublisher implements AuditEventPublisher {
 
-    private static final Logger log = LoggerFactory.getLogger(NoOpAuditPublisher.class);
+  private static final Logger log = LoggerFactory.getLogger(NoOpAuditPublisher.class);
 
-    @Override
-    public Mono<Void> publish(AuditEvent event) {
-        return Mono.fromRunnable(
-                () ->
-                        log.debug(
-                                "Audit event (disabled): eventType={}, entityId={}",
-                                event.eventType(),
-                                event.entityId()));
-    }
-
-    @Override
-    public Mono<String> publishAndAwait(AuditEvent event) {
-        log.debug(
+  @Override
+  public Mono<Void> publish(AuditEvent event) {
+    return Mono.fromRunnable(
+        () ->
+            log.debug(
                 "Audit event (disabled): eventType={}, entityId={}",
                 event.eventType(),
-                event.entityId());
-        return Mono.just("noop-" + event.eventId());
-    }
+                event.entityId()));
+  }
+
+  @Override
+  public Mono<String> publishAndAwait(AuditEvent event) {
+    log.debug(
+        "Audit event (disabled): eventType={}, entityId={}", event.eventType(), event.entityId());
+    return Mono.just("noop-" + event.eventId());
+  }
 }

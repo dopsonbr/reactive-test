@@ -7,8 +7,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class CartServiceApplicationTest extends AbstractIntegrationTest {
 
-    @Test
-    void contextLoads() {
-        // Verifies that the Spring application context starts successfully
-    }
+  @Test
+  void contextLoads() {
+    // Verifies that the Spring application context starts successfully
+  }
 }

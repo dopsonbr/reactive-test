@@ -12,10 +12,10 @@ package org.example.model.customer;
  * @param timezone the customer's timezone (IANA timezone identifier)
  */
 public record CommunicationPreferences(
-        boolean emailOptIn,
-        boolean smsOptIn,
-        boolean pushOptIn,
-        boolean mailOptIn,
-        PreferredChannel preferredChannel,
-        String preferredLanguage,
-        String timezone) {}
+    boolean emailOptIn,
+    boolean smsOptIn,
+    boolean pushOptIn,
+    boolean mailOptIn,
+    PreferredChannel preferredChannel,
+    String preferredLanguage,
+    String timezone) {}

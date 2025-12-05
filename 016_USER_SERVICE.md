@@ -10,6 +10,20 @@ Create a User Service that manages user contexts for three distinct channels: se
 
 **Related Plans:**
 - 015_CUSTOMER_SERVICE - Customer data management (User Service authenticates users who access customer data)
+- `docs/archive/006_AUTHN_AUTHZ.md` - Existing OAuth2 Resource Server pattern (User Service extends this)
+
+**Related ADRs:**
+- `docs/ADRs/005_user_service_authentication_strategy.md` - Hybrid IdP model decision
+
+## Authentication Strategy
+
+Per ADR-005, the User Service implements a **Hybrid IdP Model**:
+
+- **User Service as Internal IdP**: Issues JWTs for platform-managed users (service accounts, customers, employees)
+- **External IdP Support**: Existing `006_AUTHN_AUTHZ` pattern remains for federated/SSO scenarios
+- **Multi-Issuer Validation**: Consuming services validate tokens from both User Service and external IdP
+
+This approach provides full control over user lifecycle and custom claims while preserving flexibility for future B2B/enterprise SSO integration.
 
 ## Goals
 
@@ -32,6 +46,7 @@ Create a User Service that manages user contexts for three distinct channels: se
 
 **ADRs:**
 - `docs/ADRs/002_write_data_store.md` - PostgreSQL for durable user storage
+- `docs/ADRs/005_user_service_authentication_strategy.md` - Hybrid IdP model (User Service + external IdP)
 
 ---
 
@@ -78,15 +93,22 @@ Create a User Service that manages user contexts for three distinct channels: se
 
                               JWT Token Structure
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  Header:  { "alg": "RS256", "typ": "JWT" }                                  │
+│  Header:  { "alg": "RS256", "typ": "JWT", "kid": "user-service-key-1" }     │
 │  Payload: {                                                                 │
+│    "iss": "https://user-service.example.com",    // Issuer (User Service)   │
 │    "sub": "user-uuid",                                                      │
+│    "aud": ["reactive-platform"],                 // Audience                │
 │    "user_type": "EMPLOYEE|CUSTOMER|SERVICE_ACCOUNT",                        │
 │    "permissions": ["read", "write", "admin", "customer_search"],            │
+│    "scope": "read write admin customer_search",  // For Spring Security     │
 │    "store_number": 1234,           // For employees                         │
 │    "iat": 1234567890,                                                       │
 │    "exp": 1234571490                                                        │
 │  }                                                                          │
+│                                                                             │
+│  NOTE: Both "permissions" (array) and "scope" (space-delimited) are         │
+│  included. "scope" enables compatibility with existing JwtAuthenticationConverter│
+│  in platform-security which extracts SCOPE_* authorities.                   │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -103,6 +125,18 @@ Create a User Service that manages user contexts for three distinct channels: se
 - `write` - Modify cart, place orders, update own profile
 - `admin` - Manage users, override prices, process returns
 - `customer_search` - Search customer records (EMPLOYEE ONLY)
+
+### Permission-to-Scope Mapping
+
+For Spring Security compatibility, permissions map to OAuth scopes:
+
+| User Type       | Permissions Array                              | OAuth Scope Claim                      |
+|-----------------|------------------------------------------------|----------------------------------------|
+| SERVICE_ACCOUNT | `["read"]`                                     | `"read"`                               |
+| CUSTOMER        | `["read", "write"]`                            | `"read write"`                         |
+| EMPLOYEE        | `["read", "write", "admin", "customer_search"]`| `"read write admin customer_search"`   |
+
+The existing `JwtAuthenticationConverter` in `platform-security` extracts scopes and creates `SCOPE_read`, `SCOPE_write`, etc. authorities.
 
 ### Package Naming
 
@@ -370,9 +404,43 @@ public interface TokenService {
 
 Key behaviors:
 - Generate RS256-signed JWTs with user claims
-- Include `user_type` and `permissions` array in payload
+- Include `user_type`, `permissions` array, AND `scope` string in payload
+- Include standard claims: `iss`, `sub`, `aud`, `iat`, `exp`
 - Store refresh token hash (not plaintext) in database
 - Validate token signature and expiry on refresh
+
+### 3.3 JWK Endpoint (OIDC Discovery)
+
+**Files:**
+- CREATE: `apps/user-service/src/main/java/org/example/user/controller/JwkController.java`
+- CREATE: `apps/user-service/src/main/java/org/example/user/service/JwkService.java`
+
+**Implementation:**
+
+Per ADR-005, User Service must expose its public key for token validation by other services:
+
+```java
+@RestController
+public class JwkController {
+
+    // GET /.well-known/jwks.json - Public key for token verification
+    @GetMapping("/.well-known/jwks.json")
+    public Mono<JwkSet> getJwkSet() {
+        // Return RSA public key in JWK format
+        // kid: "user-service-key-1"
+        // use: "sig"
+        // alg: "RS256"
+    }
+
+    // GET /.well-known/openid-configuration - OIDC Discovery
+    @GetMapping("/.well-known/openid-configuration")
+    public Mono<OpenIdConfiguration> getOpenIdConfig() {
+        // Return issuer, jwks_uri, token_endpoint, etc.
+    }
+}
+```
+
+This enables consuming services to validate User Service tokens using standard OIDC discovery.
 
 ### 3.2 Authentication Service
 
@@ -592,6 +660,71 @@ Add user-service with dedicated PostgreSQL database.
 
 ---
 
+## Phase 7: Platform Security Integration (Multi-Issuer Support)
+
+Per ADR-005, consuming services must validate tokens from **both** User Service and external IdP.
+
+### 7.1 Extend JwtValidatorConfig for Multi-Issuer
+
+**Files:**
+- MODIFY: `libs/platform/platform-security/src/main/java/org/example/platform/security/JwtValidatorConfig.java`
+- MODIFY: `libs/platform/platform-security/src/main/java/org/example/platform/security/SecurityProperties.java`
+
+**Implementation:**
+
+Update `SecurityProperties` to support multiple issuers with their JWK URIs:
+
+```yaml
+# application.yml for consuming services (e.g., product-service)
+app:
+  security:
+    allowed-issuers:
+      - https://user-service.example.com    # User Service (internal IdP)
+      - https://auth.example.com            # External IdP (Auth0, Okta, etc.)
+    jwk-set-uris:
+      https://user-service.example.com: http://user-service:8084/.well-known/jwks.json
+      https://auth.example.com: https://auth.example.com/.well-known/jwks.json
+    required-audience: reactive-platform
+```
+
+Update `JwtValidatorConfig` to create a delegating decoder:
+
+```java
+@Bean
+public ReactiveJwtDecoder jwtDecoder() {
+    // Create decoder for each issuer
+    Map<String, ReactiveJwtDecoder> decoders = new HashMap<>();
+    for (String issuer : securityProperties.getAllowedIssuers()) {
+        String jwkUri = securityProperties.getJwkSetUris().get(issuer);
+        decoders.put(issuer, createDecoderForIssuer(issuer, jwkUri));
+    }
+
+    // Delegate to appropriate decoder based on issuer claim
+    return new DelegatingReactiveJwtDecoder(decoders);
+}
+```
+
+### 7.2 Update Consuming Services
+
+**Files:**
+- MODIFY: `apps/product-service/src/main/resources/application.yml`
+- MODIFY: `apps/cart-service/src/main/resources/application.yml`
+
+Add User Service to allowed issuers in each consuming service.
+
+### 7.3 Multi-Issuer Integration Tests
+
+**Files:**
+- CREATE: `libs/platform/platform-security/src/test/java/org/example/platform/security/MultiIssuerJwtDecoderTest.java`
+
+**Test Scenarios:**
+- Token from User Service issuer validates successfully
+- Token from external IdP issuer validates successfully
+- Token from unknown issuer rejected with 401
+- Correct JWK endpoint called based on issuer claim
+
+---
+
 ## Files Summary
 
 | Action | File | Purpose |
@@ -619,10 +752,17 @@ Add user-service with dedicated PostgreSQL database.
 | CREATE | `apps/user-service/src/main/java/org/example/user/service/PermissionService.java` | Permission enforcement |
 | CREATE | `apps/user-service/src/main/java/org/example/user/controller/AuthController.java` | Authentication endpoints |
 | CREATE | `apps/user-service/src/main/java/org/example/user/controller/UserController.java` | User management endpoints |
+| CREATE | `apps/user-service/src/main/java/org/example/user/controller/JwkController.java` | OIDC discovery endpoints (/.well-known/*) |
 | CREATE | `apps/user-service/src/main/java/org/example/user/controller/dto/*.java` | Request/response DTOs |
+| CREATE | `apps/user-service/src/main/java/org/example/user/service/JwkService.java` | JWK set generation service |
 | MODIFY | `settings.gradle.kts` | Add user-service module |
 | MODIFY | `docker/docker-compose.yml` | Add user-service and postgres |
 | MODIFY | `CLAUDE.md` | Add user-service documentation |
+| MODIFY | `libs/platform/platform-security/.../JwtValidatorConfig.java` | Multi-issuer JWT decoder support |
+| MODIFY | `libs/platform/platform-security/.../SecurityProperties.java` | Add jwk-set-uris map property |
+| CREATE | `libs/platform/platform-security/.../MultiIssuerJwtDecoderTest.java` | Multi-issuer validation tests |
+| MODIFY | `apps/product-service/src/main/resources/application.yml` | Add User Service to allowed-issuers |
+| MODIFY | `apps/cart-service/src/main/resources/application.yml` | Add User Service to allowed-issuers |
 
 ---
 
@@ -640,9 +780,10 @@ Add user-service with dedicated PostgreSQL database.
 
 - [ ] Phase 1: Project setup, database schema, application config
 - [ ] Phase 2: Domain models and repository layer
-- [ ] Phase 3: Token and authentication services
+- [ ] Phase 3: Token and authentication services (including JWK endpoint)
 - [ ] Phase 4: Auth and User controllers
 - [ ] Phase 5: Permission enforcement filter and service
 - [ ] Phase 6: Docker configuration and integration tests
+- [ ] Phase 7: Platform security integration (multi-issuer support)
 - [ ] All tests passing
 - [ ] Documentation updated (CLAUDE.md, README.md, AGENTS.md)

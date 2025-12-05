@@ -29,139 +29,137 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/products/search")
 public class ProductSearchController {
 
-    private static final String LOGGER_NAME = "productsearchcontroller";
+  private static final String LOGGER_NAME = "productsearchcontroller";
 
-    private final ProductSearchService searchService;
-    private final SearchRequestValidator validator;
-    private final StructuredLogger structuredLogger;
+  private final ProductSearchService searchService;
+  private final SearchRequestValidator validator;
+  private final StructuredLogger structuredLogger;
 
-    public ProductSearchController(
-            ProductSearchService searchService,
-            SearchRequestValidator validator,
-            StructuredLogger structuredLogger) {
-        this.searchService = searchService;
-        this.validator = validator;
-        this.structuredLogger = structuredLogger;
+  public ProductSearchController(
+      ProductSearchService searchService,
+      SearchRequestValidator validator,
+      StructuredLogger structuredLogger) {
+    this.searchService = searchService;
+    this.validator = validator;
+    this.structuredLogger = structuredLogger;
+  }
+
+  @GetMapping
+  @PreAuthorize("hasAuthority('SCOPE_product:read')")
+  public Mono<SearchResponse<SearchProduct>> search(
+      @RequestParam String q,
+      @RequestParam(required = false) BigDecimal minPrice,
+      @RequestParam(required = false) BigDecimal maxPrice,
+      @RequestParam(required = false) Integer minAvailability,
+      @RequestParam(required = false) Boolean inStockOnly,
+      @RequestParam(required = false) String category,
+      @RequestParam(required = false) String customerZipCode,
+      @RequestParam(required = false) String sellingLocation,
+      @RequestParam(defaultValue = "relevance") String sortBy,
+      @RequestParam(defaultValue = "DESC") String sortDirection,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId,
+      @AuthenticationPrincipal Jwt jwt,
+      ServerHttpRequest request) {
+
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    SearchCriteria criteria =
+        new SearchCriteria(
+            q,
+            Optional.ofNullable(minPrice),
+            Optional.ofNullable(maxPrice),
+            Optional.ofNullable(minAvailability),
+            Optional.ofNullable(inStockOnly),
+            Optional.ofNullable(category),
+            Optional.ofNullable(customerZipCode),
+            Optional.ofNullable(sellingLocation),
+            sortBy,
+            parseSortDirection(sortDirection),
+            page,
+            size);
+
+    return validator
+        .validate(criteria)
+        .then(
+            Mono.deferContextual(
+                ctx -> {
+                  String subject = jwt != null ? jwt.getSubject() : "unknown";
+                  RequestLogData requestData =
+                      new RequestLogData(
+                          "/products/search",
+                          request.getURI().getPath(),
+                          request.getMethod().name(),
+                          subject);
+                  structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
+
+                  return searchService
+                      .search(criteria)
+                      .doOnSuccess(
+                          response -> {
+                            ResponseLogData responseData =
+                                new ResponseLogData(
+                                    "/products/search",
+                                    request.getURI().getPath(),
+                                    request.getMethod().name(),
+                                    200,
+                                    response);
+                            structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
+                          });
+                }))
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
+
+  @GetMapping("/suggestions")
+  @PreAuthorize("hasAuthority('SCOPE_product:read')")
+  public Mono<List<String>> getSuggestions(
+      @RequestParam String prefix,
+      @RequestParam(defaultValue = "10") int limit,
+      @RequestHeader("x-store-number") int storeNumber,
+      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader("x-userid") String userId,
+      @RequestHeader("x-sessionid") String sessionId,
+      @AuthenticationPrincipal Jwt jwt,
+      ServerHttpRequest request) {
+
+    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+
+    return Mono.deferContextual(
+            ctx -> {
+              String subject = jwt != null ? jwt.getSubject() : "unknown";
+              RequestLogData requestData =
+                  new RequestLogData(
+                      "/products/search/suggestions",
+                      request.getURI().getPath(),
+                      request.getMethod().name(),
+                      subject);
+              structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
+
+              return searchService
+                  .getSuggestions(prefix, Math.min(limit, 20))
+                  .doOnSuccess(
+                      suggestions -> {
+                        ResponseLogData responseData =
+                            new ResponseLogData(
+                                "/products/search/suggestions",
+                                request.getURI().getPath(),
+                                request.getMethod().name(),
+                                200,
+                                suggestions);
+                        structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
+                      });
+            })
+        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+  }
+
+  private SortDirection parseSortDirection(String direction) {
+    try {
+      return SortDirection.valueOf(direction.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      return SortDirection.DESC;
     }
-
-    @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_product:read')")
-    public Mono<SearchResponse<SearchProduct>> search(
-            @RequestParam String q,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) Integer minAvailability,
-            @RequestParam(required = false) Boolean inStockOnly,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String customerZipCode,
-            @RequestParam(required = false) String sellingLocation,
-            @RequestParam(defaultValue = "relevance") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId,
-            @AuthenticationPrincipal Jwt jwt,
-            ServerHttpRequest request) {
-
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
-        SearchCriteria criteria =
-                new SearchCriteria(
-                        q,
-                        Optional.ofNullable(minPrice),
-                        Optional.ofNullable(maxPrice),
-                        Optional.ofNullable(minAvailability),
-                        Optional.ofNullable(inStockOnly),
-                        Optional.ofNullable(category),
-                        Optional.ofNullable(customerZipCode),
-                        Optional.ofNullable(sellingLocation),
-                        sortBy,
-                        parseSortDirection(sortDirection),
-                        page,
-                        size);
-
-        return validator
-                .validate(criteria)
-                .then(
-                        Mono.deferContextual(
-                                ctx -> {
-                                    String subject = jwt != null ? jwt.getSubject() : "unknown";
-                                    RequestLogData requestData =
-                                            new RequestLogData(
-                                                    "/products/search",
-                                                    request.getURI().getPath(),
-                                                    request.getMethod().name(),
-                                                    subject);
-                                    structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
-
-                                    return searchService
-                                            .search(criteria)
-                                            .doOnSuccess(
-                                                    response -> {
-                                                        ResponseLogData responseData =
-                                                                new ResponseLogData(
-                                                                        "/products/search",
-                                                                        request.getURI().getPath(),
-                                                                        request.getMethod().name(),
-                                                                        200,
-                                                                        response);
-                                                        structuredLogger.logResponse(
-                                                                ctx, LOGGER_NAME, responseData);
-                                                    });
-                                }))
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
-
-    @GetMapping("/suggestions")
-    @PreAuthorize("hasAuthority('SCOPE_product:read')")
-    public Mono<List<String>> getSuggestions(
-            @RequestParam String prefix,
-            @RequestParam(defaultValue = "10") int limit,
-            @RequestHeader("x-store-number") int storeNumber,
-            @RequestHeader("x-order-number") String orderNumber,
-            @RequestHeader("x-userid") String userId,
-            @RequestHeader("x-sessionid") String sessionId,
-            @AuthenticationPrincipal Jwt jwt,
-            ServerHttpRequest request) {
-
-        RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
-
-        return Mono.deferContextual(
-                        ctx -> {
-                            String subject = jwt != null ? jwt.getSubject() : "unknown";
-                            RequestLogData requestData =
-                                    new RequestLogData(
-                                            "/products/search/suggestions",
-                                            request.getURI().getPath(),
-                                            request.getMethod().name(),
-                                            subject);
-                            structuredLogger.logRequest(ctx, LOGGER_NAME, requestData);
-
-                            return searchService
-                                    .getSuggestions(prefix, Math.min(limit, 20))
-                                    .doOnSuccess(
-                                            suggestions -> {
-                                                ResponseLogData responseData =
-                                                        new ResponseLogData(
-                                                                "/products/search/suggestions",
-                                                                request.getURI().getPath(),
-                                                                request.getMethod().name(),
-                                                                200,
-                                                                suggestions);
-                                                structuredLogger.logResponse(
-                                                        ctx, LOGGER_NAME, responseData);
-                                            });
-                        })
-                .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-    }
-
-    private SortDirection parseSortDirection(String direction) {
-        try {
-            return SortDirection.valueOf(direction.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return SortDirection.DESC;
-        }
-    }
+  }
 }

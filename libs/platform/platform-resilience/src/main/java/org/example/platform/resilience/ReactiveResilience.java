@@ -30,49 +30,49 @@ import reactor.core.publisher.Mono;
 @Component
 public class ReactiveResilience {
 
-    private final CircuitBreakerRegistry circuitBreakerRegistry;
-    private final RetryRegistry retryRegistry;
-    private final TimeLimiterRegistry timeLimiterRegistry;
-    private final BulkheadRegistry bulkheadRegistry;
+  private final CircuitBreakerRegistry circuitBreakerRegistry;
+  private final RetryRegistry retryRegistry;
+  private final TimeLimiterRegistry timeLimiterRegistry;
+  private final BulkheadRegistry bulkheadRegistry;
 
-    public ReactiveResilience(
-            CircuitBreakerRegistry circuitBreakerRegistry,
-            RetryRegistry retryRegistry,
-            TimeLimiterRegistry timeLimiterRegistry,
-            BulkheadRegistry bulkheadRegistry) {
-        this.circuitBreakerRegistry = circuitBreakerRegistry;
-        this.retryRegistry = retryRegistry;
-        this.timeLimiterRegistry = timeLimiterRegistry;
-        this.bulkheadRegistry = bulkheadRegistry;
-    }
+  public ReactiveResilience(
+      CircuitBreakerRegistry circuitBreakerRegistry,
+      RetryRegistry retryRegistry,
+      TimeLimiterRegistry timeLimiterRegistry,
+      BulkheadRegistry bulkheadRegistry) {
+    this.circuitBreakerRegistry = circuitBreakerRegistry;
+    this.retryRegistry = retryRegistry;
+    this.timeLimiterRegistry = timeLimiterRegistry;
+    this.bulkheadRegistry = bulkheadRegistry;
+  }
 
-    /**
-     * Decorates a Mono with all resilience patterns.
-     *
-     * @param name The name of the resilience4j instances (must match config)
-     * @param mono The Mono to decorate
-     * @param <T> The type of the Mono
-     * @return Decorated Mono with timeout, circuit breaker, retry, and bulkhead
-     */
-    public <T> Mono<T> decorate(String name, Mono<T> mono) {
-        CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(name);
-        Retry retry = retryRegistry.retry(name);
-        TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(name);
-        Bulkhead bulkhead = bulkheadRegistry.bulkhead(name);
+  /**
+   * Decorates a Mono with all resilience patterns.
+   *
+   * @param name The name of the resilience4j instances (must match config)
+   * @param mono The Mono to decorate
+   * @param <T> The type of the Mono
+   * @return Decorated Mono with timeout, circuit breaker, retry, and bulkhead
+   */
+  public <T> Mono<T> decorate(String name, Mono<T> mono) {
+    CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(name);
+    Retry retry = retryRegistry.retry(name);
+    TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(name);
+    Bulkhead bulkhead = bulkheadRegistry.bulkhead(name);
 
-        return mono.transformDeferred(TimeLimiterOperator.of(timeLimiter))
-                .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
-                .transformDeferred(RetryOperator.of(retry))
-                .transformDeferred(BulkheadOperator.of(bulkhead));
-    }
+    return mono.transformDeferred(TimeLimiterOperator.of(timeLimiter))
+        .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
+        .transformDeferred(RetryOperator.of(retry))
+        .transformDeferred(BulkheadOperator.of(bulkhead));
+  }
 
-    /**
-     * Gets the current state of a circuit breaker.
-     *
-     * @param name The name of the circuit breaker
-     * @return The current state of the circuit breaker
-     */
-    public CircuitBreaker.State getCircuitBreakerState(String name) {
-        return circuitBreakerRegistry.circuitBreaker(name).getState();
-    }
+  /**
+   * Gets the current state of a circuit breaker.
+   *
+   * @param name The name of the circuit breaker
+   * @return The current state of the circuit breaker
+   */
+  public CircuitBreaker.State getCircuitBreakerState(String name) {
+    return circuitBreakerRegistry.circuitBreaker(name).getState();
+  }
 }

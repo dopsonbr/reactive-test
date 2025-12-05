@@ -23,12 +23,12 @@ import org.example.model.customer.WalletReference;
  * @param b2bInfo updated B2B info
  */
 public record UpdateCustomerRequest(
-        String name,
-        String email,
-        String phone,
-        CustomerStatus status,
-        List<Address> addresses,
-        WalletReference wallet,
-        CommunicationPreferences communicationPreferences,
-        LoyaltyInfo loyalty,
-        B2BInfo b2bInfo) {}
+    String name,
+    String email,
+    String phone,
+    CustomerStatus status,
+    List<Address> addresses,
+    WalletReference wallet,
+    CommunicationPreferences communicationPreferences,
+    LoyaltyInfo loyalty,
+    B2BInfo b2bInfo) {}

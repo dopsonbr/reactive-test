@@ -10,13 +10,13 @@ package org.example.model.customer;
  */
 public record CartCustomer(String customerId, String name, String email) {
 
-    /**
-     * Create a CartCustomer from a full Customer object.
-     *
-     * @param customer the full customer
-     * @return a simplified CartCustomer
-     */
-    public static CartCustomer fromCustomer(Customer customer) {
-        return new CartCustomer(customer.customerId(), customer.name(), customer.email());
-    }
+  /**
+   * Create a CartCustomer from a full Customer object.
+   *
+   * @param customer the full customer
+   * @return a simplified CartCustomer
+   */
+  public static CartCustomer fromCustomer(Customer customer) {
+    return new CartCustomer(customer.customerId(), customer.name(), customer.email());
+  }
 }

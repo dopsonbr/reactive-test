@@ -16,12 +16,12 @@ import org.springframework.test.context.ActiveProfiles;
 @Import(TestSecurityConfig.class)
 class OAuth2ClientCacheTest {
 
-    @Autowired private ReactiveOAuth2AuthorizedClientService authorizedClientService;
+  @Autowired private ReactiveOAuth2AuthorizedClientService authorizedClientService;
 
-    @Test
-    void shouldUseInMemoryAuthorizedClientService() {
-        // Verify in-memory client service is configured for token caching
-        assertThat(authorizedClientService)
-                .isInstanceOf(InMemoryReactiveOAuth2AuthorizedClientService.class);
-    }
+  @Test
+  void shouldUseInMemoryAuthorizedClientService() {
+    // Verify in-memory client service is configured for token caching
+    assertThat(authorizedClientService)
+        .isInstanceOf(InMemoryReactiveOAuth2AuthorizedClientService.class);
+  }
 }

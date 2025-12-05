@@ -21,12 +21,12 @@ import org.example.model.customer.WalletReference;
  * @param companyInfo company info (required for BUSINESS type)
  */
 public record CreateCustomerRequest(
-        int storeNumber,
-        String name,
-        String email,
-        String phone,
-        CustomerType type,
-        List<Address> addresses,
-        WalletReference wallet,
-        CommunicationPreferences communicationPreferences,
-        CompanyInfo companyInfo) {}
+    int storeNumber,
+    String name,
+    String email,
+    String phone,
+    CustomerType type,
+    List<Address> addresses,
+    WalletReference wallet,
+    CommunicationPreferences communicationPreferences,
+    CompanyInfo companyInfo) {}

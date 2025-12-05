@@ -14,12 +14,12 @@ package org.example.model.customer;
  * @param isPrimary whether this is the primary address for its type
  */
 public record Address(
-        String addressId,
-        AddressType type,
-        String line1,
-        String line2,
-        String city,
-        String state,
-        String postalCode,
-        String country,
-        boolean isPrimary) {}
+    String addressId,
+    AddressType type,
+    String line1,
+    String line2,
+    String city,
+    String state,
+    String postalCode,
+    String country,
+    boolean isPrimary) {}

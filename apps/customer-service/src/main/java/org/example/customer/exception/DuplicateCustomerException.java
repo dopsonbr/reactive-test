@@ -9,9 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.CONFLICT)
 public class DuplicateCustomerException extends RuntimeException {
 
-    public DuplicateCustomerException(int storeNumber, String email) {
-        super(
-                String.format(
-                        "Customer with email %s already exists in store %d", email, storeNumber));
-    }
+  public DuplicateCustomerException(int storeNumber, String email) {
+    super(String.format("Customer with email %s already exists in store %d", email, storeNumber));
+  }
 }

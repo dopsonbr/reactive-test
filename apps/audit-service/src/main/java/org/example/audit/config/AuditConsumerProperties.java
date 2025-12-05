@@ -16,48 +16,48 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "audit.consumer")
 public record AuditConsumerProperties(
-        String streamKey,
-        String consumerGroup,
-        String consumerName,
-        int batchSize,
-        Duration pollInterval,
-        int maxRetries,
-        Duration retryDelay) {
+    String streamKey,
+    String consumerGroup,
+    String consumerName,
+    int batchSize,
+    Duration pollInterval,
+    int maxRetries,
+    Duration retryDelay) {
 
-    /** Default constructor with sensible defaults. */
-    public AuditConsumerProperties() {
-        this(
-                "audit-events",
-                "audit-service",
-                "audit-consumer-1",
-                100,
-                Duration.ofMillis(100),
-                3,
-                Duration.ofSeconds(1));
-    }
+  /** Default constructor with sensible defaults. */
+  public AuditConsumerProperties() {
+    this(
+        "audit-events",
+        "audit-service",
+        "audit-consumer-1",
+        100,
+        Duration.ofMillis(100),
+        3,
+        Duration.ofSeconds(1));
+  }
 
-    /** Constructor for property binding with defaults for null values. */
-    public AuditConsumerProperties {
-        if (streamKey == null) {
-            streamKey = "audit-events";
-        }
-        if (consumerGroup == null) {
-            consumerGroup = "audit-service";
-        }
-        if (consumerName == null) {
-            consumerName = "audit-consumer-1";
-        }
-        if (batchSize <= 0) {
-            batchSize = 100;
-        }
-        if (pollInterval == null) {
-            pollInterval = Duration.ofMillis(100);
-        }
-        if (maxRetries <= 0) {
-            maxRetries = 3;
-        }
-        if (retryDelay == null) {
-            retryDelay = Duration.ofSeconds(1);
-        }
+  /** Constructor for property binding with defaults for null values. */
+  public AuditConsumerProperties {
+    if (streamKey == null) {
+      streamKey = "audit-events";
     }
+    if (consumerGroup == null) {
+      consumerGroup = "audit-service";
+    }
+    if (consumerName == null) {
+      consumerName = "audit-consumer-1";
+    }
+    if (batchSize <= 0) {
+      batchSize = 100;
+    }
+    if (pollInterval == null) {
+      pollInterval = Duration.ofMillis(100);
+    }
+    if (maxRetries <= 0) {
+      maxRetries = 3;
+    }
+    if (retryDelay == null) {
+      retryDelay = Duration.ofSeconds(1);
+    }
+  }
 }

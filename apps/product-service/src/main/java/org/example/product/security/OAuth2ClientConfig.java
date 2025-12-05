@@ -22,46 +22,46 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
  */
 @Configuration
 @ConditionalOnProperty(
-        name = "app.security.oauth2-client.enabled",
-        havingValue = "true",
-        matchIfMissing = true)
+    name = "app.security.oauth2-client.enabled",
+    havingValue = "true",
+    matchIfMissing = true)
 public class OAuth2ClientConfig {
 
-    private static final Logger log = LoggerFactory.getLogger(OAuth2ClientConfig.class);
+  private static final Logger log = LoggerFactory.getLogger(OAuth2ClientConfig.class);
 
-    /**
-     * In-memory cache for authorized clients (tokens). Tokens are cached until they expire, then
-     * automatically refreshed on next request.
-     */
-    @Bean
-    public ReactiveOAuth2AuthorizedClientService authorizedClientService(
-            ReactiveClientRegistrationRepository clientRegistrationRepository) {
-        log.info("Configuring in-memory OAuth2 authorized client service for token caching");
-        return new InMemoryReactiveOAuth2AuthorizedClientService(clientRegistrationRepository);
-    }
+  /**
+   * In-memory cache for authorized clients (tokens). Tokens are cached until they expire, then
+   * automatically refreshed on next request.
+   */
+  @Bean
+  public ReactiveOAuth2AuthorizedClientService authorizedClientService(
+      ReactiveClientRegistrationRepository clientRegistrationRepository) {
+    log.info("Configuring in-memory OAuth2 authorized client service for token caching");
+    return new InMemoryReactiveOAuth2AuthorizedClientService(clientRegistrationRepository);
+  }
 
-    /** Manages OAuth2 client credentials flow. Uses AuthorizedClientService for token caching. */
-    @Bean
-    public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
-            ReactiveClientRegistrationRepository clientRegistrationRepository,
-            ReactiveOAuth2AuthorizedClientService authorizedClientService) {
-        return new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
-                clientRegistrationRepository, authorizedClientService);
-    }
+  /** Manages OAuth2 client credentials flow. Uses AuthorizedClientService for token caching. */
+  @Bean
+  public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
+      ReactiveClientRegistrationRepository clientRegistrationRepository,
+      ReactiveOAuth2AuthorizedClientService authorizedClientService) {
+    return new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
+        clientRegistrationRepository, authorizedClientService);
+  }
 
-    /**
-     * Exchange filter function that adds OAuth2 bearer token to outbound requests. Automatically
-     * handles token acquisition and refresh. Uses "downstream-services" client registration.
-     */
-    @Bean
-    public ExchangeFilterFunction oauth2Filter(
-            ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
-        ServerOAuth2AuthorizedClientExchangeFilterFunction filter =
-                new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+  /**
+   * Exchange filter function that adds OAuth2 bearer token to outbound requests. Automatically
+   * handles token acquisition and refresh. Uses "downstream-services" client registration.
+   */
+  @Bean
+  public ExchangeFilterFunction oauth2Filter(
+      ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
+    ServerOAuth2AuthorizedClientExchangeFilterFunction filter =
+        new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
 
-        // Use client_credentials registration for all outbound requests
-        filter.setDefaultClientRegistrationId("downstream-services");
+    // Use client_credentials registration for all outbound requests
+    filter.setDefaultClientRegistrationId("downstream-services");
 
-        return filter;
-    }
+    return filter;
+  }
 }

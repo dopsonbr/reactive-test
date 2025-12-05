@@ -14,13 +14,13 @@ import org.springframework.data.relational.core.mapping.Table;
  */
 @Table("carts")
 public record CartEntity(
-        @Id UUID id,
-        @Column("store_number") int storeNumber,
-        @Column("customer_id") String customerId,
-        @Column("customer_json") String customerJson,
-        @Column("products_json") String productsJson,
-        @Column("discounts_json") String discountsJson,
-        @Column("fulfillments_json") String fulfillmentsJson,
-        @Column("totals_json") String totalsJson,
-        @Column("created_at") Instant createdAt,
-        @Column("updated_at") Instant updatedAt) {}
+    @Id UUID id,
+    @Column("store_number") int storeNumber,
+    @Column("customer_id") String customerId,
+    @Column("customer_json") String customerJson,
+    @Column("products_json") String productsJson,
+    @Column("discounts_json") String discountsJson,
+    @Column("fulfillments_json") String fulfillmentsJson,
+    @Column("totals_json") String totalsJson,
+    @Column("created_at") Instant createdAt,
+    @Column("updated_at") Instant updatedAt) {}

@@ -5,4 +5,4 @@ package org.example.platform.webflux.context;
  * request.
  */
 public record RequestMetadata(
-        int storeNumber, String orderNumber, String userId, String sessionId) {}
+    int storeNumber, String orderNumber, String userId, String sessionId) {}

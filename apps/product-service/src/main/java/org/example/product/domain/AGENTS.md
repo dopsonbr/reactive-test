@@ -1,7 +1,7 @@
 # Domain
 
 ## Boundaries
-Files requiring review before changes: Product.java (API contract)
+Files requiring review before changes: Product.java (API contract), SearchResponse.java (search API contract), SearchCriteria.java (search query parameters)
 
 ## Conventions
 - All models are Java records (immutable)

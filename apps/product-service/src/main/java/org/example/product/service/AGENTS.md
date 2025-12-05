@@ -1,7 +1,7 @@
 # Service
 
 ## Boundaries
-Files that require careful review before changes: ProductService.java (changes affect parallel execution and context propagation)
+Files that require careful review before changes: ProductService.java (changes affect parallel execution and context propagation), ProductSearchService.java (changes affect search caching behavior)
 
 ## Conventions
 - Services return `Mono` or `Flux` (never block)

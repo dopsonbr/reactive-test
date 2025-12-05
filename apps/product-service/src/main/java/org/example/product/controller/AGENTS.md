@@ -1,7 +1,7 @@
 # Controller
 
 ## Boundaries
-Files that require careful review before changes: ProductController.java
+Files that require careful review before changes: ProductController.java, ProductSearchController.java
 
 ## Conventions
 - All endpoints return Mono or Flux

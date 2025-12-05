@@ -180,24 +180,18 @@ class CartQueryControllerTest extends AbstractGraphQLIntegrationTest {
 
   @Test
   void shouldRejectUnauthenticatedRequest() {
-    graphQlTester
-        .document(
+    // Test that unauthenticated GraphQL requests are rejected with 401 at HTTP level
+    webTestClient
+        .post()
+        .uri("/graphql")
+        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+        .bodyValue(
             """
-                query {
-                    cart(id: "550e8400-e29b-41d4-a716-446655440000") {
-                        id
-                    }
-                }
-                """)
-        .execute()
-        .errors()
-        .satisfy(
-            errors ->
-                assertThat(errors)
-                    .anyMatch(
-                        e ->
-                            e.getMessage().contains("Access denied")
-                                || e.getMessage().contains("Unauthorized")));
+            {"query": "query { cart(id: \\"550e8400-e29b-41d4-a716-446655440000\\") { id } }"}
+            """)
+        .exchange()
+        .expectStatus()
+        .isUnauthorized();
   }
 
   @Test

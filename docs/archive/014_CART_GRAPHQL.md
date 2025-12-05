@@ -1,6 +1,6 @@
 # 014_CART_GRAPHQL
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 
@@ -1994,74 +1994,64 @@ window.addEventListener('beforeunload', () => eventSource.close());
 
 ---
 
-## Known Issues (Must Resolve Before Complete)
+## Known Issues (Resolved)
 
 ### Flyway Integration Test Issue
 
-**Status:** BLOCKING - Must be resolved before feature is complete.
+**Status:** RESOLVED
 
-**Problem:** GraphQL integration tests (`CartMutationControllerTest`, `CartQueryControllerTest`, `CartEventPubSubTest`) fail because Flyway database migrations don't run in the test environment. The error is:
+**Problem:** GraphQL integration tests failed because Flyway database migrations didn't run in the test environment with R2DBC.
+
+**Solution:** Run Flyway programmatically in a static initializer block before Spring context loads:
+```java
+static {
+  postgres = new PostgreSQLContainer<>("postgres:15-alpine")...;
+  postgres.start();
+  Flyway.configure()
+      .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
+      .locations("classpath:db/migration")
+      .load()
+      .migrate();
+}
 ```
-relation "carts" does not exist
-```
 
-**Root Cause:** Spring Boot 4 with R2DBC (reactive database driver) does not automatically configure a JDBC DataSource for Flyway. Flyway requires a JDBC connection to run migrations, but the application uses R2DBC which is non-blocking.
-
-**Investigation Done:**
-1. Added `spring-boot-starter-jdbc` to test dependencies - not sufficient
-2. Added `spring.datasource.*` properties alongside `spring.r2dbc.*` - not sufficient
-3. Added explicit `spring.flyway.*` properties - not sufficient
-
-**Resolution Needed:**
-- Configure a JDBC DataSource bean specifically for Flyway in tests
-- OR use Testcontainers' JDBC URL feature to create schema before R2DBC connects
-- OR run Flyway programmatically before tests start using `@BeforeAll`
-- Verify the solution works with Spring Boot 4.0's autoconfiguration changes
-
-**Affected Tests:**
-- `CartMutationControllerTest` - All tests fail
-- `CartQueryControllerTest` - All tests fail
-- `CartEventPubSubTest` - All tests fail
-
-**Working Tests:**
-- `GraphQLInputValidatorTest` - All 24 tests pass (doesn't require database)
-- `CartServiceApplicationTest` - Context loads successfully
-
-**Files Involved:**
-- `apps/cart-service/src/test/java/org/example/cart/graphql/AbstractGraphQLIntegrationTest.java`
-- `apps/cart-service/build.gradle.kts` (test dependencies)
+**Additional Fixes Applied:**
+1. **Spring Data R2DBC INSERT vs UPDATE**: Implemented `Persistable<UUID>` on CartEntity with `isNew()` method
+2. **JSONB column type conversion**: Created `JsonValue` wrapper type and R2DBC custom converters
+3. **Mock external service clients**: Added `@MockitoBean` for CustomerServiceClient, ProductServiceClient, etc.
+4. **Unauthenticated request tests**: Updated to use WebTestClient for testing 401 HTTP responses
 
 ---
 
 ## Checklist
 
-- [ ] Phase 1: Dependencies and configuration
-  - [ ] GraphQL starter added to build.gradle.kts
-  - [ ] application.yml configured for GraphQL + SSE
-- [ ] Phase 2: GraphQL schema
-  - [ ] schema.graphqls with all types
-  - [ ] operations.graphqls with queries, mutations, subscriptions
-- [ ] Phase 3: Event infrastructure
-  - [ ] CartEvent and CartEventType models
-  - [ ] CartEventPublisher (Redis Pub/Sub)
-  - [ ] CartEventSubscriber (Redis Pub/Sub)
-  - [ ] CartService integrated with event publishing
-- [ ] Phase 4: Validation
-  - [ ] GraphQLInputValidator with all validation methods
-  - [ ] Input type records created
-- [ ] Phase 5: Controllers
-  - [ ] CartQueryController with all queries
-  - [ ] CartMutationController with all mutations
-  - [ ] CartSubscriptionController with subscriptions
-- [ ] Phase 6: Error handling
-  - [ ] GraphQLExceptionResolver
-  - [ ] Security configuration updated
-- [ ] Phase 7: Testing
-  - [ ] Query controller tests
-  - [ ] Mutation controller tests
-  - [ ] Subscription controller tests
-  - [ ] Pub/Sub tests
-  - [ ] Validation tests
-- [ ] Phase 8: Documentation
-  - [ ] GraphQL README with examples
-  - [ ] SSE client integration examples
+- [x] Phase 1: Dependencies and configuration
+  - [x] GraphQL starter added to build.gradle.kts
+  - [x] application.yml configured for GraphQL + SSE
+- [x] Phase 2: GraphQL schema
+  - [x] schema.graphqls with all types
+  - [x] operations.graphqls with queries, mutations, subscriptions
+- [x] Phase 3: Event infrastructure
+  - [x] CartEvent and CartEventType models
+  - [x] CartEventPublisher (Redis Pub/Sub)
+  - [x] CartEventSubscriber (Redis Pub/Sub)
+  - [x] CartService integrated with event publishing
+- [x] Phase 4: Validation
+  - [x] GraphQLInputValidator with all validation methods
+  - [x] Input type records created
+- [x] Phase 5: Controllers
+  - [x] CartQueryController with all queries
+  - [x] CartMutationController with all mutations
+  - [x] CartSubscriptionController with subscriptions
+- [x] Phase 6: Error handling
+  - [x] GraphQLExceptionResolver
+  - [x] Security configuration updated
+- [x] Phase 7: Testing
+  - [x] Query controller tests
+  - [x] Mutation controller tests
+  - [x] Subscription controller tests
+  - [x] Pub/Sub tests
+  - [x] Validation tests
+- [x] Phase 8: Documentation
+  - [x] GraphQL README with examples
+  - [x] SSE client integration examples

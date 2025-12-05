@@ -38,6 +38,7 @@ Use the Explore subagent to understand current state:
 - Current patterns already in use
 - Files that will need modification
 - Dependencies and integration points
+- Documentation files that may need updates (CLAUDE.md, README files, AGENTS.md)
 
 ---
 
@@ -123,10 +124,29 @@ Follow this structure. **Omit any section that doesn't apply.**
 
 ---
 
+## Documentation Updates
+
+{List all documentation files that need updating. Consider:}
+
+| File | Update Required |
+|------|-----------------|
+| `CLAUDE.md` | {Add new module/service to project structure, commands, etc.} |
+| `README.md` | {Update if user-facing features change} |
+| `{module}/README.md` | {Module-specific documentation} |
+| `{module}/AGENTS.md` | {AI agent guidance for new packages} |
+| `docs/standards/*.md` | {New or updated standards} |
+| `docs/templates/*.md` | {New reusable patterns} |
+| `docs/ADRs/*.md` | {Architectural decisions made} |
+
+{Omit this section if no documentation updates needed}
+
+---
+
 ## Checklist
 
 - [ ] Phase 1 complete
 - [ ] All tests passing
+- [ ] Documentation updated
 ```
 
 ---
@@ -179,8 +199,9 @@ Write the plan to repository root: `/{NNN}_{FEATURE_NAME}.md`
 1. **Explore** - Use Explore subagent to understand current codebase
 2. **Identify** - Determine ONLY the standards/templates/ADRs that directly apply
 3. **Plan** - Design phases and tasks
-4. **Count** - Verify plan is under 1000 lines
-5. **Write** - Create plan with minimal, relevant references only
-6. **Report** - Tell user the plan location and line count
+4. **Documentation** - Identify all docs needing updates (CLAUDE.md, READMEs, AGENTS.md, standards)
+5. **Count** - Verify plan is under 1000 lines
+6. **Write** - Create plan with minimal, relevant references only
+7. **Report** - Tell user the plan location and line count
 
 If requirements are vague, ask clarifying questions BEFORE creating the plan.

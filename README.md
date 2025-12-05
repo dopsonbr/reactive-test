@@ -23,6 +23,20 @@ See [PACKAGES.md](PACKAGES.md) for the complete package index with documentation
 
 All repository calls execute **in parallel**. Merchandise and Price check cache first; Inventory always calls HTTP first and uses cache only on errors.
 
+## Technology Stack
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Java | 21 | Runtime (LTS) |
+| Spring Boot | 4.0.0 | Application framework |
+| Spring Framework | 7.x | Core framework (via Spring Boot) |
+| Spring WebFlux | 7.x | Reactive web framework |
+| Resilience4j | 2.2.0 | Fault tolerance (circuit breaker, retry, timeout) |
+| Micrometer | 1.14.x | Metrics and observability |
+| Redis | 7.x | Caching and session storage |
+| Testcontainers | 1.20.4 | Integration testing |
+| Gradle | 8.x | Build tool (wrapper included) |
+
 ## Logging
 
 - **Format:** Structured JSON

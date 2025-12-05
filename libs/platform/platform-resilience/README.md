@@ -139,6 +139,6 @@ resilience4j:
 
 ## Dependencies
 
-- `resilience4j-spring-boot3` - Spring Boot integration
+- `resilience4j-spring-boot` - Spring Boot 4 integration
 - `resilience4j-reactor` - Project Reactor support
 - `resilience4j-micrometer` - Metrics integration

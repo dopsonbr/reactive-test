@@ -39,6 +39,12 @@ Controller → Service → Repository
 - Repositories handle external I/O (HTTP, Redis, DB)
 - Domain objects have NO dependencies on other layers
 
+## Prerequisites
+
+- Java 21 (required - LTS release)
+- Gradle 8.x (wrapper included)
+- Docker (for integration tests with Testcontainers)
+
 ## Building
 
 ```bash

@@ -1,7 +1,7 @@
 # Validation
 
 ## Boundaries
-Files that require careful review before changes: ProductRequestValidator.java (validation rules match expected request format)
+Files that require careful review before changes: ProductRequestValidator.java (validation rules match expected request format), SearchRequestValidator.java (search parameter validation rules)
 
 ## Conventions
 - All validators return Mono<Void> that errors on validation failure

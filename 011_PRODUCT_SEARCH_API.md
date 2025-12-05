@@ -315,52 +315,36 @@ public class SearchRequestValidator {
 
 ---
 
-## Phase 3: Catalog Service Client
+## Phase 3: Catalog Search Repository
 
-### 3.1 Interface
-
-**New File:** `apps/product-service/src/main/java/org/example/product/client/CatalogServiceClient.java`
+**New File:** `apps/product-service/src/main/java/org/example/product/repository/catalog/CatalogSearchRepository.java`
 
 ```java
-package org.example.product.client;
+package org.example.product.repository.catalog;
 
+import java.math.BigDecimal;
+import java.util.List;
+import org.example.platform.logging.StructuredLogger;
+import org.example.platform.resilience.ReactiveResilience;
 import org.example.product.domain.SearchCriteria;
 import org.example.product.domain.SearchProduct;
 import org.example.product.domain.SearchResponse;
-import reactor.core.publisher.Mono;
-import java.util.List;
-
-public interface CatalogServiceClient {
-    Mono<SearchResponse<SearchProduct>> search(SearchCriteria criteria);
-    Mono<List<String>> getSuggestions(String prefix, int limit);
-}
-```
-
-### 3.2 Implementation
-
-**New File:** `apps/product-service/src/main/java/org/example/product/client/CatalogServiceClientImpl.java`
-
-```java
-package org.example.product.client;
-
-import org.example.platform.logging.StructuredLogger;
-import org.example.platform.resilience.ReactiveResilience;
-import org.example.product.domain.*;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import java.util.List;
 
-@Component
-public class CatalogServiceClientImpl implements CatalogServiceClient {
+@Repository
+public class CatalogSearchRepository {
 
-    private static final String LOGGER_NAME = "CatalogServiceClient";
+    private static final String RESILIENCE_NAME = "catalog";
+    private static final String LOGGER_NAME = "catalogsearchrepository";
+
     private final WebClient catalogWebClient;
     private final ReactiveResilience resilience;
     private final StructuredLogger structuredLogger;
 
-    public CatalogServiceClientImpl(
+    public CatalogSearchRepository(
             @Qualifier("catalogWebClient") WebClient catalogWebClient,
             ReactiveResilience resilience,
             StructuredLogger structuredLogger) {
@@ -369,36 +353,36 @@ public class CatalogServiceClientImpl implements CatalogServiceClient {
         this.structuredLogger = structuredLogger;
     }
 
-    @Override
     public Mono<SearchResponse<SearchProduct>> search(SearchCriteria criteria) {
-        return Mono.deferContextual(ctx -> {
-            structuredLogger.logOutboundRequest(LOGGER_NAME, "POST", "/catalog/search", criteria);
-            return catalogWebClient
-                .post()
-                .uri("/catalog/search")
-                .bodyValue(toCatalogSearchRequest(criteria))
-                .retrieve()
-                .bodyToMono(CatalogSearchResponse.class)
+        Mono<CatalogSearchResponse> call =
+                catalogWebClient
+                        .post()
+                        .uri("/catalog/search")
+                        .bodyValue(toCatalogSearchRequest(criteria))
+                        .retrieve()
+                        .bodyToMono(CatalogSearchResponse.class);
+
+        return resilience
+                .decorate(RESILIENCE_NAME, call)
                 .map(this::toSearchResponse)
-                .transform(resilience.decorate("catalog"));
-        });
+                .onErrorResume(this::handleSearchError);
     }
 
-    @Override
     public Mono<List<String>> getSuggestions(String prefix, int limit) {
-        return Mono.deferContextual(ctx -> {
-            structuredLogger.logOutboundRequest(LOGGER_NAME, "GET", "/catalog/suggestions", null);
-            return catalogWebClient
-                .get()
-                .uri(b -> b.path("/catalog/suggestions")
-                    .queryParam("prefix", prefix)
-                    .queryParam("limit", limit)
-                    .build())
-                .retrieve()
-                .bodyToMono(SuggestionsResponse.class)
+        Mono<SuggestionsResponse> call =
+                catalogWebClient
+                        .get()
+                        .uri(b -> b.path("/catalog/suggestions")
+                                .queryParam("prefix", prefix)
+                                .queryParam("limit", limit)
+                                .build())
+                        .retrieve()
+                        .bodyToMono(SuggestionsResponse.class);
+
+        return resilience
+                .decorate(RESILIENCE_NAME, call)
                 .map(SuggestionsResponse::suggestions)
-                .transform(resilience.decorate("catalog"));
-        });
+                .onErrorResume(this::handleSuggestionsError);
     }
 
     private CatalogSearchRequest toCatalogSearchRequest(SearchCriteria c) {
@@ -416,14 +400,30 @@ public class CatalogServiceClientImpl implements CatalogServiceClient {
             r.totalCount(), r.totalPages(), r.page(), r.size(), r.query(), r.searchTimeMs());
     }
 
+    private Mono<SearchResponse<SearchProduct>> handleSearchError(Throwable t) {
+        return Mono.deferContextual(ctx -> {
+            String cbState = resilience.getCircuitBreakerState(RESILIENCE_NAME).name();
+            structuredLogger.logError(ctx, LOGGER_NAME, RESILIENCE_NAME, t, cbState);
+            return Mono.error(t);
+        });
+    }
+
+    private Mono<List<String>> handleSuggestionsError(Throwable t) {
+        return Mono.deferContextual(ctx -> {
+            String cbState = resilience.getCircuitBreakerState(RESILIENCE_NAME).name();
+            structuredLogger.logError(ctx, LOGGER_NAME, RESILIENCE_NAME, t, cbState);
+            return Mono.just(List.of());
+        });
+    }
+
     // Internal DTOs
-    private record CatalogSearchRequest(String query, java.math.BigDecimal minPrice,
-        java.math.BigDecimal maxPrice, Integer minAvailability, Boolean inStockOnly,
+    private record CatalogSearchRequest(String query, BigDecimal minPrice,
+        BigDecimal maxPrice, Integer minAvailability, Boolean inStockOnly,
         String category, String customerZipCode, String sellingLocation,
         String sortBy, String sortDirection, int page, int size) {}
     private record CatalogSearchResponse(List<CatalogProduct> products, long totalCount,
         int totalPages, int page, int size, String query, long searchTimeMs) {}
-    private record CatalogProduct(long sku, String description, java.math.BigDecimal price,
+    private record CatalogProduct(long sku, String description, BigDecimal price,
         int availableQuantity, String category, double relevanceScore) {}
     private record SuggestionsResponse(List<String> suggestions) {}
 }
@@ -440,7 +440,7 @@ package org.example.product.service;
 
 import org.example.platform.cache.ReactiveCacheService;
 import org.example.platform.logging.StructuredLogger;
-import org.example.product.client.CatalogServiceClient;
+import org.example.product.repository.catalog.CatalogSearchRepository;
 import org.example.product.config.SearchCacheProperties;
 import org.example.product.domain.*;
 import org.springframework.stereotype.Service;
@@ -451,15 +451,15 @@ import java.util.List;
 public class ProductSearchService {
 
     private static final String LOGGER_NAME = "ProductSearchService";
-    private final CatalogServiceClient catalogServiceClient;
+    private final CatalogSearchRepository catalogSearchRepository;
     private final ReactiveCacheService cacheService;
     private final SearchCacheProperties cacheProperties;
     private final StructuredLogger structuredLogger;
 
-    public ProductSearchService(CatalogServiceClient catalogServiceClient,
+    public ProductSearchService(CatalogSearchRepository catalogSearchRepository,
             ReactiveCacheService cacheService, SearchCacheProperties cacheProperties,
             StructuredLogger structuredLogger) {
-        this.catalogServiceClient = catalogServiceClient;
+        this.catalogSearchRepository = catalogSearchRepository;
         this.cacheService = cacheService;
         this.cacheProperties = cacheProperties;
         this.structuredLogger = structuredLogger;
@@ -472,7 +472,7 @@ public class ProductSearchService {
             String cacheKey = buildSearchCacheKey(criteria);
             return cacheService.get(cacheKey, SearchResponse.class)
                 .switchIfEmpty(Mono.defer(() ->
-                    catalogServiceClient.search(criteria)
+                    catalogSearchRepository.search(criteria)
                         .flatMap(r -> cacheService.put(cacheKey, r, cacheProperties.getSearchTtl())
                             .thenReturn(r))))
                 .doOnSuccess(r -> structuredLogger.logInfo(LOGGER_NAME, "Search completed",
@@ -485,7 +485,7 @@ public class ProductSearchService {
             String cacheKey = "suggestions:" + prefix.toLowerCase().trim() + ":limit:" + limit;
             return cacheService.get(cacheKey, List.class)
                 .switchIfEmpty(Mono.defer(() ->
-                    catalogServiceClient.getSuggestions(prefix, limit)
+                    catalogSearchRepository.getSuggestions(prefix, limit)
                         .flatMap(s -> cacheService.put(cacheKey, s, cacheProperties.getSuggestionsTtl())
                             .thenReturn(s))));
         });
@@ -642,7 +642,7 @@ public WebClient catalogWebClient(
         WebClientLoggingFilter loggingFilter) {
     return WebClient.builder()
         .baseUrl(catalogBaseUrl)
-        .filter(loggingFilter.create("CatalogServiceClient"))
+        .filter(loggingFilter.create("catalogsearchrepository"))
         .build();
 }
 ```
@@ -701,8 +701,7 @@ resilience4j:
 | CREATE | `domain/SearchProduct.java` | Search result product |
 | CREATE | `validation/SearchRequestValidator.java` | Request validation |
 | CREATE | `config/SearchCacheProperties.java` | Cache configuration |
-| CREATE | `client/CatalogServiceClient.java` | Client interface |
-| CREATE | `client/CatalogServiceClientImpl.java` | Client implementation |
+| CREATE | `repository/catalog/CatalogSearchRepository.java` | Catalog search repository |
 | CREATE | `service/ProductSearchService.java` | Search service |
 | CREATE | `controller/ProductSearchController.java` | REST controller |
 | MODIFY | `ProductServiceConfig.java` | Add catalog WebClient |
@@ -712,11 +711,11 @@ resilience4j:
 
 ## Checklist
 
-- [ ] Phase 1: Domain models created
-- [ ] Phase 2: Validation implemented
-- [ ] Phase 3: Catalog client created
-- [ ] Phase 4: Search service created
-- [ ] Phase 5: Controller created
-- [ ] Phase 6: Configuration updated
-- [ ] Build passes
-- [ ] Ready for 012_PRODUCT_SEARCH_TESTING
+- [x] Phase 1: Domain models created
+- [x] Phase 2: Validation implemented
+- [x] Phase 3: Catalog search repository created
+- [x] Phase 4: Search service created
+- [x] Phase 5: Controller created
+- [x] Phase 6: Configuration updated
+- [x] Build passes
+- [x] Ready for 012_PRODUCT_SEARCH_TESTING

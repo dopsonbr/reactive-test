@@ -65,4 +65,19 @@ public class ProductServiceConfig {
                 .filter(loggingFilter.create("inventoryrepository"))
                 .build();
     }
+
+    @Bean
+    public WebClient catalogWebClient(
+            @Value("${services.catalog.base-url}") String baseUrl,
+            WebClientLoggingFilter loggingFilter,
+            @Qualifier("oauth2Filter")
+                    ObjectProvider<ExchangeFilterFunction> oauth2FilterProvider) {
+        ExchangeFilterFunction oauth2Filter =
+                oauth2FilterProvider.getIfAvailable(() -> NO_OP_FILTER);
+        return WebClient.builder()
+                .baseUrl(baseUrl)
+                .filter(oauth2Filter)
+                .filter(loggingFilter.create("catalogserviceclient"))
+                .build();
+    }
 }

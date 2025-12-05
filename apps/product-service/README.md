@@ -5,9 +5,11 @@ Product aggregation service that combines data from merchandise, price, and inve
 ## Features
 
 - **Product Aggregation**: Combines merchandise details, pricing, and inventory availability
+- **Product Search**: Full-text search with filters, sorting, and pagination via Catalog Service
+- **Search Suggestions**: Type-ahead suggestions for search queries
 - **Reactive WebFlux**: Non-blocking I/O with Project Reactor
 - **Resilience4j**: Circuit breaker, retry, timeout, and bulkhead patterns
-- **Redis Caching**: Cache-aside for merchandise/price, fallback-only for inventory
+- **Redis Caching**: Cache-aside for merchandise/price/search, fallback-only for inventory
 - **OAuth2 Security**: JWT validation for inbound requests, client credentials for downstream calls
 - **Structured Logging**: JSON logs with trace correlation
 
@@ -38,6 +40,67 @@ GET /products/{sku}
 }
 ```
 
+### Search Products
+
+```http
+GET /products/search?q={query}
+```
+
+**Query Parameters:**
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| q | Yes | Search query (min 2 chars) |
+| minPrice | No | Minimum price filter |
+| maxPrice | No | Maximum price filter |
+| minAvailability | No | Minimum stock quantity |
+| inStockOnly | No | Filter to in-stock items only |
+| category | No | Category filter |
+| customerZipCode | No | 5-digit or 5+4 zip code |
+| sellingLocation | No | ONLINE, MOBILE_APP, KIOSK, CALL_CENTER, or store ID (1-2000) |
+| sortBy | No | relevance, price, availability, description (default: relevance) |
+| sortDirection | No | ASC, DESC (default: DESC) |
+| page | No | Page number (default: 0) |
+| size | No | Page size (default: 20) |
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "sku": 123456,
+      "description": "Product Name",
+      "price": 29.99,
+      "availableQuantity": 100,
+      "category": "Electronics",
+      "relevanceScore": 0.95
+    }
+  ],
+  "totalItems": 150,
+  "totalPages": 8,
+  "page": 0,
+  "size": 20,
+  "query": "laptop",
+  "searchTimeMs": 45
+}
+```
+
+### Search Suggestions
+
+```http
+GET /products/search/suggestions?prefix={prefix}
+```
+
+**Query Parameters:**
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| prefix | Yes | Search prefix (min 2 chars) |
+| limit | No | Max suggestions (default: 10) |
+
+**Response:**
+```json
+["laptop", "laptop bag", "laptop stand"]
+```
+
 ### Health Check
 
 ```http
@@ -47,17 +110,17 @@ GET /actuator/health
 ## Architecture
 
 ```
-ProductController
-       ↓
-ProductService
-    ↓      ↓      ↓
-Merchandise  Price  Inventory
-Repository   Repository   Repository
-    ↓          ↓           ↓
- (HTTP)     (HTTP)      (HTTP)
-    ↓          ↓           ↓
-External   External   External
-Service    Service    Service
+ProductController          ProductSearchController
+       ↓                          ↓
+ProductService             ProductSearchService
+    ↓      ↓      ↓               ↓
+Merchandise  Price  Inventory   Catalog
+Repository   Repo   Repository  SearchRepository
+    ↓          ↓        ↓           ↓
+ (HTTP)     (HTTP)   (HTTP)      (HTTP)
+    ↓          ↓        ↓           ↓
+External   External  External   Catalog
+Service    Service   Service    Service
 ```
 
 ## Configuration
@@ -72,6 +135,8 @@ services:
     base-url: http://price-service:8080
   inventory:
     base-url: http://inventory-service:8080
+  catalog:
+    base-url: http://catalog-service:8080
 ```
 
 ### Cache TTLs
@@ -84,6 +149,10 @@ cache:
     ttl: 2m     # May change, shorter cache
   inventory:
     ttl: 30s    # Real-time, fallback only
+  search:
+    ttl: 5m     # Search results
+  suggestions:
+    ttl: 10m    # Search suggestions
 ```
 
 ### Resilience4j
@@ -181,10 +250,14 @@ Includes circuit breaker health indicators.
 org.example.product/
 ├── ProductServiceApplication.java
 ├── controller/
-│   └── ProductController.java
+│   ├── ProductController.java
+│   └── ProductSearchController.java
 ├── service/
-│   └── ProductService.java
+│   ├── ProductService.java
+│   └── ProductSearchService.java
 ├── repository/
+│   ├── catalog/
+│   │   └── CatalogSearchRepository.java
 │   ├── merchandise/
 │   │   ├── MerchandiseRepository.java
 │   │   └── MerchandiseResponse.java
@@ -197,12 +270,18 @@ org.example.product/
 │       ├── InventoryRequest.java
 │       └── InventoryResponse.java
 ├── domain/
-│   └── Product.java
+│   ├── Product.java
+│   ├── SearchCriteria.java
+│   ├── SearchProduct.java
+│   ├── SearchResponse.java
+│   └── SortDirection.java
 ├── config/
 │   ├── ProductServiceConfig.java
-│   └── CacheProperties.java
+│   ├── CacheProperties.java
+│   └── SearchCacheProperties.java
 ├── validation/
-│   └── ProductRequestValidator.java
+│   ├── ProductRequestValidator.java
+│   └── SearchRequestValidator.java
 └── security/
     ├── SecurityConfig.java
     └── OAuth2ClientConfig.java

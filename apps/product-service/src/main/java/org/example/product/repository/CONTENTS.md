@@ -2,6 +2,7 @@
 
 | File | Description |
 |------|-------------|
+| `catalog/CatalogSearchRepository.java` | Searches products via Catalog Service with resilience patterns |
 | `inventory/InventoryRepository.java` | Fetches available quantity with cache-aside and fallback-only patterns |
 | `inventory/InventoryRequest.java` | Request model containing SKU |
 | `inventory/InventoryResponse.java` | Response model containing available quantity |

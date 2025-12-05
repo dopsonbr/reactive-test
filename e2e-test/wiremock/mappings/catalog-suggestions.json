@@ -1,0 +1,74 @@
+{
+  "mappings": [
+    {
+      "name": "catalog-suggestions-success",
+      "priority": 10,
+      "scenarioName": "catalog-suggestions-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/catalog/suggestions.*"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "suggestions": [
+            "laptop",
+            "laptop bag",
+            "laptop stand",
+            "laptop charger",
+            "laptop sleeve"
+          ]
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 20,
+          "sigma": 0.3
+        }
+      }
+    },
+    {
+      "name": "catalog-suggestions-500",
+      "priority": 5,
+      "scenarioName": "catalog-suggestions-chaos",
+      "requiredScenarioState": "error-500",
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/catalog/suggestions.*"
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Internal Server Error",
+          "message": "Failed to retrieve suggestions"
+        }
+      }
+    },
+    {
+      "name": "catalog-suggestions-timeout",
+      "priority": 5,
+      "scenarioName": "catalog-suggestions-chaos",
+      "requiredScenarioState": "timeout",
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/catalog/suggestions.*"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "suggestions": []
+        },
+        "fixedDelayMilliseconds": 10000
+      }
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "mappings": [
+    {
+      "name": "catalog-search-success",
+      "priority": 10,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [
+            {
+              "sku": 123456,
+              "description": "Laptop Computer - 15 inch",
+              "price": 999.99,
+              "availableQuantity": 50,
+              "category": "Electronics",
+              "relevanceScore": 0.95
+            },
+            {
+              "sku": 234567,
+              "description": "Laptop Bag - Professional",
+              "price": 49.99,
+              "availableQuantity": 200,
+              "category": "Accessories",
+              "relevanceScore": 0.85
+            },
+            {
+              "sku": 345678,
+              "description": "Laptop Stand - Adjustable",
+              "price": 79.99,
+              "availableQuantity": 75,
+              "category": "Accessories",
+              "relevanceScore": 0.80
+            }
+          ],
+          "totalCount": 3,
+          "totalPages": 1,
+          "page": 0,
+          "size": 20,
+          "query": "laptop",
+          "searchTimeMs": 45
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 50,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "catalog-search-no-results",
+      "priority": 5,
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": {
+              "expression": "$.query",
+              "contains": "nonexistent"
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [],
+          "totalCount": 0,
+          "totalPages": 0,
+          "page": 0,
+          "size": 20,
+          "query": "nonexistent",
+          "searchTimeMs": 12
+        }
+      }
+    },
+    {
+      "name": "catalog-search-500",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "error-500",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search"
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Internal Server Error",
+          "message": "Catalog service unavailable"
+        }
+      }
+    },
+    {
+      "name": "catalog-search-503",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "error-503",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search"
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "Content-Type": "application/json",
+          "Retry-After": "5"
+        },
+        "jsonBody": {
+          "error": "Service Unavailable",
+          "message": "Catalog service is temporarily unavailable"
+        }
+      }
+    },
+    {
+      "name": "catalog-search-timeout",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "timeout",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [],
+          "totalCount": 0,
+          "totalPages": 0,
+          "page": 0,
+          "size": 20,
+          "query": "",
+          "searchTimeMs": 5000
+        },
+        "fixedDelayMilliseconds": 10000
+      }
+    },
+    {
+      "name": "catalog-search-slow",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "slow",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [
+            {
+              "sku": 123456,
+              "description": "Laptop Computer - 15 inch",
+              "price": 999.99,
+              "availableQuantity": 50,
+              "category": "Electronics",
+              "relevanceScore": 0.95
+            }
+          ],
+          "totalCount": 1,
+          "totalPages": 1,
+          "page": 0,
+          "size": 20,
+          "query": "laptop",
+          "searchTimeMs": 2000
+        },
+        "delayDistribution": {
+          "type": "uniform",
+          "lower": 1500,
+          "upper": 2500
+        }
+      }
+    }
+  ]
+}

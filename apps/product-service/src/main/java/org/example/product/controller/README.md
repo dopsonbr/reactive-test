@@ -9,3 +9,4 @@ Accepts GET requests with required metadata headers, delegates to service layer,
 ## Quirks
 - All four metadata headers are required; missing headers result in 400 Bad Request
 - Context is established at controller boundary, not extracted from incoming trace headers
+- ProductSearchController validates query parameters (zip code format, price range, selling location)

@@ -1,45 +1,33 @@
 package org.example.fulfillment.controller;
 
-import java.math.BigDecimal;
-import java.util.List;
-import org.example.model.fulfillment.FulfillmentType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.example.fulfillment.dto.*;
+import org.example.fulfillment.service.FulfillmentService;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-/**
- * Minimal placeholder controller for fulfillment-service. Complex B2B/B2C omnichannel fulfillment
- * model (delivery, pickup, installation, haul-away, scheduling) to be designed in a future feature
- * plan.
- */
+/** Controller for fulfillment operations including cost calculation, plans, and reservations. */
 @RestController
 @RequestMapping("/fulfillments")
 public class FulfillmentController {
 
-  /**
-   * Calculate fulfillment cost.
-   *
-   * @param request the fulfillment cost request
-   * @return the calculated cost
-   */
-  @PostMapping("/calculate")
-  public Mono<FulfillmentCostResponse> calculateCost(@RequestBody FulfillmentCostRequest request) {
-    // Stubbed costs based on fulfillment type
-    BigDecimal cost =
-        switch (request.type()) {
-          case DELIVERY -> new BigDecimal("9.99");
-          case PICKUP -> BigDecimal.ZERO;
-          case INSTALLATION -> new BigDecimal("49.99");
-        };
+  private final FulfillmentService fulfillmentService;
 
-    return Mono.just(new FulfillmentCostResponse(cost.toString()));
+  public FulfillmentController(FulfillmentService fulfillmentService) {
+    this.fulfillmentService = fulfillmentService;
   }
 
-  /** Request for calculating fulfillment cost. */
-  public record FulfillmentCostRequest(FulfillmentType type, List<Long> skus) {}
+  @PostMapping("/calculate")
+  public Mono<FulfillmentCostResponse> calculateCost(@RequestBody FulfillmentCostRequest request) {
+    return Mono.deferContextual(ctx -> fulfillmentService.calculateCost(ctx, request));
+  }
 
-  /** Response containing the calculated fulfillment cost. */
-  public record FulfillmentCostResponse(String cost) {}
+  @PostMapping("/plan")
+  public Mono<FulfillmentPlanResponse> createPlan(@RequestBody FulfillmentPlanRequest request) {
+    return Mono.deferContextual(ctx -> fulfillmentService.createPlan(ctx, request));
+  }
+
+  @PostMapping("/reserve")
+  public Mono<ReservationResponse> createReservation(@RequestBody ReservationRequest request) {
+    return Mono.deferContextual(ctx -> fulfillmentService.createReservation(ctx, request));
+  }
 }

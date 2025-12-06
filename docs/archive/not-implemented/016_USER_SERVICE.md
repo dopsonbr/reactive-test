@@ -1,6 +1,10 @@
 # 016_USER_SERVICE
 
-**Status: DRAFT**
+**Status: SUPERSEDED by [036_USER_SERVICE.md](../../../036_USER_SERVICE.md)**
+
+> This plan proposed custom JWT issuance using jjwt library. It has been replaced by
+> 036_USER_SERVICE.md which uses Spring Authorization Server for standards-compliant
+> OAuth 2.1 support. See [ADR-011](../../ADRs/011_spring_authorization_server.md).
 
 ---
 

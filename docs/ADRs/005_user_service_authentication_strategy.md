@@ -1,6 +1,6 @@
 # User Service Authentication Strategy
 
-* Status: proposed
+* Status: superseded by [ADR-011 Spring Authorization Server](011_spring_authorization_server.md)
 * Deciders: Platform Team, Security Team
 * Date: 2025-12-05
 

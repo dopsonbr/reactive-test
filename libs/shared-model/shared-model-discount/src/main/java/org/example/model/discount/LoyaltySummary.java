@@ -12,8 +12,8 @@ import java.util.List;
  * @param appliedBenefits list of benefit descriptions applied
  */
 public record LoyaltySummary(
-        String loyaltyTier,
-        long pointsEarned,
-        long pointsBalance,
-        long pointsToNextTier,
-        List<String> appliedBenefits) {}
+    String loyaltyTier,
+    long pointsEarned,
+    long pointsBalance,
+    long pointsToNextTier,
+    List<String> appliedBenefits) {}

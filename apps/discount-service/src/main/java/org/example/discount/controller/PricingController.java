@@ -14,20 +14,20 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/pricing")
 public class PricingController {
 
-    private final PricingService pricingService;
+  private final PricingService pricingService;
 
-    public PricingController(PricingService pricingService) {
-        this.pricingService = pricingService;
-    }
+  public PricingController(PricingService pricingService) {
+    this.pricingService = pricingService;
+  }
 
-    /**
-     * Calculate the best price for a cart.
-     *
-     * @param request the pricing request with cart items, promo codes, and customer info
-     * @return the pricing result with all discounts and savings
-     */
-    @PostMapping("/calculate")
-    public Mono<PricingResult> calculateBestPrice(@RequestBody PricingRequest request) {
-        return pricingService.calculateBestPrice(request);
-    }
+  /**
+   * Calculate the best price for a cart.
+   *
+   * @param request the pricing request with cart items, promo codes, and customer info
+   * @return the pricing result with all discounts and savings
+   */
+  @PostMapping("/calculate")
+  public Mono<PricingResult> calculateBestPrice(@RequestBody PricingRequest request) {
+    return pricingService.calculateBestPrice(request);
+  }
 }

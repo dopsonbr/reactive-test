@@ -14,10 +14,10 @@ import java.util.List;
  * @param shipping the shipping option
  */
 public record PricingRequest(
-        String cartId,
-        String customerId,
-        String userId,
-        int storeNumber,
-        List<CartItem> items,
-        List<String> promoCodes,
-        ShippingOption shipping) {}
+    String cartId,
+    String customerId,
+    String userId,
+    int storeNumber,
+    List<CartItem> items,
+    List<String> promoCodes,
+    ShippingOption shipping) {}

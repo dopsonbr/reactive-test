@@ -176,6 +176,7 @@ services:
     container_name: product-service
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - APP_SECURITY_ENABLED=false
       - OTEL_SERVICE_NAME=product-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
@@ -219,7 +220,7 @@ services:
       - SPRING_FLYWAY_PASSWORD=cart_pass
       - PRODUCT_SERVICE_URL=http://product-service:8080
       - CUSTOMER_SERVICE_URL=http://customer-service:8083
-      - DISCOUNT_SERVICE_URL=http://discount-service:8085
+      - DISCOUNT_SERVICE_URL=http://discount-service:8084
       - FULFILLMENT_SERVICE_URL=http://fulfillment-service:8085
       - OTEL_SERVICE_NAME=cart-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
@@ -312,12 +313,12 @@ services:
     volumes:
       - app-logs:/app/logs
     ports:
-      - "8085:8085"
+      - "8084:8084"
     depends_on:
       tempo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
       interval: 10s
       timeout: 5s
       start_period: 60s
@@ -389,6 +390,26 @@ services:
       interval: 10s
       timeout: 5s
       start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
+  # === Frontend Applications ===
+  ecommerce-web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.ecommerce-web
+    container_name: ecommerce-web
+    ports:
+      - "3001:3000"
+    depends_on:
+      product-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
       retries: 5
     networks:
       - observability

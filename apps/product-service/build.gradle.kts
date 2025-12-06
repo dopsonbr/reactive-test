@@ -26,6 +26,9 @@ dependencies {
     // Prometheus metrics
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
+    // OpenAPI documentation
+    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.8")
+
     // Test dependencies
     testImplementation(project(":libs:platform:platform-test"))
 }

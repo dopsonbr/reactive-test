@@ -19,23 +19,23 @@ import java.time.Instant;
  * @param expiresAt when the markdown expires (session-based)
  */
 public record Markdown(
-        String markdownId,
-        int storeNumber,
-        Long sku,
-        MarkdownType type,
-        BigDecimal value,
-        MarkdownReason reason,
-        String employeeId,
-        String customerId,
-        String cartId,
-        Instant appliedAt,
-        Instant expiresAt) {
+    String markdownId,
+    int storeNumber,
+    Long sku,
+    MarkdownType type,
+    BigDecimal value,
+    MarkdownReason reason,
+    String employeeId,
+    String customerId,
+    String cartId,
+    Instant appliedAt,
+    Instant expiresAt) {
 
-    public boolean isExpired() {
-        return expiresAt != null && expiresAt.isBefore(Instant.now());
-    }
+  public boolean isExpired() {
+    return expiresAt != null && expiresAt.isBefore(Instant.now());
+  }
 
-    public boolean isCartLevel() {
-        return sku == null;
-    }
+  public boolean isCartLevel() {
+    return sku == null;
+  }
 }

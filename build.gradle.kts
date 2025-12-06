@@ -2,11 +2,17 @@
 
 plugins {
     base
+    id("dev.nx.gradle.project-graph") version "+"
 }
 
 allprojects {
     group = "org.example.platform"
     version = "1.0.0-SNAPSHOT"
+}
+
+// Apply Nx plugin only to subprojects (not root) to avoid circular dependencies
+subprojects {
+    apply(plugin = "dev.nx.gradle.project-graph")
 }
 
 // Convenience tasks - only target leaf projects with actual build tasks

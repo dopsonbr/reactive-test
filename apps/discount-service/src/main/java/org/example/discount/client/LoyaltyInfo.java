@@ -13,24 +13,24 @@ import java.util.Optional;
  */
 public record LoyaltyInfo(String tier, long pointsBalance, List<LoyaltyBenefit> benefits) {
 
-    public Optional<LoyaltyBenefit> getBenefit(BenefitType type) {
-        if (benefits == null) {
-            return Optional.empty();
-        }
-        return benefits.stream().filter(b -> b.type() == type).findFirst();
+  public Optional<LoyaltyBenefit> getBenefit(BenefitType type) {
+    if (benefits == null) {
+      return Optional.empty();
     }
+    return benefits.stream().filter(b -> b.type() == type).findFirst();
+  }
 
-    public boolean hasBenefit(BenefitType type) {
-        return getBenefit(type).isPresent();
-    }
+  public boolean hasBenefit(BenefitType type) {
+    return getBenefit(type).isPresent();
+  }
 
-    public record LoyaltyBenefit(BenefitType type, BigDecimal value, String description) {}
+  public record LoyaltyBenefit(BenefitType type, BigDecimal value, String description) {}
 
-    public enum BenefitType {
-        PERCENTAGE_DISCOUNT,
-        FREE_SHIPPING,
-        POINTS_MULTIPLIER,
-        EARLY_ACCESS,
-        FREE_GIFT
-    }
+  public enum BenefitType {
+    PERCENTAGE_DISCOUNT,
+    FREE_SHIPPING,
+    POINTS_MULTIPLIER,
+    EARLY_ACCESS,
+    FREE_GIFT
+  }
 }

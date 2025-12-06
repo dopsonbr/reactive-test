@@ -43,3 +43,15 @@ logs/
 perf-test/node_modules/
 perf-test/data/
 perf-test/output/
+
+### Node/pnpm ###
+node_modules/
+.pnpm-store/
+
+### Nx ###
+.nx/
+dist/
+.cache/
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*

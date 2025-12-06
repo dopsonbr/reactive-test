@@ -4,7 +4,7 @@ This file provides guidance to AI agents (Claude Code, etc.) working with this r
 
 ## Project Structure
 
-This is a **Gradle multi-module project** with shared platform libraries and multiple Spring Boot applications.
+This is an **Nx-orchestrated polyglot monorepo** with Gradle backend modules and (future) TypeScript frontend applications. Nx provides unified task orchestration, caching, and affected analysis across all modules.
 
 ```
 reactive-platform/
@@ -26,7 +26,48 @@ reactive-platform/
 └── e2e-test/                    # k6 end-to-end tests
 ```
 
-## Build Commands
+## Package Manager
+
+This project uses **pnpm** as the package manager. Ensure you have it installed:
+
+```bash
+corepack enable
+corepack prepare pnpm@9.15.0 --activate
+pnpm install
+```
+
+## Build Commands (Nx - Preferred)
+
+Nx orchestrates both Gradle backend modules and (future) TypeScript frontend apps. Prefer Nx commands for unified caching and affected analysis.
+
+```bash
+# Build all modules
+pnpm nx run-many -t build
+
+# Build specific module
+pnpm nx build :libs:platform:platform-logging
+pnpm nx build :apps:product-service
+
+# Run all tests
+pnpm nx run-many -t test
+
+# Run specific module tests
+pnpm nx test :apps:product-service
+
+# Run affected targets only (for PRs)
+pnpm nx affected -t build
+pnpm nx affected -t test
+
+# View dependency graph
+pnpm nx graph
+
+# List all projects
+pnpm nx show projects
+```
+
+## Build Commands (Gradle - Direct)
+
+Direct Gradle commands are still available for advanced use cases:
 
 ```bash
 # Build all modules
@@ -97,8 +138,71 @@ docker compose logs -f cart-service
 | Application | Port | Description |
 |-------------|------|-------------|
 | `product-service` | 8080 | Product aggregation from merchandise, price, inventory |
-| `cart-service` | 8082 (local) / 8080 (docker) | Shopping cart management |
-| `discount-service` | 8085 | Discount pricing engine with promo codes, markdowns, and loyalty |
+| `cart-service` | 8081 | Shopping cart management |
+| `customer-service` | 8083 | Customer management |
+| `discount-service` | 8084 | Discount pricing engine with promo codes, markdowns, and loyalty |
+| `fulfillment-service` | 8085 | Fulfillment and shipping |
+| `audit-service` | 8086 | Audit event processing |
+| `ecommerce-web` | 3001 | E-commerce frontend (React + Vite) |
+
+### Frontend Libraries (libs/shared-ui/, libs/shared-data/)
+
+| Library | Purpose |
+|---------|---------|
+| `shared-ui/ui-components` | shadcn/ui components with Tailwind CSS |
+| `shared-data/api-client` | Generated TypeScript API client from OpenAPI |
+
+## Frontend Development
+
+### Development Modes
+
+**1. Hybrid Mode (Recommended for frontend development)**
+Backend services run in Docker, frontend runs locally with HMR:
+```bash
+pnpm dev              # Starts backend containers + frontend dev server
+# or separately:
+pnpm dev:backend      # Start only backend services in Docker
+pnpm dev:frontend     # Start frontend dev server with hot reload
+```
+Frontend: http://localhost:4200 (Vite dev server with proxy to backend)
+
+**2. Full Docker Mode (Production-like)**
+All services including frontend run in Docker:
+```bash
+cd docker && docker compose up -d ecommerce-web
+```
+Frontend: http://localhost:3001 (nginx serving built assets)
+
+**3. Stop Services**
+```bash
+pnpm stop             # Stop all Docker services
+```
+
+### Frontend Commands
+
+```bash
+# Serve with hot reload
+pnpm nx serve ecommerce-web
+
+# Build for production
+pnpm nx build ecommerce-web
+
+# Run tests
+pnpm nx test ecommerce-web
+
+# Build shared-ui library
+pnpm nx build ui-components
+
+# Generate API client (requires product-service running)
+pnpm generate:api
+```
+
+### TypeScript Path Aliases
+
+```typescript
+import { Button } from '@reactive-platform/shared-ui/ui-components';
+import { ApiClient } from '@reactive-platform/api-client';
+```
 
 ## Key Patterns
 
@@ -144,19 +248,25 @@ All services expect these headers for context propagation:
 3. Add to `settings.gradle.kts`: `include("libs:platform:platform-new")`
 4. Reference BOM: `api(platform(project(":libs:platform:platform-bom")))`
 
-## Observability Stack (Docker)
+## Canonical Service Ports
 
 | Service | Port | Description |
 |---------|------|-------------|
 | product-service | 8080 | Product aggregation service |
 | cart-service | 8081 | Shopping cart service |
-| discount-service | 8085 | Discount pricing engine |
 | wiremock | 8082 | Mock external services |
+| customer-service | 8083 | Customer management |
+| discount-service | 8084 | Discount pricing engine |
+| fulfillment-service | 8085 | Fulfillment and shipping |
+| audit-service | 8086 | Audit event processing |
 | redis | 6379 | Cache backend |
+| postgres | 5432 | Database |
 | grafana | 3000 | Dashboards (admin/admin) |
 | prometheus | 9090 | Metrics |
 | loki | 3100 | Logs |
 | tempo | 3200 | Traces |
+
+Run `node tools/check-service-ports.js` to verify port configuration.
 
 ## When Implementing New Features
 

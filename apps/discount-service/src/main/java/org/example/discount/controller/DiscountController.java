@@ -43,9 +43,7 @@ public class DiscountController {
         .validateCode(code, storeNumber)
         .onErrorResume(
             InvalidDiscountException.class,
-            e ->
-                Mono.error(
-                    new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage())));
+            e -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage())));
   }
 
   /**
@@ -79,9 +77,7 @@ public class DiscountController {
             })
         .onErrorResume(
             InvalidDiscountException.class,
-            e ->
-                Mono.error(
-                    new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage())));
+            e -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage())));
   }
 
   private BigDecimal calculateSavings(Discount discount, BigDecimal subtotal) {

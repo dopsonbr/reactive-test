@@ -16,10 +16,10 @@ import org.example.model.discount.MarkdownType;
  * @param cartId the cart ID
  */
 public record ApplyMarkdownRequest(
-        int storeNumber,
-        Long sku,
-        MarkdownType type,
-        BigDecimal value,
-        MarkdownReason reason,
-        String customerId,
-        String cartId) {}
+    int storeNumber,
+    Long sku,
+    MarkdownType type,
+    BigDecimal value,
+    MarkdownReason reason,
+    String customerId,
+    String cartId) {}

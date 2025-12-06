@@ -31,7 +31,8 @@
       "WebFetch(domain:nx.dev)",
       "WebFetch(domain:ui.shadcn.com)",
       "SlashCommand(/create-adr)",
-      "SlashCommand(/create-implementation-plan)"
+      "SlashCommand(/create-implementation-plan)",
+      "Bash(sort:*)"
     ],
     "deny": [],
     "ask": [
@@ -41,5 +42,9 @@
       "Bash(git clean -fd:*)",
       "Bash(git clean -f:*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "nx-mcp"
+  ]
 }

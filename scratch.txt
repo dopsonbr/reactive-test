@@ -77,3 +77,15 @@ e2e-tests need to be updated
 customer service needs documentation
 
 adr for design system. mui vs ant, vs shadcn or something else 
+
+
+create home page implementation
+
+standards agents
+documentation agents
+- tool calls to check that files are up to date 
+
+create biography.md based on git history. tell it to be walter issacson themed
+
+
+

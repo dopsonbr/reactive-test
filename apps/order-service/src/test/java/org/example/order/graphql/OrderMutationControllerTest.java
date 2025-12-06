@@ -2,7 +2,6 @@ package org.example.order.graphql;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -64,8 +63,7 @@ class OrderMutationControllerTest {
     void validationFails_propagatesError() {
       String id = UUID.randomUUID().toString();
       RuntimeException error = new RuntimeException("Validation failed");
-      when(validator.validateUpdateStatus(id, OrderStatus.CONFIRMED))
-          .thenReturn(Mono.error(error));
+      when(validator.validateUpdateStatus(id, OrderStatus.CONFIRMED)).thenReturn(Mono.error(error));
       // The .then() operator evaluates its argument eagerly, so we must mock updateStatus
       when(orderService.updateStatus(UUID.fromString(id), OrderStatus.CONFIRMED))
           .thenReturn(Mono.empty());
@@ -145,8 +143,7 @@ class OrderMutationControllerTest {
       String id = UUID.randomUUID().toString();
       UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, null, null, null);
       RuntimeException error = new RuntimeException("Validation failed");
-      when(validator.validateUpdateFulfillment(id, input))
-          .thenReturn(Mono.error(error));
+      when(validator.validateUpdateFulfillment(id, input)).thenReturn(Mono.error(error));
       // The .then() operator evaluates its argument eagerly, so we must mock findById
       when(orderService.findById(UUID.fromString(id))).thenReturn(Mono.empty());
 

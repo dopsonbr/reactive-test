@@ -1,6 +1,6 @@
 # 024D_LINT_CI_INTEGRATION
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 
@@ -33,10 +33,10 @@ Wire all lint checks into CI, create unified `pnpm lint:all` script for local va
 
 ## Exit Criteria
 
-- [ ] `pnpm lint:all` runs all checks sequentially
-- [ ] `tools/check-frontend.sh` validates environment and runs checks
-- [ ] CI workflow fails on any lint violation
-- [ ] AGENTS.md documents "Run pnpm lint:all before PR"
+- [x] `pnpm lint:all` runs all checks sequentially
+- [x] `tools/check-frontend.sh` validates environment and runs checks
+- [x] CI workflow fails on any lint violation
+- [x] AGENTS.md documents "Run pnpm lint:all before PR"
 
 ---
 
@@ -134,10 +134,11 @@ echo ""
 # ─────────────────────────────────────────
 echo -e "${YELLOW}[1/6] Validating environment...${NC}"
 
-# Check Node.js version
+# Check Node.js version (must be exactly 24.x)
 NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-if [ "$NODE_VERSION" -lt 18 ]; then
-  echo -e "${RED}  ✗ Node.js 18+ required (found: $(node -v))${NC}"
+if [ "$NODE_VERSION" -ne 24 ]; then
+  echo -e "${RED}  ✗ Node.js 24.x required (found: $(node -v))${NC}"
+  echo -e "${RED}    Install Node 24: nvm install 24 && nvm use 24${NC}"
   FAILURES+=("Node.js version")
 else
   echo -e "${GREEN}  ✓ Node.js $(node -v)${NC}"
@@ -579,12 +580,12 @@ After pushing, verify:
 
 ## Checklist
 
-- [ ] Phase 1: lint:all script chains all checks
-- [ ] Phase 2: check-frontend.sh wrapper created
-- [ ] Phase 3: GitHub Actions workflow created
-- [ ] Phase 4: AGENTS.md documents lint expectations
-- [ ] Phase 5: Nx lint targets configured
-- [ ] `pnpm lint:all` runs without errors
-- [ ] `./tools/check-frontend.sh` validates environment
-- [ ] CI workflow runs on PR
-- [ ] Documentation complete
+- [x] Phase 1: lint:all script chains all checks
+- [x] Phase 2: check-frontend.sh wrapper created
+- [x] Phase 3: GitHub Actions workflow created
+- [x] Phase 4: AGENTS.md documents lint expectations
+- [x] Phase 5: Nx lint targets configured
+- [x] `pnpm lint:all` runs without errors
+- [x] `./tools/check-frontend.sh` validates environment
+- [x] CI workflow runs on PR
+- [x] Documentation complete

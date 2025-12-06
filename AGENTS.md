@@ -365,7 +365,62 @@ All services expect these headers for context propagation:
 | loki | 3100 | Logs |
 | tempo | 3200 | Traces |
 
-Run `node tools/check-service-ports.js` to verify port configuration.
+Run `node tools/check-service-ports.mjs` to verify port configuration.
+
+## Frontend Lint Expectations
+
+All frontend code must pass lint checks before merging. Run these locally:
+
+### Quick Check (Before Commit)
+
+```bash
+pnpm lint:all
+```
+
+### Full Check (Before PR)
+
+```bash
+./tools/check-frontend.sh
+```
+
+Or with project graph validation:
+
+```bash
+./tools/check-frontend.sh --graph
+```
+
+### Individual Lint Commands
+
+| Command | What it Checks |
+|---------|----------------|
+| `pnpm lint:eslint` | Module boundaries, custom rules (design tokens, a11y, TanStack Query) |
+| `pnpm lint:styles` | Stylelint for CSS, Tailwind arbitrary value ban |
+| `pnpm lint:ui` | Story and a11y test presence for UI components |
+| `pnpm lint:tests` | Feature component test co-location |
+| `pnpm lint:md` | Markdown formatting |
+| `pnpm lint:tokens` | Design token enforcement |
+| `pnpm lint:fix` | Auto-fix all fixable issues |
+
+### CI Enforcement
+
+These checks run automatically on every PR:
+
+1. **ESLint** - Module boundary violations fail the build
+2. **Stylelint** - Arbitrary Tailwind values fail the build
+3. **Story Coverage** - Missing UI stories fail the build
+4. **A11y Coverage** - Missing accessibility tests fail the build
+5. **Test Coverage** - Missing feature tests produce warnings
+
+### Common Lint Errors
+
+| Error | Fix |
+|-------|-----|
+| "Hardcoded color detected" | Use Tailwind semantic token (e.g., `bg-primary` not `bg-[#ff0000]`) |
+| "Barrel export not allowed" | Replace `export * from` with named exports in feature folders |
+| "Missing role attribute" | Add `role="button"` to clickable non-interactive elements |
+| "Missing queryKey" | Add explicit `queryKey` array to useQuery calls |
+| "Missing story" | Create `ComponentName.stories.tsx` alongside component |
+| "Missing a11y test" | Create `ComponentName.a11y.test.tsx` with axe checks |
 
 ## When Implementing New Features
 
@@ -416,3 +471,4 @@ All completed implementation plans are stored in `docs/archive/`:
 - If the user needs help with an Nx configuration or project graph error, use the `nx_workspace` tool to get any errors
 
 <!-- nx configuration end-->
+- ALWAYS use nx commands for invoking tasks like build, lint, test

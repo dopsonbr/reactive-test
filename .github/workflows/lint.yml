@@ -1,0 +1,59 @@
+# .github/workflows/lint.yml
+name: Frontend Lint
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Derive Nx SHAs
+        uses: nrwl/nx-set-shas@v4
+
+      - name: ESLint (Module Boundaries + Custom Rules)
+        run: pnpm lint:eslint
+
+      - name: Stylelint (Design Tokens)
+        run: pnpm lint:styles
+
+      - name: Story Coverage
+        run: pnpm lint:stories
+
+      - name: A11y Test Coverage
+        run: pnpm lint:a11y
+
+      - name: Feature Test Coverage
+        run: pnpm lint:tests
+        continue-on-error: true  # Warn only for missing feature tests
+
+      - name: Markdown Lint
+        run: pnpm lint:md

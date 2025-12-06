@@ -24,7 +24,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: 'pnpm'
 
       - uses: actions/setup-java@v4
@@ -37,7 +37,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Verify service ports
-        run: node tools/check-service-ports.js
+        run: node tools/check-service-ports.mjs
 
       - name: Build affected
         run: pnpm nx affected -t build --base=origin/main~1 --head=HEAD

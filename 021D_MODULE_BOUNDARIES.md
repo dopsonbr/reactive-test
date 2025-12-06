@@ -1,6 +1,6 @@
 # 021D_MODULE_BOUNDARIES
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 
@@ -29,9 +29,9 @@ Configure ESLint `@nx/enforce-module-boundaries` rule for frontend module depend
 
 ## Exit Criteria
 
-- [ ] `eslint.config.js` contains module boundary rules
-- [ ] `nx lint` catches boundary violations
-- [ ] Tag conventions documented in this plan
+- [x] `eslint.config.mjs` contains module boundary rules
+- [x] `nx lint` catches boundary violations
+- [x] Tag conventions documented in this plan
 
 ---
 
@@ -219,8 +219,8 @@ error: A project tagged with "type:ui" can only depend on libs tagged with "type
 
 ## Checklist
 
-- [ ] Phase 1: ESLint config updated
-- [ ] Phase 2: Tag conventions documented
-- [ ] Phase 3: Example project.json patterns ready
-- [ ] Phase 4: `nx lint` runs without errors
-- [ ] Boundary violation produces expected error
+- [x] Phase 1: ESLint config updated
+- [x] Phase 2: Tag conventions documented
+- [x] Phase 3: Example project.json patterns ready
+- [x] Phase 4: `nx lint` runs without errors
+- [x] Boundary violation produces expected error

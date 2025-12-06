@@ -1,0 +1,7 @@
+# .markdownlintignore
+node_modules/
+dist/
+build/
+target/
+.git/
+docker/

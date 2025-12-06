@@ -1,44 +1,56 @@
 # Standards Contents
 
-## Files
+## Core Files
 
-### Core
 - `README.md` - Standards overview and philosophy
 - `CONTENTS.md` - This file
 
+## Shared Standards
+
+- `code-style.md` - Formatting, naming conventions
+- `documentation.md` - README, AGENTS, CONTENTS file patterns
+
+## Backend Standards (backend/)
+
 ### Architecture
-- `architecture.md` - Layered architecture, package structure, dependency rules
-- `models.md` - Pure data objects with no business logic
+- `backend/architecture.md` - Layered architecture, package structure, dependency rules
+- `backend/models.md` - Pure data objects with no business logic
 
 ### Resilience
-- `resiliency-circuit-breakers.md` - Circuit breaker patterns and configuration
-- `resiliency-retries.md` - Retry patterns with exponential backoff
-- `resiliency-bulk-heads.md` - Concurrency limiting patterns
-- `resiliency-timeouts.md` - Timeout patterns and configuration
+- `backend/resiliency-circuit-breakers.md` - Circuit breaker patterns and configuration
+- `backend/resiliency-retries.md` - Retry patterns with exponential backoff
+- `backend/resiliency-bulk-heads.md` - Concurrency limiting patterns
+- `backend/resiliency-timeouts.md` - Timeout patterns and configuration
 
 ### Caching
-- `caching.md` - Cache-aside, fallback-only patterns, TTL guidelines
+- `backend/caching.md` - Cache-aside, fallback-only patterns, TTL guidelines
 
 ### Observability
-- `observability-logs.md` - Structured JSON logging with Reactor Context
-- `observability-metrics.md` - Prometheus metrics patterns
-- `observability-traces.md` - OpenTelemetry distributed tracing
+- `backend/observability-logs.md` - Structured JSON logging with Reactor Context
+- `backend/observability-metrics.md` - Prometheus metrics patterns
+- `backend/observability-traces.md` - OpenTelemetry distributed tracing
 
 ### Security
-- `security.md` - OAuth2/JWT, header validation, authorization
+- `backend/security.md` - OAuth2/JWT, header validation, authorization
 
 ### Error Handling
-- `error-handling.md` - Global error handling, fallback responses
+- `backend/error-handling.md` - Global error handling, fallback responses
+
+### Validation
+- `backend/validation.md` - Request validation patterns
 
 ### Testing
-- `testing-unit.md` - Unit test patterns and naming
-- `testing-integration.md` - Testcontainers, WireMock patterns
-- `testing-e2e.md` - k6 end-to-end test patterns
+- `backend/testing-unit.md` - Unit test patterns and naming
+- `backend/testing-integration.md` - Testcontainers, WireMock patterns
+- `backend/testing-e2e.md` - k6 end-to-end test patterns
 
-### Code Quality
-- `code-style.md` - Spotless, Google Java Format, naming conventions
-- `documentation.md` - README, AGENTS, CONTENTS file patterns
-- `validation.md` - Request validation patterns
+## Frontend Standards (frontend/)
 
-### Frontend
-- `frontend-guiding-principles.md` - React app principles (composition, routing, cross-cutting concerns, code sharing)
+- `frontend/architecture.md` - Component layers, feature folders
+- `frontend/error-handling.md` - Error boundaries, ApiError, Query errors
+- `frontend/observability.md` - Structured logging, Web Vitals, tracing
+- `frontend/testing.md` - Testing Trophy, Ladle, Vitest, Playwright
+- `frontend/components.md` - Compound, headless, smart/presentational
+- `frontend/state-management.md` - TanStack Query, URL state
+- `frontend/code-organization.md` - Feature folders, barrel exports
+- `frontend/guiding-principles.md` - Core frontend development principles

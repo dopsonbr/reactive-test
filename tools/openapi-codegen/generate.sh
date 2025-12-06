@@ -10,7 +10,7 @@ echo "Generating TypeScript client..."
 pnpm openapi-generator-cli generate \
   -i tools/openapi-codegen/product-api.json \
   -g typescript-fetch \
-  -o libs/shared-data/api-client/src/generated \
+  -o libs/frontend/shared-data/api-client/src/generated \
   --additional-properties=supportsES6=true,typescriptThreePlus=true
 
 echo "API client generation complete!"

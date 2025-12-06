@@ -14,10 +14,10 @@ export async function uiComponentGenerator(
 ) {
   const componentNames = names(options.name);
   const componentDir = joinPathFragments(
-    'libs/shared-ui/ui-components/src/components/ui'
+    'libs/frontend/shared-ui/ui-components/src/components/ui'
   );
   const storyDir = joinPathFragments(
-    'libs/shared-ui/ui-components/stories',
+    'libs/frontend/shared-ui/ui-components/stories',
     options.category
   );
 
@@ -46,7 +46,7 @@ export async function uiComponentGenerator(
   }
 
   // Update index.ts exports
-  const indexPath = 'libs/shared-ui/ui-components/src/index.ts';
+  const indexPath = 'libs/frontend/shared-ui/ui-components/src/index.ts';
   const indexContent = tree.read(indexPath, 'utf-8') || '';
   const exportLine = `export * from "./components/ui/${componentNames.fileName}";\n`;
 

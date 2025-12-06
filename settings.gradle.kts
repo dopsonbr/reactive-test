@@ -2,26 +2,27 @@ rootProject.name = "reactive-platform"
 
 // Container projects
 include("libs")
-include("libs:platform")
-include("libs:shared-model")
+include("libs:backend")
+include("libs:backend:platform")
+include("libs:backend:shared-model")
 include("apps")
 
 // Platform libraries
-include("libs:platform:platform-bom")
-include("libs:platform:platform-logging")
-include("libs:platform:platform-resilience")
-include("libs:platform:platform-cache")
-include("libs:platform:platform-error")
-include("libs:platform:platform-webflux")
-include("libs:platform:platform-security")
-include("libs:platform:platform-test")
-include("libs:platform:platform-audit")
+include("libs:backend:platform:platform-bom")
+include("libs:backend:platform:platform-logging")
+include("libs:backend:platform:platform-resilience")
+include("libs:backend:platform:platform-cache")
+include("libs:backend:platform:platform-error")
+include("libs:backend:platform:platform-webflux")
+include("libs:backend:platform:platform-security")
+include("libs:backend:platform:platform-test")
+include("libs:backend:platform:platform-audit")
 
 // Shared model libraries
-include("libs:shared-model:shared-model-product")
-include("libs:shared-model:shared-model-customer")
-include("libs:shared-model:shared-model-discount")
-include("libs:shared-model:shared-model-fulfillment")
+include("libs:backend:shared-model:shared-model-product")
+include("libs:backend:shared-model:shared-model-customer")
+include("libs:backend:shared-model:shared-model-discount")
+include("libs:backend:shared-model:shared-model-fulfillment")
 
 // Applications
 include("apps:product-service")

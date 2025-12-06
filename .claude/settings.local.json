@@ -56,6 +56,9 @@
       "Bash(pnpm exec msw:*)",
       "Bash(npx madge:*)",
       "Bash(VITE_MSW_ENABLED=true pnpm nx serve:*)",
+      "Bash(npx tsc:*)",
+      "Bash(source:*)",
+      "Bash(sdk list:*)",
       "Bash(JAVA_HOME=/Users/BXD5017/Library/Java/JavaVirtualMachines/corretto-21.0.9/Contents/Home ./gradlew:*)",
       "Bash(/usr/libexec/java_home:*)"
     ],

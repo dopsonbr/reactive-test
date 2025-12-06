@@ -1,0 +1,37 @@
+{
+  "name": "ui-components",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/shared-ui/ui-components/src",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:lib", "platform:web"],
+  "targets": {
+    "ladle": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm ladle serve",
+        "cwd": "libs/frontend/shared-ui/ui-components"
+      }
+    },
+    "ladle-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm ladle build",
+        "cwd": "libs/frontend/shared-ui/ui-components"
+      }
+    },
+    "e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm playwright test",
+        "cwd": "libs/frontend/shared-ui/ui-components"
+      }
+    },
+    "e2e-update": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm playwright test --update-snapshots",
+        "cwd": "libs/frontend/shared-ui/ui-components"
+      }
+    }
+  }
+}

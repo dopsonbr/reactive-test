@@ -10,7 +10,7 @@ interface LintResult {
   type: 'story' | 'a11y';
 }
 
-const UI_LIB_PATTERN = 'libs/shared-ui/**/src/**/*.tsx';
+const UI_LIB_PATTERN = 'libs/frontend/shared-ui/**/src/**/*.tsx';
 const STORY_SUFFIX = '.stories.tsx';
 const A11Y_SUFFIX = '.a11y.test.tsx';
 

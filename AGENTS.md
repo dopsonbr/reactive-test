@@ -20,12 +20,16 @@ AGENTS.md (this file)           ← Repository-wide guidance
 │   ├── product-service/AGENTS.md
 │   ├── cart-service/AGENTS.md
 │   └── {service}/src/.../AGENTS.md  ← Package-level guidance
-├── libs/platform/AGENTS.md     ← All platform libraries
-│   ├── platform-logging/AGENTS.md
-│   ├── platform-cache/AGENTS.md
-│   └── ...
-├── libs/shared-ui/ui-components/AGENTS.md
-├── libs/shared-design/tokens/AGENTS.md
+├── libs/backend/AGENTS.md      ← Backend tier container
+│   ├── platform/AGENTS.md      ← All platform libraries
+│   │   ├── platform-logging/AGENTS.md
+│   │   ├── platform-cache/AGENTS.md
+│   │   └── ...
+│   └── shared-model/           ← Shared DTOs
+├── libs/frontend/AGENTS.md     ← Frontend tier container
+│   ├── shared-ui/ui-components/AGENTS.md
+│   ├── shared-data/api-client/
+│   └── shared-design/tokens/AGENTS.md
 ├── docs/standards/AGENTS.md
 └── ci/AGENTS.md
 ```
@@ -42,15 +46,22 @@ This is an **Nx-orchestrated polyglot monorepo** with Gradle backend modules and
 reactive-platform/
 ├── buildSrc/                    # Convention plugins (Kotlin DSL)
 ├── gradle/libs.versions.toml    # Version catalog
-├── libs/platform/               # Platform libraries (see libs/platform/AGENTS.md)
-│   ├── platform-bom/            # Platform BOM (extends Spring Boot BOM)
-│   ├── platform-logging/        # Structured JSON logging library
-│   ├── platform-resilience/     # Resilience4j reactive wrappers
-│   ├── platform-cache/          # Non-blocking Redis cache abstraction
-│   ├── platform-error/          # Global error handling
-│   ├── platform-webflux/        # Common WebFlux utilities (context, validation)
-│   ├── platform-security/       # Security (placeholder for OAuth2/JWT)
-│   └── platform-test/           # Shared test utilities
+├── libs/
+│   ├── backend/                 # Backend tier (Java/Gradle)
+│   │   ├── platform/            # Platform libraries
+│   │   │   ├── platform-bom/    # Platform BOM (extends Spring Boot BOM)
+│   │   │   ├── platform-logging/# Structured JSON logging library
+│   │   │   ├── platform-resilience/ # Resilience4j reactive wrappers
+│   │   │   ├── platform-cache/  # Non-blocking Redis cache abstraction
+│   │   │   ├── platform-error/  # Global error handling
+│   │   │   ├── platform-webflux/# Common WebFlux utilities
+│   │   │   ├── platform-security/ # OAuth2/JWT security
+│   │   │   └── platform-test/   # Shared test utilities
+│   │   └── shared-model/        # Shared DTOs across services
+│   └── frontend/                # Frontend tier (TypeScript/npm)
+│       ├── shared-ui/           # React UI components
+│       ├── shared-data/         # API client libraries
+│       └── shared-design/       # Design tokens
 ├── apps/                        # Applications (see apps/AGENTS.md)
 │   ├── product-service/         # Product aggregation service
 │   └── cart-service/            # Shopping cart service
@@ -69,7 +80,7 @@ Files requiring careful review before changes:
 | `settings.gradle.kts` | All module registrations - affects entire build |
 | `gradle/libs.versions.toml` | Centralized dependency versions |
 | `buildSrc/` | Convention plugins affect all modules |
-| `libs/platform/platform-bom/` | BOM changes propagate to all services |
+| `libs/backend/platform/platform-bom/` | BOM changes propagate to all services |
 | `docker/docker-compose.yml` | Infrastructure configuration |
 | `tsconfig.base.json` | TypeScript path mappings for all frontend projects |
 | `nx.json` | Nx workspace configuration |
@@ -130,7 +141,7 @@ Nx orchestrates both Gradle backend modules and (future) TypeScript frontend app
 pnpm nx run-many -t build
 
 # Build specific module
-pnpm nx build :libs:platform:platform-logging
+pnpm nx build :libs:backend:platform:platform-logging
 pnpm nx build :apps:product-service
 
 # Run all tests
@@ -163,7 +174,7 @@ Direct Gradle commands are still available for advanced use cases:
 ./gradlew buildAll
 
 # Build specific module
-./gradlew :libs:platform:platform-logging:build
+./gradlew :libs:backend:platform:platform-logging:build
 ./gradlew :apps:product-service:build
 ./gradlew :apps:cart-service:build
 
@@ -175,7 +186,7 @@ Direct Gradle commands are still available for advanced use cases:
 ./gradlew testAll
 
 # Run module tests
-./gradlew :libs:platform:platform-logging:test
+./gradlew :libs:backend:platform:platform-logging:test
 ./gradlew :apps:product-service:test
 
 # Build bootable JARs
@@ -209,7 +220,7 @@ docker compose logs -f cart-service
 
 ## Module Overview
 
-### Platform Libraries (libs/platform/)
+### Platform Libraries (libs/backend/platform/)
 
 | Module | Purpose |
 |--------|---------|
@@ -236,7 +247,7 @@ docker compose logs -f cart-service
 | `order-service` | 8088 | Order viewing and management (REST + GraphQL) |
 | `ecommerce-web` | 3001 | E-commerce frontend (React + Vite) |
 
-### Frontend Libraries (libs/shared-ui/, libs/shared-data/, libs/shared-design/)
+### Frontend Libraries (libs/frontend/)
 
 | Library | Purpose |
 |---------|---------|
@@ -396,16 +407,16 @@ All services expect these headers for context propagation:
 1. Create module directory: `apps/new-service/`
 2. Create `build.gradle.kts` using `platform.application-conventions` plugin
 3. Add to `settings.gradle.kts`: `include("apps:new-service")`
-4. Depend on platform libraries: `project(":libs:platform:platform-*")`
+4. Depend on platform libraries: `project(":libs:backend:platform:platform-*")`
 5. Create application class with proper `scanBasePackages`
 6. Add to Docker Compose
 
 ## Adding a New Platform Library
 
-1. Create module directory: `libs/platform/platform-new/`
+1. Create module directory: `libs/backend/platform/platform-new/`
 2. Create `build.gradle.kts` using `platform.library-conventions` plugin
-3. Add to `settings.gradle.kts`: `include("libs:platform:platform-new")`
-4. Reference BOM: `api(platform(project(":libs:platform:platform-bom")))`
+3. Add to `settings.gradle.kts`: `include("libs:backend:platform:platform-new")`
+4. Reference BOM: `api(platform(project(":libs:backend:platform:platform-bom")))`
 
 ## Canonical Service Ports
 

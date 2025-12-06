@@ -1,4 +1,4 @@
-@import '../../../libs/shared-design/tokens/src/index.css';
+@import '../../../libs/frontend/shared-design/tokens/src/index.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

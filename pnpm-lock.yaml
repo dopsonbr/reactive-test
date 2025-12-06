@@ -238,9 +238,11 @@ importers:
         specifier: ^2.8.2
         version: 2.8.2
 
-  libs/shared-data/api-client: {}
+  libs/frontend/shared-data/api-client: {}
 
-  libs/shared-ui/ui-components: {}
+  libs/frontend/shared-design/tokens: {}
+
+  libs/frontend/shared-ui/ui-components: {}
 
   tools/eslint-plugin-reactive:
     dependencies:

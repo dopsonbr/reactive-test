@@ -1,6 +1,6 @@
 packages:
   - 'apps/*-web'
-  - 'libs/shared-ui/*'
-  - 'libs/shared-data/*'
-  - 'libs/shared-utils/*'
+  - 'libs/frontend/shared-ui/*'
+  - 'libs/frontend/shared-data/*'
+  - 'libs/frontend/shared-design/*'
   - 'tools/*'

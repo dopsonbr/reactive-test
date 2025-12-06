@@ -1,4 +1,8 @@
 import nx from '@nx/eslint-plugin';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const reactivePlugin = require('./tools/eslint-plugin-reactive');
 
 export default [
   {
@@ -106,5 +110,50 @@ export default [
     ],
     // Override or add rules here
     rules: {},
+  },
+  // Custom reactive plugin for frontend guardrails
+  {
+    plugins: {
+      reactive: reactivePlugin,
+    },
+  },
+  // Apply custom rules to TypeScript/JavaScript files
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    rules: {
+      // Design tokens - warn for now to allow gradual adoption
+      'reactive/no-hardcoded-colors': 'warn',
+
+      // Barrel exports (feature folders only)
+      'reactive/no-barrel-exports': [
+        'error',
+        {
+          featureFolderPattern: 'features/',
+        },
+      ],
+
+      // Accessibility
+      'reactive/require-accessible-controls': 'warn',
+
+      // TanStack Query
+      'reactive/tanstack-query-guardrails': [
+        'error',
+        {
+          maxRetries: 3,
+        },
+      ],
+
+      // Feature test co-location (warn only)
+      'reactive/require-colocated-test': 'warn',
+    },
+  },
+  // Stricter rules for UI libs
+  {
+    files: ['libs/shared-ui/**/*.tsx'],
+    rules: {
+      'reactive/no-hardcoded-colors': 'error',
+      // UI libs should never have barrel exports
+      'reactive/no-barrel-exports': 'error',
+    },
   },
 ];

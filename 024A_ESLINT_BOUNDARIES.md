@@ -1,6 +1,6 @@
 # 024A_ESLINT_BOUNDARIES
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 

@@ -1,6 +1,6 @@
 # 024B_DESIGN_TOKEN_STYLELINT
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/stylelintrc.json",
+  "plugins": ["./tools/stylelint-plugin-tokens"],
+  "extends": ["stylelint-config-standard", "stylelint-config-tailwindcss"],
+  "rules": {
+    "reactive/no-arbitrary-values": true,
+    "at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": ["tailwind", "apply", "layer", "config", "screen"]
+      }
+    ],
+    "function-no-unknown": [
+      true,
+      {
+        "ignoreFunctions": ["theme"]
+      }
+    ],
+    "declaration-block-no-duplicate-properties": true,
+    "no-descending-specificity": null,
+    "selector-class-pattern": null,
+    "comment-empty-line-before": null,
+    "lightness-notation": null,
+    "hue-degree-notation": null,
+    "color-function-notation": null,
+    "alpha-value-notation": null,
+    "custom-property-empty-line-before": null,
+    "import-notation": null,
+    "value-keyword-case": null,
+    "at-rule-empty-line-before": null,
+    "declaration-empty-line-before": null
+  },
+  "overrides": [
+    {
+      "files": ["**/*.css"],
+      "rules": {
+        "value-no-vendor-prefix": true,
+        "property-no-vendor-prefix": true
+      }
+    }
+  ]
+}

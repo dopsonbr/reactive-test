@@ -1,6 +1,6 @@
 # 024_FRONTEND_LINT_GUARDRAILS
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 
@@ -95,8 +95,8 @@ Encode frontend standards as automated checks that fail fast in CI. This initiat
 
 ## Checklist
 
-- [ ] 024A complete: ESLint + custom plugin working
-- [ ] 024B complete: Stylelint + Tailwind enforcement working
-- [ ] 024C complete: Story/test enforcement working
-- [ ] 024D complete: CI + lint:all + docs updated
-- [ ] All checks pass on existing codebase (or violations fixed)
+- [x] 024A complete: ESLint + custom plugin working
+- [x] 024B complete: Stylelint + Tailwind enforcement working
+- [x] 024C complete: Story/test enforcement working
+- [x] 024D complete: CI + lint:all + docs updated
+- [x] All checks pass on existing codebase (or violations fixed)

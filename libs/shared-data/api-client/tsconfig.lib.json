@@ -3,6 +3,9 @@
   "compilerOptions": {
     "outDir": "../../../dist/out-tsc",
     "declaration": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noPropertyAccessFromIndexSignature": false,
     "types": ["node", "vite/client"]
   },
   "include": ["src/**/*.ts"],

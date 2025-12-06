@@ -13,6 +13,7 @@ COPY nx.json tsconfig.base.json ./
 COPY apps/ecommerce-web/ ./apps/ecommerce-web/
 COPY libs/shared-ui/ ./libs/shared-ui/
 COPY libs/shared-data/ ./libs/shared-data/
+COPY libs/shared-design/ ./libs/shared-design/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile

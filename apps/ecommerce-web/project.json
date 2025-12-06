@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/ecommerce-web/src",
   "projectType": "application",
-  "tags": [],
+  "tags": ["type:app", "scope:ecommerce", "platform:web"],
   "// targets": "to see all targets run: nx show project ecommerce-web --web",
   "targets": {}
 }

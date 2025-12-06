@@ -1,0 +1,205 @@
+# Docker Compose for E2E testing - minimal services, fast startup
+name: reactive-e2e
+
+services:
+  # Database
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: e2e
+      POSTGRES_PASSWORD: e2e
+      POSTGRES_DB: e2e
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres/init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U e2e"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - e2e
+
+  # Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - e2e
+
+  # External service mocks
+  wiremock:
+    image: wiremock/wiremock:3.10.0
+    ports:
+      - "8082:8080"
+    volumes:
+      - ../e2e-test/wiremock/mappings:/home/wiremock/mappings:ro
+    command: ["--global-response-templating", "--verbose"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/__admin/mappings"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - e2e
+
+  # Product Service
+  product-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.product-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=e2e
+      - APP_SECURITY_ENABLED=false
+      - MERCHANDISE_URL=http://wiremock:8080
+      - PRICE_URL=http://wiremock:8080
+      - INVENTORY_URL=http://wiremock:8080
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+    depends_on:
+      redis:
+        condition: service_healthy
+      wiremock:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+    networks:
+      - e2e
+
+  # Customer Service (dependency for cart)
+  customer-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.customer-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=e2e
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/customerdb
+      - SPRING_R2DBC_USERNAME=customer_user
+      - SPRING_R2DBC_PASSWORD=customer_pass
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/customerdb
+      - SPRING_FLYWAY_USER=customer_user
+      - SPRING_FLYWAY_PASSWORD=customer_pass
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+    networks:
+      - e2e
+
+  # Discount Service (dependency for cart)
+  discount-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.discount-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=e2e
+      - CUSTOMER_SERVICE_URL=http://customer-service:8083
+    depends_on:
+      customer-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+    networks:
+      - e2e
+
+  # Fulfillment Service (dependency for cart)
+  fulfillment-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.fulfillment-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=e2e
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+    networks:
+      - e2e
+
+  # Cart Service
+  cart-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.cart-service
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=e2e
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/cartdb
+      - SPRING_R2DBC_USERNAME=cart_user
+      - SPRING_R2DBC_PASSWORD=cart_pass
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/cartdb
+      - SPRING_FLYWAY_USER=cart_user
+      - SPRING_FLYWAY_PASSWORD=cart_pass
+      - PRODUCT_SERVICE_URL=http://product-service:8080
+      - CUSTOMER_SERVICE_URL=http://customer-service:8083
+      - DISCOUNT_SERVICE_URL=http://discount-service:8084
+      - FULFILLMENT_SERVICE_URL=http://fulfillment-service:8085
+    depends_on:
+      postgres:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      customer-service:
+        condition: service_healthy
+      discount-service:
+        condition: service_healthy
+      fulfillment-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+    networks:
+      - e2e
+
+  # Frontend (built for E2E)
+  ecommerce-web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.ecommerce-web
+    ports:
+      - "4200:3000"
+    depends_on:
+      product-service:
+        condition: service_healthy
+      cart-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    networks:
+      - e2e
+
+networks:
+  e2e:
+    driver: bridge

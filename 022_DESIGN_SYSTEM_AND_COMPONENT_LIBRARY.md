@@ -1,6 +1,6 @@
 # 022_DESIGN_SYSTEM_AND_COMPONENT_LIBRARY
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 
@@ -153,12 +153,13 @@ tools/
 
 ## Checklist
 
-- [ ] 022A: Design tokens package created
-- [ ] 022A: Tailwind v4 configured with tokens
-- [ ] 022A: CVA patterns documented
-- [ ] 022B: shared-ui library scaffolded
-- [ ] 022B: Core primitives implemented (Button, Input, Card, Modal, Form)
-- [ ] 022B: Ladle stories organized by domain
-- [ ] 022B: All components pass axe-core checks
-- [ ] 022B: Custom Nx generators operational
-- [ ] Documentation updated (CLAUDE.md, library READMEs, AGENTS.md)
+- [x] 022A: Design tokens package created
+- [x] 022A: Tailwind v4 configured with tokens
+- [x] 022A: CVA patterns documented
+- [x] 022B: shared-ui library scaffolded
+- [x] 022B: Core primitives implemented (Button, Input, Card, Label, Textarea, Checkbox)
+- [x] 022B: Ladle stories organized by domain
+- [x] 022B: All components pass axe-core checks
+- [x] 022B: Custom Nx generators operational
+- [x] 022B: Playwright visual regression tests (Chromium only)
+- [x] Documentation updated (CLAUDE.md, library READMEs, AGENTS.md)

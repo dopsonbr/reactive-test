@@ -65,6 +65,10 @@ pnpm nx graph
 pnpm nx show projects
 ```
 
+### Nx Inferred Tasks
+
+Nx 22+ automatically creates **inferred tasks** from tool configurations (Vite, Vitest, Jest, package scripts, Gradle, etc.). Before assuming a missing `build`/`test` target, run `pnpm nx show project <name>` to inspect the auto-generated targets, or read the Nx docs on [inferred tasks](https://nx.dev/docs/concepts/inferred-tasks). Only add manual targets when an inferred one cannot express the required behavior.
+
 ## Build Commands (Gradle - Direct)
 
 Direct Gradle commands are still available for advanced use cases:
@@ -145,12 +149,19 @@ docker compose logs -f cart-service
 | `audit-service` | 8086 | Audit event processing |
 | `ecommerce-web` | 3001 | E-commerce frontend (React + Vite) |
 
-### Frontend Libraries (libs/shared-ui/, libs/shared-data/)
+### Frontend Libraries (libs/shared-ui/, libs/shared-data/, libs/shared-design/)
 
 | Library | Purpose |
 |---------|---------|
-| `shared-ui/ui-components` | shadcn/ui components with Tailwind CSS |
+| `shared-design/tokens` | Design tokens (CSS variables for colors, spacing, typography) |
+| `shared-ui/ui-components` | shadcn/ui components with Tailwind CSS and CVA |
 | `shared-data/api-client` | Generated TypeScript API client from OpenAPI |
+
+### Workspace Plugin (tools/)
+
+| Generator | Command | Purpose |
+|-----------|---------|---------|
+| `ui-component` | `pnpm nx g @reactive-platform/workspace-plugin:ui-component Name` | Scaffold component + test + story |
 
 ## Frontend Development
 
@@ -192,6 +203,15 @@ pnpm nx test ecommerce-web
 
 # Build shared-ui library
 pnpm nx build ui-components
+
+# Run component tests
+pnpm nx test ui-components
+
+# Launch Ladle (component stories)
+pnpm nx ladle ui-components
+
+# Generate new UI component
+pnpm nx g @reactive-platform/workspace-plugin:ui-component ComponentName
 
 # Generate API client (requires product-service running)
 pnpm generate:api

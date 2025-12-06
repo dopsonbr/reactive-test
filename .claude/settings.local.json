@@ -32,7 +32,13 @@
       "WebFetch(domain:ui.shadcn.com)",
       "SlashCommand(/create-adr)",
       "SlashCommand(/create-implementation-plan)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(mkdir:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm nx test:*)",
+      "Bash(pnpm nx g:*)",
+      "Bash(pnpm nx build:*)",
+      "Bash(pnpm exec playwright:*)"
     ],
     "deny": [],
     "ask": [

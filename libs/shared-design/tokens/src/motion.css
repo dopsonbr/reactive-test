@@ -1,0 +1,30 @@
+/* motion.css - Animation tokens */
+@layer tokens {
+  :root {
+    /* Durations */
+    --duration-75: 75ms;
+    --duration-100: 100ms;
+    --duration-150: 150ms;
+    --duration-200: 200ms;
+    --duration-300: 300ms;
+    --duration-500: 500ms;
+
+    /* Easings */
+    --ease-linear: linear;
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Respect user preference */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --duration-75: 0ms;
+      --duration-100: 0ms;
+      --duration-150: 0ms;
+      --duration-200: 0ms;
+      --duration-300: 0ms;
+      --duration-500: 0ms;
+    }
+  }
+}

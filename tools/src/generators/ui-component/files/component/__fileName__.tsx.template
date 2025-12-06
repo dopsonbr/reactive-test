@@ -1,0 +1,44 @@
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../../lib/utils";
+
+const <%= fileName %>Variants = cva(
+  // Base styles
+  "inline-flex items-center justify-center",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground",
+        secondary: "bg-secondary text-secondary-foreground",
+      },
+      size: {
+        sm: "h-8 px-3 text-sm",
+        md: "h-10 px-4 text-base",
+        lg: "h-12 px-6 text-lg",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "md",
+    },
+  }
+);
+
+export interface <%= className %>Props
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof <%= fileName %>Variants> {}
+
+const <%= className %> = React.forwardRef<HTMLDivElement, <%= className %>Props>(
+  ({ className, variant, size, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(<%= fileName %>Variants({ variant, size }), className)}
+        {...props}
+      />
+    );
+  }
+);
+<%= className %>.displayName = "<%= className %>";
+
+export { <%= className %>, <%= fileName %>Variants };

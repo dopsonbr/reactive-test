@@ -1,0 +1,86 @@
+/* colors.css - Semantic color tokens with light/dark support */
+/* Theme: Orange (based on shadcn/ui themes) */
+@layer tokens {
+  :root {
+    /* Primitive palette (oklch for perceptual uniformity) */
+    --color-gray-50: oklch(0.985 0 0);
+    --color-gray-100: oklch(0.967 0 0);
+    --color-gray-200: oklch(0.928 0 0);
+    --color-gray-300: oklch(0.872 0 0);
+    --color-gray-400: oklch(0.707 0 0);
+    --color-gray-500: oklch(0.551 0 0);
+    --color-gray-600: oklch(0.446 0 0);
+    --color-gray-700: oklch(0.373 0 0);
+    --color-gray-800: oklch(0.269 0 0);
+    --color-gray-900: oklch(0.205 0 0);
+    --color-gray-950: oklch(0.145 0 0);
+
+    /* Orange palette */
+    --color-orange-50: hsl(33, 100%, 96%);
+    --color-orange-100: hsl(34, 100%, 92%);
+    --color-orange-200: hsl(32, 98%, 83%);
+    --color-orange-300: hsl(31, 97%, 72%);
+    --color-orange-400: hsl(27, 96%, 61%);
+    --color-orange-500: hsl(25, 95%, 53%);
+    --color-orange-600: hsl(21, 90%, 48%);
+    --color-orange-700: hsl(17, 88%, 40%);
+    --color-orange-800: hsl(15, 79%, 34%);
+    --color-orange-900: hsl(15, 75%, 28%);
+    --color-orange-950: hsl(13, 81%, 15%);
+
+    /* Semantic tokens (light mode - Orange theme) */
+    --color-background: hsl(0, 0%, 100%);
+    --color-foreground: hsl(20, 14.3%, 4.1%);
+    --color-muted: hsl(60, 4.8%, 95.9%);
+    --color-muted-foreground: hsl(25, 5.3%, 44.7%);
+    --color-border: hsl(20, 5.9%, 90%);
+    --color-input: hsl(20, 5.9%, 90%);
+    --color-ring: hsl(24.6, 95%, 53.1%);
+
+    --color-primary: hsl(24.6, 95%, 53.1%);
+    --color-primary-foreground: hsl(60, 9.1%, 97.8%);
+    --color-secondary: hsl(60, 4.8%, 95.9%);
+    --color-secondary-foreground: hsl(24, 9.8%, 10%);
+
+    --color-destructive: hsl(0, 84.2%, 60.2%);
+    --color-destructive-foreground: hsl(60, 9.1%, 97.8%);
+
+    --color-accent: hsl(60, 4.8%, 95.9%);
+    --color-accent-foreground: hsl(24, 9.8%, 10%);
+
+    /* Card tokens */
+    --color-card: hsl(0, 0%, 100%);
+    --color-card-foreground: hsl(20, 14.3%, 4.1%);
+
+    /* Popover tokens */
+    --color-popover: hsl(0, 0%, 100%);
+    --color-popover-foreground: hsl(20, 14.3%, 4.1%);
+  }
+
+  .dark {
+    --color-background: hsl(20, 14.3%, 4.1%);
+    --color-foreground: hsl(60, 9.1%, 97.8%);
+    --color-muted: hsl(12, 6.5%, 15.1%);
+    --color-muted-foreground: hsl(24, 5.4%, 63.9%);
+    --color-border: hsl(12, 6.5%, 15.1%);
+    --color-input: hsl(12, 6.5%, 15.1%);
+    --color-ring: hsl(20.5, 90.2%, 48.2%);
+
+    --color-primary: hsl(20.5, 90.2%, 48.2%);
+    --color-primary-foreground: hsl(60, 9.1%, 97.8%);
+    --color-secondary: hsl(12, 6.5%, 15.1%);
+    --color-secondary-foreground: hsl(60, 9.1%, 97.8%);
+
+    --color-destructive: hsl(0, 72.2%, 50.6%);
+    --color-destructive-foreground: hsl(60, 9.1%, 97.8%);
+
+    --color-accent: hsl(12, 6.5%, 15.1%);
+    --color-accent-foreground: hsl(60, 9.1%, 97.8%);
+
+    --color-card: hsl(20, 14.3%, 4.1%);
+    --color-card-foreground: hsl(60, 9.1%, 97.8%);
+
+    --color-popover: hsl(20, 14.3%, 4.1%);
+    --color-popover-foreground: hsl(60, 9.1%, 97.8%);
+  }
+}

@@ -311,6 +311,68 @@ import { Button } from '@reactive-platform/shared-ui/ui-components';
 import { ApiClient } from '@reactive-platform/api-client';
 ```
 
+## Frontend E2E Testing
+
+### Two E2E Tracks
+
+| Track | When | Speed | Coverage |
+|-------|------|-------|----------|
+| **Mocked** | Every PR | ~2 min | All journeys, mocked APIs (MSW) |
+| **Full-Stack** | Main + nightly | ~10 min | Critical paths, real services |
+
+### Running E2E Locally
+
+```bash
+# Mocked E2E (fast, no backend needed)
+pnpm nx e2e ecommerce-web-e2e
+
+# Full-stack E2E (requires Docker)
+docker compose -f docker/docker-compose.e2e.yml up -d --build
+npx tsx e2e/ecommerce-fullstack/fixtures/seed-data.ts
+pnpm nx e2e ecommerce-fullstack-e2e
+
+# Keep services running for debugging
+E2E_KEEP_RUNNING=true pnpm nx e2e ecommerce-fullstack-e2e
+```
+
+### Adding New E2E Journeys
+
+1. **Mocked tests** (`apps/ecommerce-web/e2e/specs/`):
+   - Add MSW handlers in `src/mocks/handlers.ts`
+   - Add mock data in `src/mocks/data.ts`
+   - Create spec file with Playwright tests
+
+2. **Full-stack tests** (`e2e/ecommerce-fullstack/specs/`):
+   - Add seed data in `fixtures/seed-data.ts`
+   - Add WireMock stubs if needed
+   - Create spec with `test.beforeEach` for session setup
+
+### E2E Test Patterns
+
+```typescript
+// Mocked: Use route interception for edge cases
+test('handles API error gracefully', async ({ page }) => {
+  await page.route('**/products/**', (route) =>
+    route.fulfill({ status: 500, body: 'Server error' })
+  );
+  await page.goto('/products/SKU-001');
+  await expect(page.getByText(/error/i)).toBeVisible();
+});
+
+// Full-stack: Use seeded data for consistency
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    sessionStorage.setItem('cartId', 'e2e-cart-001');
+  });
+});
+```
+
+### CI Integration
+
+- **PR builds**: Run `e2e-mocked` job (blocks merge on failure)
+- **Main branch**: Run both `e2e-mocked` and `e2e-fullstack`
+- **Nightly**: Full regression with `e2e-fullstack`
+
 ## Package Naming
 
 | Type | Package Pattern |

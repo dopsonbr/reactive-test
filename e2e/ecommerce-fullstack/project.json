@@ -1,0 +1,24 @@
+{
+  "name": "ecommerce-fullstack-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "e2e/ecommerce-fullstack",
+  "projectType": "application",
+  "tags": ["scope:ecommerce", "type:e2e", "platform:fullstack"],
+  "implicitDependencies": ["ecommerce-web", "product-service", "cart-service"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "options": {
+        "config": "e2e/ecommerce-fullstack/playwright.config.ts"
+      },
+      "outputs": ["{workspaceRoot}/e2e/ecommerce-fullstack/playwright-report"]
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "e2e/ecommerce-fullstack",
+        "command": "npx tsx fixtures/seed-data.ts"
+      }
+    }
+  }
+}

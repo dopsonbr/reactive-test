@@ -1,0 +1,121 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 6 * * *' # Nightly full-stack run
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Fast mocked E2E for all PRs
+  e2e-mocked:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build dependencies
+        run: pnpm nx build ecommerce-web
+
+      - name: Run Mocked E2E
+        run: pnpm nx e2e ecommerce-web-e2e
+        env:
+          VITE_MSW_ENABLED: 'true'
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-mocked-report
+          path: apps/ecommerce-web/e2e/playwright-report/
+          retention-days: 7
+
+  # Full-stack E2E (nightly or on main)
+  e2e-fullstack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+    needs: e2e-mocked
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build Backend JARs
+        run: ./gradlew bootJar -x test --parallel
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Start E2E Environment
+        run: docker compose -f docker/docker-compose.e2e.yml up -d --build
+        env:
+          DOCKER_BUILDKIT: 1
+
+      - name: Wait for Services
+        run: |
+          echo "Waiting for services to be healthy..."
+          timeout 180 bash -c 'until curl -sf http://localhost:8080/actuator/health; do sleep 5; done'
+          echo "product-service: healthy"
+          timeout 180 bash -c 'until curl -sf http://localhost:8081/actuator/health; do sleep 5; done'
+          echo "cart-service: healthy"
+          timeout 60 bash -c 'until curl -sf http://localhost:4200/health; do sleep 5; done'
+          echo "ecommerce-web: healthy"
+
+      - name: Run Full-Stack E2E
+        run: pnpm nx e2e ecommerce-fullstack-e2e
+        env:
+          E2E_BASE_URL: http://localhost:4200
+
+      - name: Collect Docker Logs
+        if: failure()
+        run: docker compose -f docker/docker-compose.e2e.yml logs > docker-logs.txt
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-fullstack-artifacts
+          path: |
+            e2e/ecommerce-fullstack/playwright-report/
+            docker-logs.txt
+          retention-days: 7
+
+      - name: Cleanup
+        if: always()
+        run: docker compose -f docker/docker-compose.e2e.yml down -v

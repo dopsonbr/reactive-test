@@ -51,7 +51,11 @@
       "Bash(node tools/check-service-ports.js:*)",
       "Bash(node tools/validate-tailwind-config.mjs:*)",
       "Bash(node tools/check-service-ports.mjs:*)",
-      "Bash(pnpm lint:tokens:*)"
+      "Bash(pnpm lint:tokens:*)",
+      "Bash(VITE_MSW_ENABLED=true pnpm nx e2e:*)",
+      "Bash(pnpm exec msw:*)",
+      "Bash(npx madge:*)",
+      "Bash(VITE_MSW_ENABLED=true pnpm nx serve:*)"
     ],
     "deny": [],
     "ask": [

@@ -38,7 +38,9 @@
       "Bash(pnpm nx test:*)",
       "Bash(pnpm nx g:*)",
       "Bash(pnpm nx build:*)",
-      "Bash(pnpm exec playwright:*)"
+      "Bash(pnpm exec playwright:*)",
+      "mcp__nx-mcp__nx_docs",
+      "mcp__nx-mcp__nx_workspace"
     ],
     "deny": [],
     "ask": [

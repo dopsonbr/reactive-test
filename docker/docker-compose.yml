@@ -444,6 +444,44 @@ services:
     networks:
       - observability
 
+  order-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.order-service
+    container_name: order-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVER_PORT=8088
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/checkoutdb
+      - SPRING_R2DBC_USERNAME=checkout_user
+      - SPRING_R2DBC_PASSWORD=checkout_pass
+      - APP_SECURITY_ENABLED=false
+      - OTEL_SERVICE_NAME=order-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_PROPAGATORS=tracecontext,baggage
+      - OTEL_INSTRUMENTATION_SPRING_WEBFLUX_ENABLED=true
+    volumes:
+      - app-logs:/app/logs
+    ports:
+      - "8088:8088"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
   # === Frontend Applications ===
   ecommerce-web:
     build:

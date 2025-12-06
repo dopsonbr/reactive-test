@@ -40,7 +40,8 @@
       "Bash(pnpm nx build:*)",
       "Bash(pnpm exec playwright:*)",
       "mcp__nx-mcp__nx_docs",
-      "mcp__nx-mcp__nx_workspace"
+      "mcp__nx-mcp__nx_workspace",
+      "SlashCommand(/document-packages)"
     ],
     "deny": [],
     "ask": [

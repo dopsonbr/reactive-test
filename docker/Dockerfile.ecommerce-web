@@ -1,0 +1,36 @@
+# Build stage
+FROM node:22-alpine AS builder
+WORKDIR /app
+
+# Enable corepack for pnpm
+RUN corepack enable
+
+# Copy package files first for better caching
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY nx.json tsconfig.base.json ./
+
+# Copy only the necessary source directories
+COPY apps/ecommerce-web/ ./apps/ecommerce-web/
+COPY libs/shared-ui/ ./libs/shared-ui/
+COPY libs/shared-data/ ./libs/shared-data/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build the application
+RUN pnpm nx build ecommerce-web --configuration=production
+
+# Production stage
+FROM nginx:alpine
+
+# Copy built files
+COPY --from=builder /app/dist/apps/ecommerce-web /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY docker/nginx-frontend.conf /etc/nginx/conf.d/default.conf
+
+# Expose port
+EXPOSE 3000
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

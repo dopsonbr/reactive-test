@@ -1,0 +1,28 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "bundler",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@reactive-platform/shared-ui/*": ["libs/shared-ui/*/src/index.ts"],
+      "@reactive-platform/api-client": [
+        "libs/shared-data/api-client/src/index.ts"
+      ],
+      "ui-components": ["libs/shared-ui/ui-components/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

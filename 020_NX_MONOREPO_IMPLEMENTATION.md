@@ -793,14 +793,14 @@ pnpm add -D concurrently
 
 ## Milestone 2 Checklist
 
-- [ ] Phase 2.1: Frontend Nx plugins installed, TypeScript configured
-- [ ] Phase 2.2: ecommerce-web application scaffolded with Vite + React
-- [ ] Phase 2.3: shared-ui library with shadcn/ui + Tailwind initialized
-- [ ] Phase 2.4: API client generation pipeline configured
-- [ ] Phase 2.5: Docker build and compose integration complete
-- [ ] Phase 2.6: Local development scripts and documentation
-- [ ] `nx serve ecommerce-web` runs with backend proxy working
-- [ ] `nx build ecommerce-web` produces production bundle
+- [x] Phase 2.1: Frontend Nx plugins installed, TypeScript configured
+- [x] Phase 2.2: ecommerce-web application scaffolded with Vite + React
+- [x] Phase 2.3: shared-ui library with shadcn/ui + Tailwind initialized
+- [x] Phase 2.4: API client generation pipeline configured
+- [x] Phase 2.5: Docker build and compose integration complete
+- [x] Phase 2.6: Local development scripts and documentation
+- [x] `nx serve ecommerce-web` runs with backend proxy working
+- [x] `nx build ecommerce-web` produces production bundle (238.71 kB, 74.40 kB gzip)
 
 ---
 

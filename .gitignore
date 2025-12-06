@@ -52,3 +52,6 @@ node_modules/
 .nx/
 dist/
 .cache/
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*

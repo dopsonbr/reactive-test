@@ -143,6 +143,66 @@ docker compose logs -f cart-service
 | `discount-service` | 8084 | Discount pricing engine with promo codes, markdowns, and loyalty |
 | `fulfillment-service` | 8085 | Fulfillment and shipping |
 | `audit-service` | 8086 | Audit event processing |
+| `ecommerce-web` | 3001 | E-commerce frontend (React + Vite) |
+
+### Frontend Libraries (libs/shared-ui/, libs/shared-data/)
+
+| Library | Purpose |
+|---------|---------|
+| `shared-ui/ui-components` | shadcn/ui components with Tailwind CSS |
+| `shared-data/api-client` | Generated TypeScript API client from OpenAPI |
+
+## Frontend Development
+
+### Development Modes
+
+**1. Hybrid Mode (Recommended for frontend development)**
+Backend services run in Docker, frontend runs locally with HMR:
+```bash
+pnpm dev              # Starts backend containers + frontend dev server
+# or separately:
+pnpm dev:backend      # Start only backend services in Docker
+pnpm dev:frontend     # Start frontend dev server with hot reload
+```
+Frontend: http://localhost:4200 (Vite dev server with proxy to backend)
+
+**2. Full Docker Mode (Production-like)**
+All services including frontend run in Docker:
+```bash
+cd docker && docker compose up -d ecommerce-web
+```
+Frontend: http://localhost:3001 (nginx serving built assets)
+
+**3. Stop Services**
+```bash
+pnpm stop             # Stop all Docker services
+```
+
+### Frontend Commands
+
+```bash
+# Serve with hot reload
+pnpm nx serve ecommerce-web
+
+# Build for production
+pnpm nx build ecommerce-web
+
+# Run tests
+pnpm nx test ecommerce-web
+
+# Build shared-ui library
+pnpm nx build ui-components
+
+# Generate API client (requires product-service running)
+pnpm generate:api
+```
+
+### TypeScript Path Aliases
+
+```typescript
+import { Button } from '@reactive-platform/shared-ui/ui-components';
+import { ApiClient } from '@reactive-platform/api-client';
+```
 
 ## Key Patterns
 

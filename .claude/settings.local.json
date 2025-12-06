@@ -56,9 +56,12 @@
       "Bash(pnpm exec msw:*)",
       "Bash(npx madge:*)",
       "Bash(VITE_MSW_ENABLED=true pnpm nx serve:*)",
+      "Bash(npx tsc:*)",
+      "Bash(source:*)",
       "Bash(sdk list:*)",
       "Bash(/usr/libexec/java_home:*)",
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/21.0.5-tem ./gradlew:*)",
+      "Bash(JAVA_HOME=/Users/BXD5017/Library/Java/JavaVirtualMachines/corretto-21.0.9/Contents/Home ./gradlew:*)",
       "Bash(done)",
       "Bash(for svc in checkout-service customer-service discount-service fulfillment-service audit-service cart-service order-service product-service)",
       "Bash(do echo:*)"

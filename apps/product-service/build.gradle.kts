@@ -4,18 +4,18 @@ plugins {
 
 dependencies {
     // Platform BOM for version management
-    implementation(platform(project(":libs:platform:platform-bom")))
+    implementation(platform(project(":libs:backend:platform:platform-bom")))
 
     // Shared model libraries
-    implementation(project(":libs:shared-model:shared-model-product"))
+    implementation(project(":libs:backend:shared-model:shared-model-product"))
 
     // Platform libraries
-    implementation(project(":libs:platform:platform-logging"))
-    implementation(project(":libs:platform:platform-resilience"))
-    implementation(project(":libs:platform:platform-cache"))
-    implementation(project(":libs:platform:platform-error"))
-    implementation(project(":libs:platform:platform-webflux"))
-    implementation(project(":libs:platform:platform-security"))
+    implementation(project(":libs:backend:platform:platform-logging"))
+    implementation(project(":libs:backend:platform:platform-resilience"))
+    implementation(project(":libs:backend:platform:platform-cache"))
+    implementation(project(":libs:backend:platform:platform-error"))
+    implementation(project(":libs:backend:platform:platform-webflux"))
+    implementation(project(":libs:backend:platform:platform-security"))
 
     // Spring Boot starters (versions from BOM)
     implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -30,5 +30,5 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.8")
 
     // Test dependencies
-    testImplementation(project(":libs:platform:platform-test"))
+    testImplementation(project(":libs:backend:platform:platform-test"))
 }

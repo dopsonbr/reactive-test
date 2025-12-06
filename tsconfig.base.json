@@ -17,17 +17,17 @@
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
-      "@reactive-platform/shared-ui/*": ["libs/shared-ui/*/src/index.ts"],
+      "@reactive-platform/shared-ui/*": ["libs/frontend/shared-ui/*/src/index.ts"],
       "@reactive-platform/shared-ui-components": [
-        "libs/shared-ui/ui-components/src/index.ts"
+        "libs/frontend/shared-ui/ui-components/src/index.ts"
       ],
       "@reactive-platform/api-client": [
-        "libs/shared-data/api-client/src/index.ts"
+        "libs/frontend/shared-data/api-client/src/index.ts"
       ],
       "@reactive-platform/shared-design-tokens": [
-        "libs/shared-design/tokens/src/index.css"
+        "libs/frontend/shared-design/tokens/src/index.css"
       ],
-      "ui-components": ["libs/shared-ui/ui-components/src/index.ts"],
+      "ui-components": ["libs/frontend/shared-ui/ui-components/src/index.ts"],
       "@reactive-platform/workspace-plugin": ["tools/src/index.ts"]
     }
   },

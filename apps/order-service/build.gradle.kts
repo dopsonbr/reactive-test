@@ -4,18 +4,18 @@ plugins {
 
 dependencies {
     // Platform BOM for version management
-    implementation(platform(project(":libs:platform:platform-bom")))
+    implementation(platform(project(":libs:backend:platform:platform-bom")))
 
     // Platform libraries
-    implementation(project(":libs:platform:platform-logging"))
-    implementation(project(":libs:platform:platform-error"))
-    implementation(project(":libs:platform:platform-webflux"))
-    implementation(project(":libs:platform:platform-security"))
+    implementation(project(":libs:backend:platform:platform-logging"))
+    implementation(project(":libs:backend:platform:platform-error"))
+    implementation(project(":libs:backend:platform:platform-webflux"))
+    implementation(project(":libs:backend:platform:platform-security"))
 
     // Shared model libraries
-    implementation(project(":libs:shared-model:shared-model-discount"))
-    implementation(project(":libs:shared-model:shared-model-fulfillment"))
-    implementation(project(":libs:shared-model:shared-model-product"))
+    implementation(project(":libs:backend:shared-model:shared-model-discount"))
+    implementation(project(":libs:backend:shared-model:shared-model-fulfillment"))
+    implementation(project(":libs:backend:shared-model:shared-model-product"))
 
     // Spring Boot starters (versions from BOM)
     implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -32,7 +32,7 @@ dependencies {
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     // Test dependencies
-    testImplementation(project(":libs:platform:platform-test"))
+    testImplementation(project(":libs:backend:platform:platform-test"))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:r2dbc")

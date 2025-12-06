@@ -146,7 +146,7 @@ export default [
   },
   // Stricter rules for UI libs
   {
-    files: ['libs/shared-ui/**/*.tsx'],
+    files: ['libs/frontend/shared-ui/**/*.tsx'],
     rules: {
       'reactive/no-hardcoded-colors': 'error',
       // UI libs should never have barrel exports

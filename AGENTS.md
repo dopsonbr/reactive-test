@@ -75,15 +75,15 @@ reactive-platform/
 
 Files requiring careful review before changes:
 
-| File/Directory | Reason |
-|----------------|--------|
-| `settings.gradle.kts` | All module registrations - affects entire build |
-| `gradle/libs.versions.toml` | Centralized dependency versions |
-| `buildSrc/` | Convention plugins affect all modules |
-| `libs/backend/platform/platform-bom/` | BOM changes propagate to all services |
-| `docker/docker-compose.yml` | Infrastructure configuration |
-| `tsconfig.base.json` | TypeScript path mappings for all frontend projects |
-| `nx.json` | Nx workspace configuration |
+| File/Directory                        | Reason                                             |
+| ------------------------------------- | -------------------------------------------------- |
+| `settings.gradle.kts`                 | All module registrations - affects entire build    |
+| `gradle/libs.versions.toml`           | Centralized dependency versions                    |
+| `buildSrc/`                           | Convention plugins affect all modules              |
+| `libs/backend/platform/platform-bom/` | BOM changes propagate to all services              |
+| `docker/docker-compose.yml`           | Infrastructure configuration                       |
+| `tsconfig.base.json`                  | TypeScript path mappings for all frontend projects |
+| `nx.json`                             | Nx workspace configuration                         |
 
 ---
 
@@ -111,14 +111,14 @@ Files requiring careful review before changes:
 
 Detailed standards are in `docs/standards/`:
 
-| Standard | When to Reference |
-|----------|-------------------|
-| `docs/standards/backend/architecture.md` | Backend service structure |
-| `docs/standards/backend/validation.md` | Request validation patterns |
-| `docs/standards/backend/testing-*.md` | Testing patterns |
+| Standard                                  | When to Reference            |
+| ----------------------------------------- | ---------------------------- |
+| `docs/standards/backend/architecture.md`  | Backend service structure    |
+| `docs/standards/backend/validation.md`    | Request validation patterns  |
+| `docs/standards/backend/testing-*.md`     | Testing patterns             |
 | `docs/standards/frontend/architecture.md` | Frontend component structure |
-| `docs/standards/frontend/components.md` | UI component patterns |
-| `docs/standards/documentation.md` | README/AGENTS.md patterns |
+| `docs/standards/frontend/components.md`   | UI component patterns        |
+| `docs/standards/documentation.md`         | README/AGENTS.md patterns    |
 
 ---
 
@@ -164,6 +164,42 @@ pnpm nx show projects
 ### Nx Inferred Tasks
 
 Nx 22+ automatically creates **inferred tasks** from tool configurations (Vite, Vitest, Jest, package scripts, Gradle, etc.). Before assuming a missing `build`/`test` target, run `pnpm nx show project <name>` to inspect the auto-generated targets, or read the Nx docs on [inferred tasks](https://nx.dev/docs/concepts/inferred-tasks). Only add manual targets when an inferred one cannot express the required behavior.
+
+## Lint Commands (Nx)
+
+Nx provides unified lint commands across Java (ArchUnit + Spotless) and TypeScript (ESLint) projects:
+
+```bash
+# Lint single project
+pnpm nx lint :apps:product-service
+
+# Lint all projects
+pnpm nx run-many -t lint
+
+# Lint affected projects
+pnpm nx affected -t lint
+
+# Run architecture tests only
+pnpm nx archTest :apps:product-service
+```
+
+## Format Commands (Nx)
+
+Nx provides unified format commands across Java (Spotless) and TypeScript (Prettier) projects:
+
+```bash
+# Format single project
+pnpm nx format :apps:product-service
+
+# Format all projects
+pnpm nx run-many -t format
+
+# Check formatting without modifying
+pnpm nx run-many -t format-check
+
+# Check formatting on single project
+pnpm nx format-check :apps:product-service
+```
 
 ## Build Commands (Gradle - Direct)
 
@@ -222,43 +258,43 @@ docker compose logs -f cart-service
 
 ### Platform Libraries (libs/backend/platform/)
 
-| Module | Purpose |
-|--------|---------|
-| `platform-bom` | Centralized dependency versions (extends Spring Boot BOM) |
-| `platform-logging` | StructuredLogger, WebClientLoggingFilter, log data models |
+| Module                | Purpose                                                                  |
+| --------------------- | ------------------------------------------------------------------------ |
+| `platform-bom`        | Centralized dependency versions (extends Spring Boot BOM)                |
+| `platform-logging`    | StructuredLogger, WebClientLoggingFilter, log data models                |
 | `platform-resilience` | ReactiveResilience wrapper for circuit breaker, retry, timeout, bulkhead |
-| `platform-cache` | ReactiveCacheService interface, RedisCacheService, CacheKeyGenerator |
-| `platform-error` | GlobalErrorHandler, ErrorResponse, ValidationException |
-| `platform-webflux` | RequestMetadata, ContextKeys for Reactor Context |
-| `platform-security` | Placeholder for OAuth2/JWT (implementation per 006_AUTHN_AUTHZ.md) |
-| `platform-test` | WireMockSupport, RedisTestSupport, ReactorTestSupport |
+| `platform-cache`      | ReactiveCacheService interface, RedisCacheService, CacheKeyGenerator     |
+| `platform-error`      | GlobalErrorHandler, ErrorResponse, ValidationException                   |
+| `platform-webflux`    | RequestMetadata, ContextKeys for Reactor Context                         |
+| `platform-security`   | Placeholder for OAuth2/JWT (implementation per 006_AUTHN_AUTHZ.md)       |
+| `platform-test`       | WireMockSupport, RedisTestSupport, ReactorTestSupport                    |
 
 ### Applications (apps/)
 
-| Application | Port | Description |
-|-------------|------|-------------|
-| `product-service` | 8080 | Product aggregation from merchandise, price, inventory |
-| `cart-service` | 8081 | Shopping cart management |
-| `customer-service` | 8083 | Customer management |
-| `discount-service` | 8084 | Discount pricing engine with promo codes, markdowns, and loyalty |
-| `fulfillment-service` | 8085 | Fulfillment and shipping |
-| `audit-service` | 8086 | Audit event processing |
-| `checkout-service` | 8087 | Order checkout and payment processing |
-| `order-service` | 8088 | Order viewing and management (REST + GraphQL) |
-| `ecommerce-web` | 3001 | E-commerce frontend (React + Vite) |
+| Application           | Port | Description                                                      |
+| --------------------- | ---- | ---------------------------------------------------------------- |
+| `product-service`     | 8080 | Product aggregation from merchandise, price, inventory           |
+| `cart-service`        | 8081 | Shopping cart management                                         |
+| `customer-service`    | 8083 | Customer management                                              |
+| `discount-service`    | 8084 | Discount pricing engine with promo codes, markdowns, and loyalty |
+| `fulfillment-service` | 8085 | Fulfillment and shipping                                         |
+| `audit-service`       | 8086 | Audit event processing                                           |
+| `checkout-service`    | 8087 | Order checkout and payment processing                            |
+| `order-service`       | 8088 | Order viewing and management (REST + GraphQL)                    |
+| `ecommerce-web`       | 3001 | E-commerce frontend (React + Vite)                               |
 
 ### Frontend Libraries (libs/frontend/)
 
-| Library | Purpose |
-|---------|---------|
-| `shared-design/tokens` | Design tokens (CSS variables for colors, spacing, typography) |
-| `shared-ui/ui-components` | shadcn/ui components with Tailwind CSS and CVA |
-| `shared-data/api-client` | Generated TypeScript API client from OpenAPI |
+| Library                   | Purpose                                                       |
+| ------------------------- | ------------------------------------------------------------- |
+| `shared-design/tokens`    | Design tokens (CSS variables for colors, spacing, typography) |
+| `shared-ui/ui-components` | shadcn/ui components with Tailwind CSS and CVA                |
+| `shared-data/api-client`  | Generated TypeScript API client from OpenAPI                  |
 
 ### Workspace Plugin (tools/)
 
-| Generator | Command | Purpose |
-|-----------|---------|---------|
+| Generator      | Command                                                           | Purpose                           |
+| -------------- | ----------------------------------------------------------------- | --------------------------------- |
 | `ui-component` | `pnpm nx g @reactive-platform/workspace-plugin:ui-component Name` | Scaffold component + test + story |
 
 ## Frontend Development
@@ -267,22 +303,27 @@ docker compose logs -f cart-service
 
 **1. Hybrid Mode (Recommended for frontend development)**
 Backend services run in Docker, frontend runs locally with HMR:
+
 ```bash
 pnpm dev              # Starts backend containers + frontend dev server
 # or separately:
 pnpm dev:backend      # Start only backend services in Docker
 pnpm dev:frontend     # Start frontend dev server with hot reload
 ```
+
 Frontend: http://localhost:4200 (Vite dev server with proxy to backend)
 
 **2. Full Docker Mode (Production-like)**
 All services including frontend run in Docker:
+
 ```bash
 cd docker && docker compose up -d ecommerce-web
 ```
+
 Frontend: http://localhost:3001 (nginx serving built assets)
 
 **3. Stop Services**
+
 ```bash
 pnpm stop             # Stop all Docker services
 ```
@@ -326,10 +367,10 @@ import { ApiClient } from '@reactive-platform/api-client';
 
 ### Two E2E Tracks
 
-| Track | When | Speed | Coverage |
-|-------|------|-------|----------|
-| **Mocked** | Every PR | ~2 min | All journeys, mocked APIs (MSW) |
-| **Full-Stack** | Main + nightly | ~10 min | Critical paths, real services |
+| Track          | When           | Speed   | Coverage                        |
+| -------------- | -------------- | ------- | ------------------------------- |
+| **Mocked**     | Every PR       | ~2 min  | All journeys, mocked APIs (MSW) |
+| **Full-Stack** | Main + nightly | ~10 min | Critical paths, real services   |
 
 ### Running E2E Locally
 
@@ -349,6 +390,7 @@ E2E_KEEP_RUNNING=true pnpm nx e2e ecommerce-fullstack-e2e
 ### Adding New E2E Journeys
 
 1. **Mocked tests** (`apps/ecommerce-web/e2e/specs/`):
+
    - Add MSW handlers in `src/mocks/handlers.ts`
    - Add mock data in `src/mocks/data.ts`
    - Create spec file with Playwright tests
@@ -386,17 +428,18 @@ test.beforeEach(async ({ page }) => {
 
 ## Package Naming
 
-| Type | Package Pattern |
-|------|-----------------|
-| Platform libraries | `org.example.platform.{module}` |
-| Product service | `org.example.product.{subpackage}` |
-| Cart service | `org.example.cart.{subpackage}` |
-| Checkout service | `org.example.checkout.{subpackage}` |
-| Order service | `org.example.order.{subpackage}` |
+| Type               | Package Pattern                     |
+| ------------------ | ----------------------------------- |
+| Platform libraries | `org.example.platform.{module}`     |
+| Product service    | `org.example.product.{subpackage}`  |
+| Cart service       | `org.example.cart.{subpackage}`     |
+| Checkout service   | `org.example.checkout.{subpackage}` |
+| Order service      | `org.example.order.{subpackage}`    |
 
 ## Request Headers
 
 All services expect these headers for context propagation:
+
 - `x-store-number` - Integer 1-2000
 - `x-order-number` - UUID
 - `x-userid` - 6 alphanumeric chars
@@ -407,7 +450,9 @@ All services expect these headers for context propagation:
 Backend services support two actuator modes controlled by Spring profiles:
 
 ### Dev Mode (Default)
+
 All actuator endpoints are exposed without authentication for maximum debugging capability:
+
 ```bash
 # Start service (default - no profile needed)
 ./gradlew :apps:product-service:bootRun
@@ -422,7 +467,9 @@ curl http://localhost:8080/actuator/loggers  # Logger levels
 ```
 
 ### Prod Mode
+
 Restricted to k8s-required endpoints only:
+
 ```bash
 # Start service with prod profile
 SPRING_PROFILES_ACTIVE=prod ./gradlew :apps:product-service:bootRun
@@ -435,7 +482,9 @@ curl http://localhost:8080/actuator/prometheus # Prometheus scrape endpoint
 ```
 
 ### Docker Compose
+
 Docker Compose runs services in dev mode by default. For production-like testing:
+
 ```yaml
 environment:
   - SPRING_PROFILES_ACTIVE=prod
@@ -459,23 +508,23 @@ environment:
 
 ## Canonical Service Ports
 
-| Service | Port | Description |
-|---------|------|-------------|
-| product-service | 8080 | Product aggregation service |
-| cart-service | 8081 | Shopping cart service |
-| wiremock | 8082 | Mock external services |
-| customer-service | 8083 | Customer management |
-| discount-service | 8084 | Discount pricing engine |
-| fulfillment-service | 8085 | Fulfillment and shipping |
-| audit-service | 8086 | Audit event processing |
-| checkout-service | 8087 | Order checkout and payment |
-| order-service | 8088 | Order viewing and management |
-| redis | 6379 | Cache backend |
-| postgres | 5432 | Database |
-| grafana | 3000 | Dashboards (admin/admin) |
-| prometheus | 9090 | Metrics |
-| loki | 3100 | Logs |
-| tempo | 3200 | Traces |
+| Service             | Port | Description                  |
+| ------------------- | ---- | ---------------------------- |
+| product-service     | 8080 | Product aggregation service  |
+| cart-service        | 8081 | Shopping cart service        |
+| wiremock            | 8082 | Mock external services       |
+| customer-service    | 8083 | Customer management          |
+| discount-service    | 8084 | Discount pricing engine      |
+| fulfillment-service | 8085 | Fulfillment and shipping     |
+| audit-service       | 8086 | Audit event processing       |
+| checkout-service    | 8087 | Order checkout and payment   |
+| order-service       | 8088 | Order viewing and management |
+| redis               | 6379 | Cache backend                |
+| postgres            | 5432 | Database                     |
+| grafana             | 3000 | Dashboards (admin/admin)     |
+| prometheus          | 9090 | Metrics                      |
+| loki                | 3100 | Logs                         |
+| tempo               | 3200 | Traces                       |
 
 Run `node tools/check-service-ports.mjs` to verify port configuration.
 
@@ -503,15 +552,15 @@ Or with project graph validation:
 
 ### Individual Lint Commands
 
-| Command | What it Checks |
-|---------|----------------|
+| Command            | What it Checks                                                        |
+| ------------------ | --------------------------------------------------------------------- |
 | `pnpm lint:eslint` | Module boundaries, custom rules (design tokens, a11y, TanStack Query) |
-| `pnpm lint:styles` | Stylelint for CSS, Tailwind arbitrary value ban |
-| `pnpm lint:ui` | Story and a11y test presence for UI components |
-| `pnpm lint:tests` | Feature component test co-location |
-| `pnpm lint:md` | Markdown formatting |
-| `pnpm lint:tokens` | Design token enforcement |
-| `pnpm lint:fix` | Auto-fix all fixable issues |
+| `pnpm lint:styles` | Stylelint for CSS, Tailwind arbitrary value ban                       |
+| `pnpm lint:ui`     | Story and a11y test presence for UI components                        |
+| `pnpm lint:tests`  | Feature component test co-location                                    |
+| `pnpm lint:md`     | Markdown formatting                                                   |
+| `pnpm lint:tokens` | Design token enforcement                                              |
+| `pnpm lint:fix`    | Auto-fix all fixable issues                                           |
 
 ### CI Enforcement
 
@@ -525,14 +574,14 @@ These checks run automatically on every PR:
 
 ### Common Lint Errors
 
-| Error | Fix |
-|-------|-----|
-| "Hardcoded color detected" | Use Tailwind semantic token (e.g., `bg-primary` not `bg-[#ff0000]`) |
-| "Barrel export not allowed" | Replace `export * from` with named exports in feature folders |
-| "Missing role attribute" | Add `role="button"` to clickable non-interactive elements |
-| "Missing queryKey" | Add explicit `queryKey` array to useQuery calls |
-| "Missing story" | Create `ComponentName.stories.tsx` alongside component |
-| "Missing a11y test" | Create `ComponentName.a11y.test.tsx` with axe checks |
+| Error                       | Fix                                                                 |
+| --------------------------- | ------------------------------------------------------------------- |
+| "Hardcoded color detected"  | Use Tailwind semantic token (e.g., `bg-primary` not `bg-[#ff0000]`) |
+| "Barrel export not allowed" | Replace `export * from` with named exports in feature folders       |
+| "Missing role attribute"    | Add `role="button"` to clickable non-interactive elements           |
+| "Missing queryKey"          | Add explicit `queryKey` array to useQuery calls                     |
+| "Missing story"             | Create `ComponentName.stories.tsx` alongside component              |
+| "Missing a11y test"         | Create `ComponentName.a11y.test.tsx` with axe checks                |
 
 ## When Implementing New Features
 
@@ -562,13 +611,13 @@ mv 010_FEATURE_NAME.md docs/archive/
 ### Archive Location
 
 All completed implementation plans are stored in `docs/archive/`:
+
 - `000_INIT_IMPLEMENTATION_PLAN.md`
 - `001_GRAFANA_STACK_IMPLEMENTATION_PLAN.md`
 - `006_AUTHN_AUTHZ.md`
 - `008_CART_SERVICE.md`
 - `009_AUDIT_DATA.md`
 - etc.
-
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
@@ -583,4 +632,5 @@ All completed implementation plans are stored in `docs/archive/`:
 - If the user needs help with an Nx configuration or project graph error, use the `nx_workspace` tool to get any errors
 
 <!-- nx configuration end-->
+
 - ALWAYS use nx commands for invoking tasks like build, lint, test

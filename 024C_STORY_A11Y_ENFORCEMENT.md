@@ -33,11 +33,11 @@ Create scripts and lint rules to enforce that every exported UI component has a 
 
 ## Exit Criteria
 
-- [ ] `pnpm lint:stories` passes when all stories exist
-- [ ] `pnpm lint:a11y` passes when all axe tests exist
-- [ ] `pnpm lint:tests` passes when feature tests exist
-- [ ] Missing files produce clear, actionable errors
-- [ ] Scripts exit with non-zero code on failure
+- [x] `pnpm lint:stories` passes when all stories exist
+- [x] `pnpm lint:a11y` passes when all axe tests exist
+- [x] `pnpm lint:tests` passes when feature tests exist
+- [x] Missing files produce clear, actionable errors
+- [x] Scripts exit with non-zero code on failure
 
 ---
 
@@ -627,11 +627,11 @@ rm -rf libs/shared-ui/test-button
 
 ## Checklist
 
-- [ ] Phase 1: Story coverage checker working
-- [ ] Phase 2: Feature test checker working
-- [ ] Phase 3: A11y test template created
-- [ ] Phase 4: Fixture template created
-- [ ] Phase 5: ESLint rule for test co-location added
-- [ ] `pnpm lint:ui` runs both story and a11y checks
-- [ ] `pnpm lint:tests` checks feature test co-location
-- [ ] Missing files produce clear error messages
+- [x] Phase 1: Story coverage checker working
+- [x] Phase 2: Feature test checker working
+- [x] Phase 3: A11y test template created
+- [x] Phase 4: Fixture template created
+- [x] Phase 5: ESLint rule for test co-location added
+- [x] `pnpm lint:ui` runs both story and a11y checks
+- [x] `pnpm lint:tests` checks feature test co-location
+- [x] Missing files produce clear error messages

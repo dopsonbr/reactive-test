@@ -33,10 +33,10 @@ Wire all lint checks into CI, create unified `pnpm lint:all` script for local va
 
 ## Exit Criteria
 
-- [ ] `pnpm lint:all` runs all checks sequentially
-- [ ] `tools/check-frontend.sh` validates environment and runs checks
-- [ ] CI workflow fails on any lint violation
-- [ ] AGENTS.md documents "Run pnpm lint:all before PR"
+- [x] `pnpm lint:all` runs all checks sequentially
+- [x] `tools/check-frontend.sh` validates environment and runs checks
+- [x] CI workflow fails on any lint violation
+- [x] AGENTS.md documents "Run pnpm lint:all before PR"
 
 ---
 
@@ -580,12 +580,12 @@ After pushing, verify:
 
 ## Checklist
 
-- [ ] Phase 1: lint:all script chains all checks
-- [ ] Phase 2: check-frontend.sh wrapper created
-- [ ] Phase 3: GitHub Actions workflow created
-- [ ] Phase 4: AGENTS.md documents lint expectations
-- [ ] Phase 5: Nx lint targets configured
-- [ ] `pnpm lint:all` runs without errors
-- [ ] `./tools/check-frontend.sh` validates environment
-- [ ] CI workflow runs on PR
-- [ ] Documentation complete
+- [x] Phase 1: lint:all script chains all checks
+- [x] Phase 2: check-frontend.sh wrapper created
+- [x] Phase 3: GitHub Actions workflow created
+- [x] Phase 4: AGENTS.md documents lint expectations
+- [x] Phase 5: Nx lint targets configured
+- [x] `pnpm lint:all` runs without errors
+- [x] `./tools/check-frontend.sh` validates environment
+- [x] CI workflow runs on PR
+- [x] Documentation complete

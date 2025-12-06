@@ -66,14 +66,14 @@ Encode frontend standards as automated checks that fail fast in CI. This initiat
 
 ## Exit Criteria (Initiative-Level)
 
-- [ ] `nx lint` catches module boundary violations
-- [ ] Custom ESLint rules enforce design tokens, no barrel exports, a11y patterns, TanStack Query guardrails
-- [ ] Stylelint bans arbitrary Tailwind values and inline styles
-- [ ] Missing story or axe test fails lint
-- [ ] Missing feature test co-location fails lint
-- [ ] `pnpm lint:all` runs all checks locally
-- [ ] CI fails on any lint violation
-- [ ] AGENTS.md documents lint expectations
+- [x] `nx lint` catches module boundary violations
+- [x] Custom ESLint rules enforce design tokens, no barrel exports, a11y patterns, TanStack Query guardrails
+- [x] Stylelint bans arbitrary Tailwind values and inline styles
+- [x] Missing story or axe test fails lint
+- [x] Missing feature test co-location fails lint
+- [x] `pnpm lint:all` runs all checks locally
+- [x] CI fails on any lint violation
+- [x] AGENTS.md documents lint expectations
 
 ---
 

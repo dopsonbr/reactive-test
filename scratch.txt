@@ -84,8 +84,34 @@ create home page implementation
 standards agents
 documentation agents
 - tool calls to check that files are up to date 
+verification command invoke agents: standards, docs, local-ci
+
 
 create biography.md based on git history. tell it to be walter issacson themed
 
+once plan 28 is complete then update verifier agents/commands with tool hints 
 
+update all tools and scripts to be written in node esm
+create plan to make sure openapi-specs are produced and committed then used for client types and integrations 
+
+
+create POS implementatino plans
+create self checkout kiosk implemenation plan
+create order management app for employee. all types of modifications
+create order management app for customer (cancels/refund, change delivery date only, update customer account information)
+pla
+create mobile version of each existing app
+
+check to see if it makes senses to ban jest and only use vite test
+
+update all backend apps to expose actuator 
+
+
+create gh pages site that explains the app and documentation
+
+make sure backend lint is implemented by NX to run spotless
+
+fix ecommerce-web e2e and update standards docs for frontend e2e testing
+
+have gemini 3 create a montage based on git history, archived specs, file changes
 

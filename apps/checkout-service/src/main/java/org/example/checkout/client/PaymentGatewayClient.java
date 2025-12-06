@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 /**
- * Mock payment gateway client for MVP. Simulates payment processing with configurable success/failure.
+ * Mock payment gateway client for MVP. Simulates payment processing with configurable
+ * success/failure.
  *
  * <p>In production, this would be replaced with a real payment provider integration (Stripe,
  * Square, Adyen, etc.).
@@ -46,13 +47,11 @@ public class PaymentGatewayClient {
               Thread.sleep(100);
 
               // Generate mock payment reference
-              String paymentReference = "PAY-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+              String paymentReference =
+                  "PAY-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
               return new PaymentResponse(
-                  true,
-                  paymentReference,
-                  "Payment processed successfully",
-                  request.amount());
+                  true, paymentReference, "Payment processed successfully", request.amount());
             });
 
     return reactiveResilience.decorate(RESILIENCE_NAME, mockResponse);
@@ -69,10 +68,10 @@ public class PaymentGatewayClient {
     Mono<RefundResponse> mockResponse =
         Mono.fromCallable(
             () -> {
-              LOG.info(
-                  "Processing mock refund: reference={}, amount={}", paymentReference, amount);
+              LOG.info("Processing mock refund: reference={}, amount={}", paymentReference, amount);
 
-              String refundReference = "REF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+              String refundReference =
+                  "REF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
               return new RefundResponse(true, refundReference, "Refund processed successfully");
             });
@@ -91,17 +90,11 @@ public class PaymentGatewayClient {
 
   /** Payment method-specific details. */
   public record PaymentDetails(
-      String cardLast4,
-      String cardBrand,
-      String cardToken,
-      String billingZip) {}
+      String cardLast4, String cardBrand, String cardToken, String billingZip) {}
 
   /** Payment response. */
   public record PaymentResponse(
-      boolean success,
-      String paymentReference,
-      String message,
-      BigDecimal chargedAmount) {}
+      boolean success, String paymentReference, String message, BigDecimal chargedAmount) {}
 
   /** Refund response. */
   public record RefundResponse(boolean success, String refundReference, String message) {}

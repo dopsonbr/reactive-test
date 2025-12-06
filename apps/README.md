@@ -41,7 +41,7 @@ Controller → Service → Repository
 
 ## Prerequisites
 
-- Java 21 (required - LTS release)
+- Java 25 (required - LTS release)
 - Gradle 8.x (wrapper included)
 - Docker (for integration tests with Testcontainers)
 

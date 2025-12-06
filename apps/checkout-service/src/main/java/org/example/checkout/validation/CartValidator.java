@@ -55,7 +55,8 @@ public class CartValidator {
     } else {
       if (cart.totals().grandTotal() == null
           || cart.totals().grandTotal().compareTo(BigDecimal.ZERO) <= 0) {
-        errors.add(new ValidationError("cart.totals.grandTotal", "Cart total must be greater than zero"));
+        errors.add(
+            new ValidationError("cart.totals.grandTotal", "Cart total must be greater than zero"));
       }
     }
 
@@ -77,7 +78,8 @@ public class CartValidator {
 
       // Validate price
       if (item.unitPrice() == null || item.unitPrice().compareTo(BigDecimal.ZERO) <= 0) {
-        errors.add(new ValidationError(prefix + ".unitPrice", "Unit price must be greater than zero"));
+        errors.add(
+            new ValidationError(prefix + ".unitPrice", "Unit price must be greater than zero"));
       }
 
       // Validate SKU

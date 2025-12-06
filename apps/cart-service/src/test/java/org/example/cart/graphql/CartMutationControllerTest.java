@@ -14,18 +14,18 @@ class CartMutationControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                mutation CreateCart($input: CreateCartInput!) {
-                    createCart(input: $input) {
-                        id
-                        storeNumber
-                        customerId
-                        itemCount
-                        totals {
-                            grandTotal
-                        }
+            mutation CreateCart($input: CreateCartInput!) {
+                createCart(input: $input) {
+                    id
+                    storeNumber
+                    customerId
+                    itemCount
+                    totals {
+                        grandTotal
                     }
                 }
-                """)
+            }
+            """)
         .variable("input", Map.of("storeNumber", 100, "customerId", "cust-123"))
         .execute()
         .path("createCart.storeNumber")
@@ -48,14 +48,14 @@ class CartMutationControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                mutation {
-                    createCart(input: { storeNumber: 200 }) {
-                        id
-                        storeNumber
-                        customerId
-                    }
+            mutation {
+                createCart(input: { storeNumber: 200 }) {
+                    id
+                    storeNumber
+                    customerId
                 }
-                """)
+            }
+            """)
         .execute()
         .path("createCart.storeNumber")
         .entity(Integer.class)
@@ -70,12 +70,12 @@ class CartMutationControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                mutation {
-                    createCart(input: { storeNumber: 9999 }) {
-                        id
-                    }
+            mutation {
+                createCart(input: { storeNumber: 9999 }) {
+                    id
                 }
-                """)
+            }
+            """)
         .execute()
         .errors()
         .satisfy(
@@ -109,10 +109,10 @@ class CartMutationControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                mutation DeleteCart($id: ID!) {
-                    deleteCart(id: $id)
-                }
-                """)
+            mutation DeleteCart($id: ID!) {
+                deleteCart(id: $id)
+            }
+            """)
         .variable("id", cartId)
         .execute()
         .path("deleteCart")
@@ -143,18 +143,18 @@ class CartMutationControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                mutation SetCustomer($cartId: ID!, $input: SetCustomerInput!) {
-                    setCustomer(cartId: $cartId, input: $input) {
-                        id
+            mutation SetCustomer($cartId: ID!, $input: SetCustomerInput!) {
+                setCustomer(cartId: $cartId, input: $input) {
+                    id
+                    customerId
+                    customer {
                         customerId
-                        customer {
-                            customerId
-                            name
-                            email
-                        }
+                        name
+                        email
                     }
                 }
-                """)
+            }
+            """)
         .variable("cartId", cartId)
         .variable(
             "input",
@@ -177,16 +177,16 @@ class CartMutationControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                mutation RemoveCustomer($cartId: ID!) {
-                    removeCustomer(cartId: $cartId) {
-                        id
+            mutation RemoveCustomer($cartId: ID!) {
+                removeCustomer(cartId: $cartId) {
+                    id
+                    customerId
+                    customer {
                         customerId
-                        customer {
-                            customerId
-                        }
                     }
                 }
-                """)
+            }
+            """)
         .variable("cartId", cartId)
         .execute()
         .path("removeCustomer.customerId")

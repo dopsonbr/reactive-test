@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.example.checkout.client.CartServiceClient;
 import org.example.checkout.client.CartServiceClient.CartDetails;
-import org.example.checkout.client.CartServiceClient.CartItem;
 import org.example.checkout.client.DiscountServiceClient;
 import org.example.checkout.client.DiscountServiceClient.DiscountRequest;
 import org.example.checkout.client.DiscountServiceClient.DiscountRequestItem;
@@ -25,9 +24,7 @@ import org.example.checkout.dto.InitiateCheckoutRequest;
 import org.example.checkout.dto.OrderResponse;
 import org.example.checkout.model.AppliedDiscount;
 import org.example.checkout.model.CustomerSnapshot;
-import org.example.checkout.model.DeliveryAddress;
 import org.example.checkout.model.FulfillmentDetails;
-import org.example.checkout.model.FulfillmentType;
 import org.example.checkout.model.Order;
 import org.example.checkout.model.OrderLineItem;
 import org.example.checkout.model.OrderStatus;
@@ -92,7 +89,8 @@ public class CheckoutService {
     return Mono.deferContextual(
         ctx -> {
           RequestMetadata metadata = ctx.getOrDefault(ContextKeys.METADATA, null);
-          String orderNumber = metadata != null ? metadata.orderNumber() : UUID.randomUUID().toString();
+          String orderNumber =
+              metadata != null ? metadata.orderNumber() : UUID.randomUUID().toString();
 
           structuredLogger.logMessage(
               ctx,
@@ -103,7 +101,8 @@ public class CheckoutService {
           // Step 1: Fetch and validate cart
           return cartServiceClient
               .getCart(request.cartId(), storeNumber)
-              .flatMap(cart -> cartValidator.validateForCheckout(cart, storeNumber).thenReturn(cart))
+              .flatMap(
+                  cart -> cartValidator.validateForCheckout(cart, storeNumber).thenReturn(cart))
               // Step 2: Validate and calculate discounts
               .flatMap(cart -> validateDiscounts(cart).thenReturn(cart))
               // Step 3: Create fulfillment reservation
@@ -166,12 +165,15 @@ public class CheckoutService {
                   order ->
                       markCartCompleted(order)
                           .thenReturn(order)
-                          .onErrorResume(e -> {
-                            // Log error but don't fail - cart completion is best effort
-                            structuredLogger.logMessage(
-                                ctx, LOGGER_NAME, "Failed to mark cart completed: " + e.getMessage());
-                            return Mono.just(order);
-                          }))
+                          .onErrorResume(
+                              e -> {
+                                // Log error but don't fail - cart completion is best effort
+                                structuredLogger.logMessage(
+                                    ctx,
+                                    LOGGER_NAME,
+                                    "Failed to mark cart completed: " + e.getMessage());
+                                return Mono.just(order);
+                              }))
               // Step 5: Return order response
               .map(OrderResponse::fromOrder);
         });
@@ -230,7 +232,9 @@ public class CheckoutService {
         .validateAndCalculateDiscounts(request)
         .flatMap(
             response -> {
-              if (!response.valid() && response.invalidCodes() != null && !response.invalidCodes().isEmpty()) {
+              if (!response.valid()
+                  && response.invalidCodes() != null
+                  && !response.invalidCodes().isEmpty()) {
                 return Mono.error(
                     new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -426,7 +430,11 @@ public class CheckoutService {
   }
 
   private Mono<Order> createOrder(
-      CheckoutSession session, String paymentReference, String paymentMethod, String createdBy, UUID userSessionId) {
+      CheckoutSession session,
+      String paymentReference,
+      String paymentMethod,
+      String createdBy,
+      UUID userSessionId) {
     Instant now = Instant.now();
 
     Order order =

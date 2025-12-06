@@ -18,17 +18,17 @@ class CartQueryControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                query GetCart($id: ID!) {
-                    cart(id: $id) {
-                        id
-                        storeNumber
-                        totals {
-                            grandTotal
-                        }
-                        itemCount
+            query GetCart($id: ID!) {
+                cart(id: $id) {
+                    id
+                    storeNumber
+                    totals {
+                        grandTotal
                     }
+                    itemCount
                 }
-                """)
+            }
+            """)
         .variable("id", cartId)
         .execute()
         .path("cart.id")
@@ -48,12 +48,12 @@ class CartQueryControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                query GetCart($id: ID!) {
-                    cart(id: $id) {
-                        id
-                    }
+            query GetCart($id: ID!) {
+                cart(id: $id) {
+                    id
                 }
-                """)
+            }
+            """)
         .variable("id", "550e8400-e29b-41d4-a716-446655440000")
         .execute()
         .path("cart")
@@ -70,13 +70,13 @@ class CartQueryControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                query CartsByStore($storeNumber: Int!) {
-                    cartsByStore(storeNumber: $storeNumber) {
-                        id
-                        storeNumber
-                    }
+            query CartsByStore($storeNumber: Int!) {
+                cartsByStore(storeNumber: $storeNumber) {
+                    id
+                    storeNumber
                 }
-                """)
+            }
+            """)
         .variable("storeNumber", 150)
         .execute()
         .path("cartsByStore")
@@ -106,13 +106,13 @@ class CartQueryControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                query CartsByCustomer($customerId: String!) {
-                    cartsByCustomer(customerId: $customerId) {
-                        id
-                        customerId
-                    }
+            query CartsByCustomer($customerId: String!) {
+                cartsByCustomer(customerId: $customerId) {
+                    id
+                    customerId
                 }
-                """)
+            }
+            """)
         .variable("customerId", "test-customer-query")
         .execute()
         .path("cartsByCustomer")
@@ -123,12 +123,12 @@ class CartQueryControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                query CartsByCustomer($customerId: String!) {
-                    cartsByCustomer(customerId: $customerId) {
-                        customerId
-                    }
+            query CartsByCustomer($customerId: String!) {
+                cartsByCustomer(customerId: $customerId) {
+                    customerId
                 }
-                """)
+            }
+            """)
         .variable("customerId", "test-customer-query")
         .execute()
         .path("cartsByCustomer[0].customerId")
@@ -142,12 +142,12 @@ class CartQueryControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                query {
-                    cart(id: "not-a-uuid") {
-                        id
-                    }
+            query {
+                cart(id: "not-a-uuid") {
+                    id
                 }
-                """)
+            }
+            """)
         .execute()
         .errors()
         .satisfy(
@@ -163,12 +163,12 @@ class CartQueryControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                query {
-                    cartsByStore(storeNumber: 9999) {
-                        id
-                    }
+            query {
+                cartsByStore(storeNumber: 9999) {
+                    id
                 }
-                """)
+            }
+            """)
         .execute()
         .errors()
         .satisfy(
@@ -203,12 +203,12 @@ class CartQueryControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                mutation SetCustomer($cartId: ID!, $input: SetCustomerInput!) {
-                    setCustomer(cartId: $cartId, input: $input) {
-                        id
-                    }
+            mutation SetCustomer($cartId: ID!, $input: SetCustomerInput!) {
+                setCustomer(cartId: $cartId, input: $input) {
+                    id
                 }
-                """)
+            }
+            """)
         .variable("cartId", cartId)
         .variable(
             "input",
@@ -222,40 +222,40 @@ class CartQueryControllerTest extends AbstractGraphQLIntegrationTest {
     graphQlTester
         .document(
             """
-                query GetCartFull($id: ID!) {
-                    cart(id: $id) {
-                        id
-                        storeNumber
+            query GetCartFull($id: ID!) {
+                cart(id: $id) {
+                    id
+                    storeNumber
+                    customerId
+                    customer {
                         customerId
-                        customer {
-                            customerId
-                            name
-                            email
-                        }
-                        products {
-                            sku
-                            quantity
-                        }
-                        discounts {
-                            discountId
-                            code
-                        }
-                        fulfillments {
-                            fulfillmentId
-                            type
-                        }
-                        totals {
-                            subtotal
-                            discountTotal
-                            fulfillmentTotal
-                            grandTotal
-                        }
-                        itemCount
-                        createdAt
-                        updatedAt
+                        name
+                        email
                     }
+                    products {
+                        sku
+                        quantity
+                    }
+                    discounts {
+                        discountId
+                        code
+                    }
+                    fulfillments {
+                        fulfillmentId
+                        type
+                    }
+                    totals {
+                        subtotal
+                        discountTotal
+                        fulfillmentTotal
+                        grandTotal
+                    }
+                    itemCount
+                    createdAt
+                    updatedAt
                 }
-                """)
+            }
+            """)
         .variable("id", cartId)
         .execute()
         .path("cart.id")
@@ -279,12 +279,12 @@ class CartQueryControllerTest extends AbstractGraphQLIntegrationTest {
     return graphQlTester
         .document(
             """
-                mutation CreateCart($storeNumber: Int!) {
-                    createCart(input: { storeNumber: $storeNumber }) {
-                        id
-                    }
+            mutation CreateCart($storeNumber: Int!) {
+                createCart(input: { storeNumber: $storeNumber }) {
+                    id
                 }
-                """)
+            }
+            """)
         .variable("storeNumber", storeNumber)
         .execute()
         .path("createCart.id")

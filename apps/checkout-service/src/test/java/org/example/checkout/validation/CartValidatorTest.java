@@ -1,13 +1,10 @@
 package org.example.checkout.validation;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import org.example.checkout.client.CartServiceClient.CartCustomer;
 import org.example.checkout.client.CartServiceClient.CartDetails;
-import org.example.checkout.client.CartServiceClient.CartDiscount;
 import org.example.checkout.client.CartServiceClient.CartItem;
 import org.example.checkout.client.CartServiceClient.CartTotals;
 import org.example.platform.error.ValidationException;
@@ -46,8 +43,20 @@ class CartValidatorTest {
               "customer-1",
               createCustomer(),
               List.of(
-                  new CartItem("prod-1", 123456L, "Product 1", 2, new BigDecimal("10.00"), new BigDecimal("20.00")),
-                  new CartItem("prod-2", 789012L, "Product 2", 1, new BigDecimal("30.00"), new BigDecimal("30.00"))),
+                  new CartItem(
+                      "prod-1",
+                      123456L,
+                      "Product 1",
+                      2,
+                      new BigDecimal("10.00"),
+                      new BigDecimal("20.00")),
+                  new CartItem(
+                      "prod-2",
+                      789012L,
+                      "Product 2",
+                      1,
+                      new BigDecimal("30.00"),
+                      new BigDecimal("30.00"))),
               List.of(),
               new CartTotals(
                   new BigDecimal("50.00"),
@@ -71,8 +80,8 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(e -> e.field().equals("cart")))
+                      && ((ValidationException) error)
+                          .getErrors().stream().anyMatch(e -> e.field().equals("cart")))
           .verify();
     }
   }
@@ -88,11 +97,12 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(
-                              e ->
-                                  e.field().equals("cart.storeNumber")
-                                      && e.message().contains("does not belong")))
+                      && ((ValidationException) error)
+                          .getErrors().stream()
+                              .anyMatch(
+                                  e ->
+                                      e.field().equals("cart.storeNumber")
+                                          && e.message().contains("does not belong")))
           .verify();
     }
   }
@@ -118,11 +128,12 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(
-                              e ->
-                                  e.field().equals("cart.items")
-                                      && e.message().contains("at least one")))
+                      && ((ValidationException) error)
+                          .getErrors().stream()
+                              .anyMatch(
+                                  e ->
+                                      e.field().equals("cart.items")
+                                          && e.message().contains("at least one")))
           .verify();
     }
 
@@ -144,11 +155,12 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(
-                              e ->
-                                  e.field().equals("cart.items")
-                                      && e.message().contains("at least one")))
+                      && ((ValidationException) error)
+                          .getErrors().stream()
+                              .anyMatch(
+                                  e ->
+                                      e.field().equals("cart.items")
+                                          && e.message().contains("at least one")))
           .verify();
     }
 
@@ -161,7 +173,8 @@ class CartValidatorTest {
               "customer-1",
               createCustomer(),
               List.of(
-                  new CartItem("prod-1", 123456L, "Product 1", 0, new BigDecimal("10.00"), BigDecimal.ZERO)),
+                  new CartItem(
+                      "prod-1", 123456L, "Product 1", 0, new BigDecimal("10.00"), BigDecimal.ZERO)),
               List.of(),
               createValidTotals(),
               Instant.now(),
@@ -171,11 +184,12 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(
-                              e ->
-                                  e.field().contains("quantity")
-                                      && e.message().contains("between")))
+                      && ((ValidationException) error)
+                          .getErrors().stream()
+                              .anyMatch(
+                                  e ->
+                                      e.field().contains("quantity")
+                                          && e.message().contains("between")))
           .verify();
     }
 
@@ -188,7 +202,13 @@ class CartValidatorTest {
               "customer-1",
               createCustomer(),
               List.of(
-                  new CartItem("prod-1", 123456L, "Product 1", 1000, new BigDecimal("10.00"), new BigDecimal("10000.00"))),
+                  new CartItem(
+                      "prod-1",
+                      123456L,
+                      "Product 1",
+                      1000,
+                      new BigDecimal("10.00"),
+                      new BigDecimal("10000.00"))),
               List.of(),
               createValidTotals(),
               Instant.now(),
@@ -198,11 +218,12 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(
-                              e ->
-                                  e.field().contains("quantity")
-                                      && e.message().contains("between")))
+                      && ((ValidationException) error)
+                          .getErrors().stream()
+                              .anyMatch(
+                                  e ->
+                                      e.field().contains("quantity")
+                                          && e.message().contains("between")))
           .verify();
     }
 
@@ -215,7 +236,8 @@ class CartValidatorTest {
               "customer-1",
               createCustomer(),
               List.of(
-                  new CartItem("prod-1", 123456L, "Product 1", 1, BigDecimal.ZERO, BigDecimal.ZERO)),
+                  new CartItem(
+                      "prod-1", 123456L, "Product 1", 1, BigDecimal.ZERO, BigDecimal.ZERO)),
               List.of(),
               createValidTotals(),
               Instant.now(),
@@ -225,11 +247,12 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(
-                              e ->
-                                  e.field().contains("unitPrice")
-                                      && e.message().contains("greater than zero")))
+                      && ((ValidationException) error)
+                          .getErrors().stream()
+                              .anyMatch(
+                                  e ->
+                                      e.field().contains("unitPrice")
+                                          && e.message().contains("greater than zero")))
           .verify();
     }
 
@@ -251,8 +274,8 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(e -> e.field().contains("unitPrice")))
+                      && ((ValidationException) error)
+                          .getErrors().stream().anyMatch(e -> e.field().contains("unitPrice")))
           .verify();
     }
 
@@ -265,7 +288,13 @@ class CartValidatorTest {
               "customer-1",
               createCustomer(),
               List.of(
-                  new CartItem("prod-1", null, "Product 1", 1, new BigDecimal("10.00"), new BigDecimal("10.00"))),
+                  new CartItem(
+                      "prod-1",
+                      null,
+                      "Product 1",
+                      1,
+                      new BigDecimal("10.00"),
+                      new BigDecimal("10.00"))),
               List.of(),
               createValidTotals(),
               Instant.now(),
@@ -275,8 +304,8 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(e -> e.field().contains("sku")))
+                      && ((ValidationException) error)
+                          .getErrors().stream().anyMatch(e -> e.field().contains("sku")))
           .verify();
     }
 
@@ -289,7 +318,13 @@ class CartValidatorTest {
               "customer-1",
               createCustomer(),
               List.of(
-                  new CartItem("prod-1", 0L, "Product 1", 1, new BigDecimal("10.00"), new BigDecimal("10.00"))),
+                  new CartItem(
+                      "prod-1",
+                      0L,
+                      "Product 1",
+                      1,
+                      new BigDecimal("10.00"),
+                      new BigDecimal("10.00"))),
               List.of(),
               createValidTotals(),
               Instant.now(),
@@ -299,8 +334,10 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(e -> e.field().contains("sku") && e.message().contains("Valid")))
+                      && ((ValidationException) error)
+                          .getErrors().stream()
+                              .anyMatch(
+                                  e -> e.field().contains("sku") && e.message().contains("Valid")))
           .verify();
     }
   }
@@ -326,8 +363,8 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(e -> e.field().equals("cart.totals")))
+                      && ((ValidationException) error)
+                          .getErrors().stream().anyMatch(e -> e.field().equals("cart.totals")))
           .verify();
     }
 
@@ -354,11 +391,12 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(
-                              e ->
-                                  e.field().equals("cart.totals.grandTotal")
-                                      && e.message().contains("greater than zero")))
+                      && ((ValidationException) error)
+                          .getErrors().stream()
+                              .anyMatch(
+                                  e ->
+                                      e.field().equals("cart.totals.grandTotal")
+                                          && e.message().contains("greater than zero")))
           .verify();
     }
 
@@ -381,8 +419,9 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(e -> e.field().equals("cart.totals.grandTotal")))
+                      && ((ValidationException) error)
+                          .getErrors().stream()
+                              .anyMatch(e -> e.field().equals("cart.totals.grandTotal")))
           .verify();
     }
 
@@ -409,11 +448,12 @@ class CartValidatorTest {
           .expectErrorMatches(
               error ->
                   error instanceof ValidationException
-                      && ((ValidationException) error).getErrors().stream()
-                          .anyMatch(
-                              e ->
-                                  e.field().equals("cart.totals.grandTotal")
-                                      && e.message().contains("greater than zero")))
+                      && ((ValidationException) error)
+                          .getErrors().stream()
+                              .anyMatch(
+                                  e ->
+                                      e.field().equals("cart.totals.grandTotal")
+                                          && e.message().contains("greater than zero")))
           .verify();
     }
   }
@@ -434,7 +474,11 @@ class CartValidatorTest {
                   new CartItem("prod-1", 0L, "Product 1", 0, null, BigDecimal.ZERO)), // all invalid
               List.of(),
               new CartTotals(
-                  BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO),
+                  BigDecimal.ZERO,
+                  BigDecimal.ZERO,
+                  BigDecimal.ZERO,
+                  BigDecimal.ZERO,
+                  BigDecimal.ZERO),
               Instant.now(),
               Instant.now());
 
@@ -459,7 +503,8 @@ class CartValidatorTest {
               "customer-1",
               createCustomer(),
               List.of(
-                  new CartItem("prod-1", 123456L, "Product 1", 0, new BigDecimal("10.00"), BigDecimal.ZERO),
+                  new CartItem(
+                      "prod-1", 123456L, "Product 1", 0, new BigDecimal("10.00"), BigDecimal.ZERO),
                   new CartItem("prod-2", 789012L, "Product 2", 1, null, BigDecimal.ZERO)),
               List.of(),
               createValidTotals(),
@@ -473,10 +518,12 @@ class CartValidatorTest {
                 var errors = ((ValidationException) error).getErrors();
                 boolean hasItem0QuantityError =
                     errors.stream()
-                        .anyMatch(e -> e.field().contains("items[0]") && e.field().contains("quantity"));
+                        .anyMatch(
+                            e -> e.field().contains("items[0]") && e.field().contains("quantity"));
                 boolean hasItem1PriceError =
                     errors.stream()
-                        .anyMatch(e -> e.field().contains("items[1]") && e.field().contains("unitPrice"));
+                        .anyMatch(
+                            e -> e.field().contains("items[1]") && e.field().contains("unitPrice"));
                 return hasItem0QuantityError && hasItem1PriceError;
               })
           .verify();

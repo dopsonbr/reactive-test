@@ -2,8 +2,6 @@ package org.example.checkout.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -123,7 +121,8 @@ class CheckoutServiceTest {
           new InitiateCheckoutRequest(CART_ID, FulfillmentType.IMMEDIATE, null, null, null);
 
       when(cartServiceClient.getCart(CART_ID, STORE_NUMBER))
-          .thenReturn(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found")));
+          .thenReturn(
+              Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found")));
 
       // When/Then
       StepVerifier.create(
@@ -146,7 +145,8 @@ class CheckoutServiceTest {
 
       when(cartServiceClient.getCart(CART_ID, STORE_NUMBER)).thenReturn(Mono.just(cart));
       when(cartValidator.validateForCheckout(cart, STORE_NUMBER))
-          .thenReturn(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid cart")));
+          .thenReturn(
+              Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid cart")));
 
       // When/Then
       StepVerifier.create(
@@ -156,7 +156,8 @@ class CheckoutServiceTest {
           .expectErrorMatches(
               error ->
                   error instanceof ResponseStatusException
-                      && ((ResponseStatusException) error).getStatusCode() == HttpStatus.BAD_REQUEST)
+                      && ((ResponseStatusException) error).getStatusCode()
+                          == HttpStatus.BAD_REQUEST)
           .verify();
 
       verify(discountServiceClient, never()).validateAndCalculateDiscounts(any());
@@ -244,7 +245,8 @@ class CheckoutServiceTest {
       // Set up complete checkout mocks
       when(paymentGatewayClient.processPayment(any()))
           .thenReturn(Mono.just(createSuccessfulPaymentResponse()));
-      when(orderRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+      when(orderRepository.save(any()))
+          .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
       // Complete checkout
       CompleteCheckoutRequest completeRequest =
@@ -349,7 +351,9 @@ class CheckoutServiceTest {
       when(fulfillmentServiceClient.cancelReservation(any())).thenReturn(Mono.empty());
 
       CompleteCheckoutRequest completeRequest =
-          new CompleteCheckoutRequest(checkoutSessionId, "CARD",
+          new CompleteCheckoutRequest(
+              checkoutSessionId,
+              "CARD",
               new CompleteCheckoutRequest.PaymentDetails("1234", "VISA", "tok_test", "10001"));
 
       StepVerifier.create(
@@ -359,7 +363,8 @@ class CheckoutServiceTest {
           .expectErrorMatches(
               error ->
                   error instanceof ResponseStatusException
-                      && ((ResponseStatusException) error).getStatusCode() == HttpStatus.PAYMENT_REQUIRED)
+                      && ((ResponseStatusException) error).getStatusCode()
+                          == HttpStatus.PAYMENT_REQUIRED)
           .verify();
 
       // Verify reservation was cancelled
@@ -412,8 +417,7 @@ class CheckoutServiceTest {
       // Given
       Order order1 = createTestOrder(UUID.randomUUID());
       Order order2 = createTestOrder(UUID.randomUUID());
-      when(orderRepository.findByStoreNumber(STORE_NUMBER))
-          .thenReturn(Flux.just(order1, order2));
+      when(orderRepository.findByStoreNumber(STORE_NUMBER)).thenReturn(Flux.just(order1, order2));
 
       // When/Then
       StepVerifier.create(checkoutService.listOrdersByStore(STORE_NUMBER))
@@ -441,7 +445,12 @@ class CheckoutServiceTest {
         new CartCustomer("customer-1", "John", "Doe", "john@example.com", "555-1234", "GOLD"),
         List.of(
             new CartItem(
-                "prod-1", 123456L, "Test Product", 2, new BigDecimal("25.00"), new BigDecimal("50.00"))),
+                "prod-1",
+                123456L,
+                "Test Product",
+                2,
+                new BigDecimal("25.00"),
+                new BigDecimal("50.00"))),
         List.of(),
         new CartTotals(
             new BigDecimal("50.00"),
@@ -461,7 +470,12 @@ class CheckoutServiceTest {
         new CartCustomer("customer-1", "John", "Doe", "john@example.com", "555-1234", "GOLD"),
         List.of(
             new CartItem(
-                "prod-1", 123456L, "Test Product", 2, new BigDecimal("25.00"), new BigDecimal("50.00"))),
+                "prod-1",
+                123456L,
+                "Test Product",
+                2,
+                new BigDecimal("25.00"),
+                new BigDecimal("50.00"))),
         List.of(
             new CartServiceClient.CartDiscount(
                 "disc-1", "SAVE10", "PERCENTAGE", new BigDecimal("10"), new BigDecimal("5.00"))),

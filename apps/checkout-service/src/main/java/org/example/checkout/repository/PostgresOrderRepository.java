@@ -31,7 +31,8 @@ public class PostgresOrderRepository implements OrderRepository {
   private final OrderEntityRepository entityRepository;
   private final ObjectMapper objectMapper;
 
-  public PostgresOrderRepository(OrderEntityRepository entityRepository, ObjectMapper objectMapper) {
+  public PostgresOrderRepository(
+      OrderEntityRepository entityRepository, ObjectMapper objectMapper) {
     this.entityRepository = entityRepository;
     this.objectMapper = objectMapper;
   }

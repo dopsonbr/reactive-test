@@ -2,15 +2,47 @@
 
 This file provides guidance to AI agents (Claude Code, etc.) working with this repository.
 
+---
+
+## CRITICAL: Respect Nested AGENTS.md Files
+
+**This is the most important rule.** Before making changes to any directory, you MUST:
+
+1. **Check for AGENTS.md** in the target directory and all parent directories up to this root
+2. **Read and follow** all applicable AGENTS.md guidance - nested files take precedence for their scope
+3. **Never override** package-specific conventions defined in nested AGENTS.md files
+
+### AGENTS.md Hierarchy
+
+```
+AGENTS.md (this file)           ← Repository-wide guidance
+├── apps/AGENTS.md              ← All applications
+│   ├── product-service/AGENTS.md
+│   ├── cart-service/AGENTS.md
+│   └── {service}/src/.../AGENTS.md  ← Package-level guidance
+├── libs/platform/AGENTS.md     ← All platform libraries
+│   ├── platform-logging/AGENTS.md
+│   ├── platform-cache/AGENTS.md
+│   └── ...
+├── libs/shared-ui/ui-components/AGENTS.md
+├── libs/shared-design/tokens/AGENTS.md
+├── docs/standards/AGENTS.md
+└── ci/AGENTS.md
+```
+
+**When modifying code**: Always read the most specific AGENTS.md first, then work up the hierarchy.
+
+---
+
 ## Project Structure
 
-This is an **Nx-orchestrated polyglot monorepo** with Gradle backend modules and (future) TypeScript frontend applications. Nx provides unified task orchestration, caching, and affected analysis across all modules.
+This is an **Nx-orchestrated polyglot monorepo** with Gradle backend modules and TypeScript frontend applications. Nx provides unified task orchestration, caching, and affected analysis across all modules.
 
 ```
 reactive-platform/
 ├── buildSrc/                    # Convention plugins (Kotlin DSL)
 ├── gradle/libs.versions.toml    # Version catalog
-├── libs/platform/               # Platform libraries
+├── libs/platform/               # Platform libraries (see libs/platform/AGENTS.md)
 │   ├── platform-bom/            # Platform BOM (extends Spring Boot BOM)
 │   ├── platform-logging/        # Structured JSON logging library
 │   ├── platform-resilience/     # Resilience4j reactive wrappers
@@ -19,12 +51,65 @@ reactive-platform/
 │   ├── platform-webflux/        # Common WebFlux utilities (context, validation)
 │   ├── platform-security/       # Security (placeholder for OAuth2/JWT)
 │   └── platform-test/           # Shared test utilities
-├── apps/                        # Applications
+├── apps/                        # Applications (see apps/AGENTS.md)
 │   ├── product-service/         # Product aggregation service
 │   └── cart-service/            # Shopping cart service
 ├── docker/                      # Docker Compose and observability stack
 └── e2e-test/                    # k6 end-to-end tests
 ```
+
+---
+
+## Boundaries
+
+Files requiring careful review before changes:
+
+| File/Directory | Reason |
+|----------------|--------|
+| `settings.gradle.kts` | All module registrations - affects entire build |
+| `gradle/libs.versions.toml` | Centralized dependency versions |
+| `buildSrc/` | Convention plugins affect all modules |
+| `libs/platform/platform-bom/` | BOM changes propagate to all services |
+| `docker/docker-compose.yml` | Infrastructure configuration |
+| `tsconfig.base.json` | TypeScript path mappings for all frontend projects |
+| `nx.json` | Nx workspace configuration |
+
+---
+
+## Conventions
+
+1. **Always use Nx for builds** - Run `pnpm nx run-many -t build` not `./gradlew build` directly
+2. **Reactor Context over MDC** - Never use thread-local MDC in reactive code
+3. **Implementation plans required** - Create `NNN_FEATURE_NAME.md` before major changes
+4. **Never delete plans** - Archive to `docs/archive/` when complete
+5. **Platform libraries are shared** - Changes affect all applications
+6. **Follow nested AGENTS.md** - Package-specific guidance takes precedence
+
+---
+
+## Warnings
+
+- **MDC is not reactive-safe** - Use Reactor Context with `deferContextual()` or `contextWrite()`
+- **Resilience4j order matters** - Decorators: timeout → circuit breaker → retry → bulkhead
+- **Port conflicts** - Check `tools/check-service-ports.js` before adding services
+- **Breaking platform changes** - Require version bumps and migration notes
+
+---
+
+## Standards Reference
+
+Detailed standards are in `docs/standards/`:
+
+| Standard | When to Reference |
+|----------|-------------------|
+| `docs/standards/backend/architecture.md` | Backend service structure |
+| `docs/standards/backend/validation.md` | Request validation patterns |
+| `docs/standards/backend/testing-*.md` | Testing patterns |
+| `docs/standards/frontend/architecture.md` | Frontend component structure |
+| `docs/standards/frontend/components.md` | UI component patterns |
+| `docs/standards/documentation.md` | README/AGENTS.md patterns |
+
+---
 
 ## Package Manager
 
@@ -224,18 +309,6 @@ pnpm generate:api
 import { Button } from '@reactive-platform/shared-ui/ui-components';
 import { ApiClient } from '@reactive-platform/api-client';
 ```
-
-## Key Patterns
-
-### Reactor Context (not MDC)
-Request metadata propagates via Reactor Context, not thread-local MDC. Always use `deferContextual()` or `contextWrite()`.
-
-### Resilience4j Decorator Order
-Decorators apply in order (innermost to outermost): timeout → circuit breaker → retry → bulkhead.
-
-### Caching Patterns
-- **Cache-aside**: Merchandise, Price (check cache first)
-- **Fallback-only**: Inventory (HTTP first, cache on error)
 
 ## Package Naming
 

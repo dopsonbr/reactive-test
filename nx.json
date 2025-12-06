@@ -51,6 +51,18 @@
     "test": {
       "cache": true
     },
+    "lint": {
+      "cache": true
+    },
+    "format": {
+      "cache": false
+    },
+    "format-check": {
+      "cache": true
+    },
+    "archTest": {
+      "cache": true
+    },
     "@nx/js:tsc": {
       "cache": true,
       "dependsOn": ["^build"],

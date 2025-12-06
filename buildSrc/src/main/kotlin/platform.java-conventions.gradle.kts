@@ -43,3 +43,62 @@ spotless {
         endWithNewline()
     }
 }
+
+// ============================================================================
+// Architecture tests task (ArchUnit) - Phase 1
+// ============================================================================
+// Runs only tests tagged with "architecture" for independent execution
+val testSourceSet = the<SourceSetContainer>()["test"]
+
+tasks.register<Test>("archTest") {
+    description = "Runs ArchUnit architecture tests"
+    group = "verification"
+
+    // Configure test classpath from test source set
+    testClassesDirs = testSourceSet.output.classesDirs
+    classpath = testSourceSet.runtimeClasspath
+
+    useJUnitPlatform {
+        includeTags("architecture")
+    }
+
+    // Run after regular tests if both are executed together
+    shouldRunAfter(tasks.test)
+}
+
+// Exclude architecture tests from regular test task
+tasks.test {
+    useJUnitPlatform {
+        excludeTags("architecture")
+    }
+}
+
+// ============================================================================
+// Lint task - Phase 2
+// ============================================================================
+// Combines spotlessCheck + archTest for comprehensive linting
+tasks.register("lint") {
+    description = "Runs all linting checks (Spotless + ArchUnit)"
+    group = "verification"
+
+    dependsOn("spotlessCheck", "archTest")
+}
+
+// ============================================================================
+// Format tasks - Phase 3
+// ============================================================================
+// Format task (applies formatting)
+tasks.register("format") {
+    description = "Applies code formatting with Spotless"
+    group = "formatting"
+
+    dependsOn("spotlessApply")
+}
+
+// Format check task (validates without modifying)
+tasks.register("format-check") {
+    description = "Checks code formatting without modifying files"
+    group = "verification"
+
+    dependsOn("spotlessCheck")
+}

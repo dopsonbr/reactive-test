@@ -6,6 +6,7 @@ import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Shared architecture rules for all applications.
@@ -20,6 +21,7 @@ import com.tngtech.archunit.lang.ArchRule;
  * class ArchitectureTest extends ArchitectureRules {}
  * }</pre>
  */
+@Tag("architecture")
 public abstract class ArchitectureRules {
 
   // Layer definitions

@@ -8,6 +8,7 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import org.example.platform.test.architecture.ArchitectureRules;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Architecture tests for product-service.
@@ -18,6 +19,7 @@ import org.example.platform.test.architecture.ArchitectureRules;
  * <p>Note: Domain-related rules are overridden because this service uses shared domain models from
  * libs/shared-model/shared-model-product instead of having a local domain package.
  */
+@Tag("architecture")
 @AnalyzeClasses(
     packages = "org.example.product",
     importOptions = ImportOption.DoNotIncludeTests.class)

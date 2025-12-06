@@ -17,7 +17,9 @@
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
-      "@reactive-platform/shared-ui/*": ["libs/frontend/shared-ui/*/src/index.ts"],
+      "@reactive-platform/shared-ui/*": [
+        "libs/frontend/shared-ui/*/src/index.ts"
+      ],
       "@reactive-platform/shared-ui-components": [
         "libs/frontend/shared-ui/ui-components/src/index.ts"
       ],

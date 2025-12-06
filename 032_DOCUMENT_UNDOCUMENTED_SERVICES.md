@@ -1,6 +1,6 @@
 # 032_DOCUMENT_UNDOCUMENTED_SERVICES
 
-**Status: DRAFT**
+**Status: COMPLETED**
 
 ---
 
@@ -290,11 +290,11 @@ Expected counts:
 
 ## Checklist
 
-- [ ] Phase 1: checkout-service documented (30 files)
-- [ ] Phase 2: customer-service documented (27 files)
-- [ ] Phase 3: discount-service documented (33 files)
-- [ ] Phase 4: fulfillment-service documented (15 files)
-- [ ] Phase 5: Verification complete (all 105 files present and valid)
-- [ ] All README.md have Purpose/Behavior sections
-- [ ] All AGENTS.md have Boundaries/Conventions/Warnings sections
-- [ ] All CONTENTS.md list all package files
+- [x] Phase 1: checkout-service documented (30 files)
+- [x] Phase 2: customer-service documented (27 files)
+- [x] Phase 3: discount-service documented (33 files)
+- [x] Phase 4: fulfillment-service documented (15 files)
+- [x] Phase 5: Verification complete (all 105 files present and valid)
+- [x] All README.md have Purpose/Behavior sections
+- [x] All AGENTS.md have Boundaries/Conventions/Warnings sections
+- [x] All CONTENTS.md list all package files

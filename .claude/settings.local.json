@@ -67,7 +67,18 @@
       "Bash(do echo:*)",
       "Bash(unzip:*)",
       "Bash(python3:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(node tools/generate-fake-auth-tokens.mjs:*)",
+      "Bash(.dockerignore )",
+      "Bash(apps/ecommerce-web/src/app/providers.tsx )",
+      "Bash(apps/ecommerce-web/src/shared/layouts/Header.tsx )",
+      "Bash(apps/ecommerce-web/src/features/auth/ )",
+      "Bash(docker/Dockerfile.ecommerce-web )",
+      "Bash(docker/nginx-frontend.conf )",
+      "Bash(libs/frontend/shared-data/api-client/src/lib/api-client.ts )",
+      "Bash(e2e-test/wiremock/mappings/fake-auth/ )",
+      "Bash(tools/generate-fake-auth-tokens.mjs )",
+      "Bash(035_FAKE_AUTH_DOCKER.md)"
     ],
     "deny": [],
     "ask": [

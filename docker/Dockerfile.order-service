@@ -1,5 +1,5 @@
 # Runtime image (JAR must be pre-built with ./gradlew :apps:order-service:bootJar)
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 
 # Install curl for health checks
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*

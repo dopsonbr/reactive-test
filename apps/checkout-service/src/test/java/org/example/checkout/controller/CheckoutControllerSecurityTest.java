@@ -24,7 +24,6 @@ import org.example.platform.test.TestSecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
@@ -58,10 +57,7 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    webTestClient =
-        WebTestClient.bindToServer()
-            .baseUrl("http://localhost:" + port)
-            .build();
+    webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
 
     testCheckoutSummary =
         new CheckoutSummaryResponse(
@@ -158,7 +154,9 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
           .header("x-order-number", ORDER_NUMBER)
           .header("x-userid", USER_ID)
           .header("x-sessionid", SESSION_ID)
-          .bodyValue(new InitiateCheckoutRequest(VALID_CART_ID, FulfillmentType.IMMEDIATE, null, null, null))
+          .bodyValue(
+              new InitiateCheckoutRequest(
+                  VALID_CART_ID, FulfillmentType.IMMEDIATE, null, null, null))
           .exchange()
           .expectStatus()
           .isUnauthorized();
@@ -217,7 +215,9 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
 
       webTestClient
           .get()
-          .uri(uriBuilder -> uriBuilder.path("/orders").queryParam("storeNumber", STORE_NUMBER).build())
+          .uri(
+              uriBuilder ->
+                  uriBuilder.path("/orders").queryParam("storeNumber", STORE_NUMBER).build())
           .header("Authorization", SecurityTestUtils.bearerAuth(validToken))
           .header("x-store-number", String.valueOf(STORE_NUMBER))
           .header("x-order-number", ORDER_NUMBER)
@@ -234,7 +234,9 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
 
       webTestClient
           .get()
-          .uri(uriBuilder -> uriBuilder.path("/orders").queryParam("storeNumber", STORE_NUMBER).build())
+          .uri(
+              uriBuilder ->
+                  uriBuilder.path("/orders").queryParam("storeNumber", STORE_NUMBER).build())
           .header("Authorization", SecurityTestUtils.bearerAuth(tokenWithWrongScope))
           .header("x-store-number", String.valueOf(STORE_NUMBER))
           .header("x-order-number", ORDER_NUMBER)
@@ -262,7 +264,9 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
           .header("x-userid", USER_ID)
           .header("x-sessionid", SESSION_ID)
           .header("Content-Type", "application/json")
-          .bodyValue(new InitiateCheckoutRequest(VALID_CART_ID, FulfillmentType.IMMEDIATE, null, null, null))
+          .bodyValue(
+              new InitiateCheckoutRequest(
+                  VALID_CART_ID, FulfillmentType.IMMEDIATE, null, null, null))
           .exchange()
           .expectStatus()
           .isForbidden();
@@ -284,7 +288,9 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
           .header("x-userid", USER_ID)
           .header("x-sessionid", SESSION_ID)
           .header("Content-Type", "application/json")
-          .bodyValue(new InitiateCheckoutRequest(VALID_CART_ID, FulfillmentType.IMMEDIATE, null, null, null))
+          .bodyValue(
+              new InitiateCheckoutRequest(
+                  VALID_CART_ID, FulfillmentType.IMMEDIATE, null, null, null))
           .exchange()
           .expectStatus()
           .isOk()
@@ -353,7 +359,9 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
           .header("x-userid", USER_ID)
           .header("x-sessionid", SESSION_ID)
           .header("Content-Type", "application/json")
-          .bodyValue(new InitiateCheckoutRequest(VALID_CART_ID, FulfillmentType.IMMEDIATE, null, null, null))
+          .bodyValue(
+              new InitiateCheckoutRequest(
+                  VALID_CART_ID, FulfillmentType.IMMEDIATE, null, null, null))
           .exchange()
           .expectStatus()
           .isOk();

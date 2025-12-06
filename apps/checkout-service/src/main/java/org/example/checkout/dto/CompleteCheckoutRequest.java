@@ -8,14 +8,9 @@ package org.example.checkout.dto;
  * @param paymentDetails payment method-specific details
  */
 public record CompleteCheckoutRequest(
-    String checkoutSessionId,
-    String paymentMethod,
-    PaymentDetails paymentDetails) {
+    String checkoutSessionId, String paymentMethod, PaymentDetails paymentDetails) {
 
   /** Payment method-specific details. */
   public record PaymentDetails(
-      String cardLast4,
-      String cardBrand,
-      String cardToken,
-      String billingZip) {}
+      String cardLast4, String cardBrand, String cardToken, String billingZip) {}
 }

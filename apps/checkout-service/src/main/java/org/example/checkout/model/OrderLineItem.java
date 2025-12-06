@@ -22,7 +22,8 @@ public record OrderLineItem(
       int quantity,
       BigDecimal unitPrice,
       BigDecimal discountAmount) {
-    BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(quantity)).subtract(discountAmount);
+    BigDecimal lineTotal =
+        unitPrice.multiply(BigDecimal.valueOf(quantity)).subtract(discountAmount);
     return new OrderLineItem(productId, sku, name, quantity, unitPrice, lineTotal, discountAmount);
   }
 }

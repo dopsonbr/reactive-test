@@ -1,7 +1,5 @@
 package org.example.checkout.validation;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -55,8 +53,8 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().equals("cartId")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("cartId")))
         .verify();
   }
 
@@ -71,11 +69,12 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(
-                            e ->
-                                e.field().equals("cartId")
-                                    && e.message().contains("valid UUID")))
+                    && ((ValidationException) error)
+                        .getErrors().stream()
+                            .anyMatch(
+                                e ->
+                                    e.field().equals("cartId")
+                                        && e.message().contains("valid UUID")))
         .verify();
   }
 
@@ -90,8 +89,8 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().equals("fulfillmentType")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("fulfillmentType")))
         .verify();
   }
 
@@ -107,11 +106,12 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(
-                            e ->
-                                e.field().equals("fulfillmentDate")
-                                    && e.message().contains("required")))
+                    && ((ValidationException) error)
+                        .getErrors().stream()
+                            .anyMatch(
+                                e ->
+                                    e.field().equals("fulfillmentDate")
+                                        && e.message().contains("required")))
         .verify();
   }
 
@@ -131,11 +131,12 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(
-                            e ->
-                                e.field().equals("fulfillmentDate")
-                                    && e.message().contains("future")))
+                    && ((ValidationException) error)
+                        .getErrors().stream()
+                            .anyMatch(
+                                e ->
+                                    e.field().equals("fulfillmentDate")
+                                        && e.message().contains("future")))
         .verify();
   }
 
@@ -167,11 +168,12 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(
-                            e ->
-                                e.field().equals("deliveryAddress")
-                                    && e.message().contains("required")))
+                    && ((ValidationException) error)
+                        .getErrors().stream()
+                            .anyMatch(
+                                e ->
+                                    e.field().equals("deliveryAddress")
+                                        && e.message().contains("required")))
         .verify();
   }
 
@@ -180,11 +182,7 @@ class CheckoutRequestValidatorTest {
     DeliveryAddress incompleteAddress = new DeliveryAddress(null, null, null, null, null, null);
     InitiateCheckoutRequest request =
         new InitiateCheckoutRequest(
-            UUID.randomUUID().toString(),
-            FulfillmentType.DELIVERY,
-            null,
-            incompleteAddress,
-            null);
+            UUID.randomUUID().toString(), FulfillmentType.DELIVERY, null, incompleteAddress, null);
 
     StepVerifier.create(
             validator.validateInitiateCheckout(
@@ -207,11 +205,7 @@ class CheckoutRequestValidatorTest {
         new DeliveryAddress("123 Main St", "Apt 4", "New York", "NY", "10001", "US");
     InitiateCheckoutRequest request =
         new InitiateCheckoutRequest(
-            UUID.randomUUID().toString(),
-            FulfillmentType.DELIVERY,
-            null,
-            completeAddress,
-            null);
+            UUID.randomUUID().toString(), FulfillmentType.DELIVERY, null, completeAddress, null);
 
     StepVerifier.create(
             validator.validateInitiateCheckout(
@@ -242,8 +236,8 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().equals("checkoutSessionId")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("checkoutSessionId")))
         .verify();
   }
 
@@ -258,8 +252,8 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().equals("paymentMethod")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("paymentMethod")))
         .verify();
   }
 
@@ -274,8 +268,8 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().equals("paymentDetails")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("paymentDetails")))
         .verify();
   }
 
@@ -292,8 +286,8 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().contains("cardToken")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().contains("cardToken")))
         .verify();
   }
 
@@ -310,8 +304,8 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().equals("x-store-number")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("x-store-number")))
         .verify();
 
     StepVerifier.create(
@@ -320,8 +314,8 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().equals("x-store-number")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("x-store-number")))
         .verify();
   }
 
@@ -337,8 +331,8 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().equals("x-order-number")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("x-order-number")))
         .verify();
   }
 
@@ -355,8 +349,8 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().equals("x-userid")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("x-userid")))
         .verify();
 
     // Invalid characters
@@ -366,8 +360,8 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().equals("x-userid")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("x-userid")))
         .verify();
   }
 
@@ -383,19 +377,17 @@ class CheckoutRequestValidatorTest {
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
-                    && ((ValidationException) error).getErrors().stream()
-                        .anyMatch(e -> e.field().equals("x-sessionid")))
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("x-sessionid")))
         .verify();
   }
 
   @Test
   void shouldCollectAllValidationErrors() {
     // Multiple invalid fields
-    InitiateCheckoutRequest request =
-        new InitiateCheckoutRequest("bad-id", null, null, null, null);
+    InitiateCheckoutRequest request = new InitiateCheckoutRequest("bad-id", null, null, null, null);
 
-    StepVerifier.create(
-            validator.validateInitiateCheckout(request, 0, "bad", "x", "bad"))
+    StepVerifier.create(validator.validateInitiateCheckout(request, 0, "bad", "x", "bad"))
         .expectErrorMatches(
             error -> {
               if (!(error instanceof ValidationException)) return false;

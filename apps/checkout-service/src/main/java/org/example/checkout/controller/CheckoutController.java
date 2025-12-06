@@ -142,7 +142,8 @@ public class CheckoutController {
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateListOrders(storeNumber, headerStoreNumber, orderNumber, userId, sessionId)
+                  .validateListOrders(
+                      storeNumber, headerStoreNumber, orderNumber, userId, sessionId)
                   .thenMany(checkoutService.listOrdersByStore(storeNumber));
             })
         .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));

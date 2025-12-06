@@ -27,24 +27,24 @@ public interface CustomerEntityRepository extends ReactiveCrudRepository<Custome
 
   @Query(
       """
-        SELECT * FROM customers
-        WHERE store_number = :storeNumber
-        AND (
-            customer_id = :searchTerm
-            OR LOWER(email) = LOWER(:searchTerm)
-            OR phone = :searchTerm
-        )
-        """)
+      SELECT * FROM customers
+      WHERE store_number = :storeNumber
+      AND (
+          customer_id = :searchTerm
+          OR LOWER(email) = LOWER(:searchTerm)
+          OR phone = :searchTerm
+      )
+      """)
   Flux<CustomerEntity> searchByIdEmailOrPhone(int storeNumber, String searchTerm);
 
   @Query(
       """
-        SELECT * FROM customers
-        WHERE store_number = :storeNumber
-        AND status = 'ACTIVE'
-        ORDER BY updated_at DESC
-        LIMIT :limit OFFSET :offset
-        """)
+      SELECT * FROM customers
+      WHERE store_number = :storeNumber
+      AND status = 'ACTIVE'
+      ORDER BY updated_at DESC
+      LIMIT :limit OFFSET :offset
+      """)
   Flux<CustomerEntity> findActiveByStorePaginated(int storeNumber, int limit, int offset);
 
   Mono<Long> countByStoreNumber(int storeNumber);
@@ -53,10 +53,10 @@ public interface CustomerEntityRepository extends ReactiveCrudRepository<Custome
 
   @Query(
       """
-        SELECT * FROM customers
-        WHERE store_number = :storeNumber
-        AND loyalty_json ->> 'tier' = :tier
-        """)
+      SELECT * FROM customers
+      WHERE store_number = :storeNumber
+      AND loyalty_json ->> 'tier' = :tier
+      """)
   Flux<CustomerEntity> findByStoreNumberAndLoyaltyTier(int storeNumber, String tier);
 
   Mono<Boolean> existsByStoreNumberAndEmail(int storeNumber, String email);

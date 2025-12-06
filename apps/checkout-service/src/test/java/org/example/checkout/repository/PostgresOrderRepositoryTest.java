@@ -7,16 +7,15 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.example.checkout.AbstractIntegrationTest;
+import org.example.checkout.config.TestR2dbcConfig;
 import org.example.checkout.model.AppliedDiscount;
 import org.example.checkout.model.CustomerSnapshot;
-import org.example.checkout.model.DeliveryAddress;
 import org.example.checkout.model.FulfillmentDetails;
 import org.example.checkout.model.FulfillmentType;
 import org.example.checkout.model.Order;
 import org.example.checkout.model.OrderLineItem;
 import org.example.checkout.model.OrderStatus;
 import org.example.checkout.model.PaymentStatus;
-import org.example.checkout.config.TestR2dbcConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,9 +113,7 @@ class PostgresOrderRepositoryTest extends AbstractIntegrationTest {
     orderRepository.save(order2).block();
 
     // When/Then
-    StepVerifier.create(orderRepository.findByStoreNumber(100))
-        .expectNextCount(2)
-        .verifyComplete();
+    StepVerifier.create(orderRepository.findByStoreNumber(100)).expectNextCount(2).verifyComplete();
   }
 
   @Test
@@ -189,11 +186,7 @@ class PostgresOrderRepositoryTest extends AbstractIntegrationTest {
             new CustomerSnapshot("CUST-001", "John", "Doe", "john@example.com", "555-1234", "GOLD"))
         .fulfillmentDetails(
             new FulfillmentDetails(
-                FulfillmentType.IMMEDIATE,
-                null,
-                null,
-                "Store 100 - Main Entrance",
-                null))
+                FulfillmentType.IMMEDIATE, null, null, "Store 100 - Main Entrance", null))
         .createdAt(Instant.now())
         .updatedAt(Instant.now())
         .createdBy("testuser")

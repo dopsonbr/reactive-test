@@ -57,8 +57,7 @@ public class CheckoutRequestValidator {
       if (request.fulfillmentType() == FulfillmentType.WILL_CALL) {
         if (request.fulfillmentDate() == null) {
           errors.add(
-              new ValidationError(
-                  "fulfillmentDate", "Fulfillment date is required for WILL_CALL"));
+              new ValidationError("fulfillmentDate", "Fulfillment date is required for WILL_CALL"));
         } else if (request.fulfillmentDate().isBefore(Instant.now())) {
           errors.add(
               new ValidationError("fulfillmentDate", "Fulfillment date must be in the future"));

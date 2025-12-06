@@ -8,7 +8,7 @@ group = "org.example.platform"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
 }
 
@@ -38,7 +38,7 @@ dependencies {
 spotless {
     java {
         target("src/**/*.java")
-        googleJavaFormat("1.19.2").reflowLongStrings()
+        googleJavaFormat("1.33.0").reflowLongStrings()
         trimTrailingWhitespace()
         endWithNewline()
     }

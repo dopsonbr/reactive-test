@@ -3,6 +3,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { ApiError } from '@reactive-platform/api-client';
 import { router } from './routes';
 import { logger } from '../shared/utils/logger';
+import { AuthProvider } from '../features/auth';
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -40,8 +41,10 @@ const queryClient = new QueryClient({
 
 export function Providers() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }

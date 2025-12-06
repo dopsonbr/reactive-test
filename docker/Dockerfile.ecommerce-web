@@ -8,12 +8,11 @@ RUN corepack enable
 # Copy package files first for better caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY nx.json tsconfig.base.json ./
+COPY scripts/ ./scripts/
 
 # Copy only the necessary source directories
 COPY apps/ecommerce-web/ ./apps/ecommerce-web/
-COPY libs/shared-ui/ ./libs/shared-ui/
-COPY libs/shared-data/ ./libs/shared-data/
-COPY libs/shared-design/ ./libs/shared-design/
+COPY libs/frontend/ ./libs/frontend/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile

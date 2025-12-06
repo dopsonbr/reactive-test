@@ -15,8 +15,9 @@ out/
 .git/
 .gitignore
 
-# Docker (avoid recursive copy)
-docker/
+# Docker (avoid recursive copy, but allow nginx config)
+docker/*
+!docker/nginx-frontend.conf
 
 # Test outputs and data
 logs/

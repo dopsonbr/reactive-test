@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { ShoppingCart } from 'lucide-react';
 import { Button } from '@reactive-platform/shared-ui-components';
 import { useCart } from '../../features/cart/api/useCart';
+import { UserMenu } from '../../features/auth';
 
 export function Header() {
   const { data: cart } = useCart();
@@ -35,6 +36,8 @@ export function Header() {
               )}
             </Button>
           </Link>
+
+          <UserMenu />
         </nav>
       </div>
     </header>

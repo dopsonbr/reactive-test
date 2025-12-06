@@ -4,8 +4,9 @@ interface RequestOptions extends RequestInit {
   params?: Record<string, string>;
 }
 
-const PRODUCT_SERVICE_URL = import.meta.env.VITE_PRODUCT_API_URL || 'http://localhost:8080';
-const CART_SERVICE_URL = import.meta.env.VITE_CART_API_URL || 'http://localhost:8081';
+// Use empty string for same-origin requests (nginx proxy), or explicit URLs for dev server
+const PRODUCT_SERVICE_URL = import.meta.env.VITE_PRODUCT_API_URL || '';
+const CART_SERVICE_URL = import.meta.env.VITE_CART_API_URL || '';
 
 function getSessionValue(key: string, defaultValue: string): string {
   if (typeof sessionStorage === 'undefined') {
@@ -29,7 +30,9 @@ export async function apiClient<T>(
   const { params, ...fetchOptions } = options;
 
   const baseUrl = getBaseUrl(endpoint);
-  const url = new URL(endpoint, baseUrl);
+  // Use window.location.origin for same-origin requests when baseUrl is empty
+  const resolvedBaseUrl = baseUrl || window.location.origin;
+  const url = new URL(endpoint, resolvedBaseUrl);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -47,6 +50,12 @@ export async function apiClient<T>(
   headers.set('x-order-number', getSessionValue('orderNumber', crypto.randomUUID()));
   headers.set('x-userid', getSessionValue('userId', 'GUEST1'));
   headers.set('x-sessionid', getSessionValue('sessionId', crypto.randomUUID()));
+
+  // Add auth token if present
+  const authToken = getSessionValue('authToken', '');
+  if (authToken) {
+    headers.set('Authorization', `Bearer ${authToken}`);
+  }
 
   const response = await fetch(url.toString(), { ...fetchOptions, headers });
 

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "UiComponent",
+  "title": "UI Component Generator",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Component name (PascalCase)",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "What is the component name?"
+    },
+    "description": {
+      "type": "string",
+      "description": "Component description for stories"
+    },
+    "withStory": {
+      "type": "boolean",
+      "description": "Generate Ladle story",
+      "default": true
+    },
+    "withTest": {
+      "type": "boolean",
+      "description": "Generate test file",
+      "default": true
+    },
+    "category": {
+      "type": "string",
+      "description": "Story category",
+      "enum": ["foundations", "components", "patterns"],
+      "default": "components"
+    }
+  },
+  "required": ["name"]
+}

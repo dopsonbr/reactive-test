@@ -1,0 +1,44 @@
+import { render, screen } from "@testing-library/react";
+import { axe } from "vitest-axe";
+import { <%= className %> } from "./<%= fileName %>";
+
+describe("<%= className %>", () => {
+  it("renders children", () => {
+    render(<<%= className %> data-testid="<%= fileName %>">Content</<%= className %>>);
+    expect(screen.getByTestId("<%= fileName %>")).toBeInTheDocument();
+  });
+
+  it("applies variant classes", () => {
+    const { rerender } = render(<<%= className %> variant="default" data-testid="<%= fileName %>">Content</<%= className %>>);
+    expect(screen.getByTestId("<%= fileName %>")).toHaveClass("bg-primary");
+
+    rerender(<<%= className %> variant="secondary" data-testid="<%= fileName %>">Content</<%= className %>>);
+    expect(screen.getByTestId("<%= fileName %>")).toHaveClass("bg-secondary");
+  });
+
+  it("applies size classes", () => {
+    const { rerender } = render(<<%= className %> size="sm" data-testid="<%= fileName %>">Content</<%= className %>>);
+    expect(screen.getByTestId("<%= fileName %>")).toHaveClass("h-8");
+
+    rerender(<<%= className %> size="lg" data-testid="<%= fileName %>">Content</<%= className %>>);
+    expect(screen.getByTestId("<%= fileName %>")).toHaveClass("h-12");
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = render(<<%= className %>>Accessible content</<%= className %>>);
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+
+  it("forwards ref correctly", () => {
+    const ref = vi.fn();
+    render(<<%= className %> ref={ref}>Content</<%= className %>>);
+    expect(ref).toHaveBeenCalled();
+    expect(ref.mock.calls[0][0]).toBeInstanceOf(HTMLDivElement);
+  });
+
+  it("merges custom className", () => {
+    render(<<%= className %> className="custom-class" data-testid="<%= fileName %>">Content</<%= className %>>);
+    expect(screen.getByTestId("<%= fileName %>")).toHaveClass("custom-class");
+  });
+});

@@ -1,0 +1,19 @@
+{
+  "name": "@reactive-platform/shared-design-tokens",
+  "version": "0.1.0",
+  "description": "Design tokens for reactive-platform design system",
+  "main": "src/index.css",
+  "exports": {
+    ".": "./src/index.css",
+    "./colors": "./src/colors.css",
+    "./spacing": "./src/spacing.css",
+    "./typography": "./src/typography.css",
+    "./shadows": "./src/shadows.css",
+    "./motion": "./src/motion.css"
+  },
+  "files": [
+    "src/**/*.css"
+  ],
+  "keywords": ["design-tokens", "css", "design-system"],
+  "license": "MIT"
+}

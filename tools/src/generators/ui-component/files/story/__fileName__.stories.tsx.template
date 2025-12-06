@@ -1,0 +1,24 @@
+import type { Story } from "@ladle/react";
+import { <%= className %> } from "../../src/components/ui/<%= fileName %>";
+
+export default {
+  title: "<%= category.charAt(0).toUpperCase() + category.slice(1) %>/<%= className %>",
+};
+
+export const Default: Story = () => <<%= className %>>Default <%= className %></<%= className %>>;
+
+export const Variants: Story = () => (
+  <div className="flex flex-wrap gap-4">
+    <<%= className %> variant="default">Default</<%= className %>>
+    <<%= className %> variant="secondary">Secondary</<%= className %>>
+  </div>
+);
+Variants.meta = { name: "All Variants" };
+
+export const Sizes: Story = () => (
+  <div className="flex items-center gap-4">
+    <<%= className %> size="sm">Small</<%= className %>>
+    <<%= className %> size="md">Medium</<%= className %>>
+    <<%= className %> size="lg">Large</<%= className %>>
+  </div>
+);

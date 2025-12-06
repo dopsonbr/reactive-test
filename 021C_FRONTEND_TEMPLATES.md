@@ -1,6 +1,6 @@
 # 021C_FRONTEND_TEMPLATES
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 
@@ -33,10 +33,10 @@ Create 6 frontend code templates for feature components, UI components, hooks, p
 
 ## Exit Criteria
 
-- [ ] 6 frontend templates in `docs/templates/frontend/`
-- [ ] UI component template includes CVA guidance
-- [ ] `docs/templates/README.md` indexes all templates
-- [ ] `pnpm check:docs-index` passes
+- [x] 6 frontend templates in `docs/templates/frontend/`
+- [x] UI component template includes CVA guidance
+- [x] `docs/templates/README.md` indexes all templates
+- [x] `pnpm check:docs-index` passes
 
 ---
 
@@ -492,11 +492,11 @@ Update to include frontend templates section:
 
 ## Checklist
 
-- [ ] Phase 1: Feature component template created
-- [ ] Phase 2: UI component template created (with CVA guidance)
-- [ ] Phase 3: Hook template created
-- [ ] Phase 4: Page template created
-- [ ] Phase 5: Ladle story template created
-- [ ] Phase 6: Vitest test template created
-- [ ] Phase 7: README.md indexes all templates
-- [ ] `pnpm check:docs-index` passes
+- [x] Phase 1: Feature component template created
+- [x] Phase 2: UI component template created (with CVA guidance)
+- [x] Phase 3: Hook template created
+- [x] Phase 4: Page template created
+- [x] Phase 5: Ladle story template created
+- [x] Phase 6: Vitest test template created
+- [x] Phase 7: README.md indexes all templates
+- [x] `pnpm check:docs-index` passes

@@ -1,10 +1,10 @@
 # Platform Standards
 
-Standards for building reactive Spring Boot applications on this platform.
+Standards for building applications on this platform, designed for **both humans and AI agents**.
 
 ## Philosophy
 
-These standards are designed for **both humans and AI agents**. They convey:
+These standards convey:
 - **Intent** - Why we do things this way
 - **Outcomes** - What success looks like
 - **Patterns** - Pseudo-code and data structures (not implementation code)
@@ -15,58 +15,43 @@ Implementation details live in the modules themselves (README.md files alongside
 
 1. **Before implementing a feature**, read the relevant standard
 2. **Follow the patterns** described in each standard
-3. **Reference implementation** lives in `apps/product-service/`
+3. **Reference implementation** lives in application directories
 
-## Standard Categories
+## Standards by Ecosystem
 
-Use the right section based on the ecosystem:
-- **Backend** (Spring/Gradle): patterns below
-- **Frontend** (Nx/React/Vite): see `docs/standards/frontend/` once created (per plan 021)
-- **Shared**: code-style and documentation apply to both
+### Shared Standards (All Ecosystems)
 
-### Architecture
-- [architecture](./architecture.md) - Layered architecture, package structure, dependency rules
-- [models](./models.md) - Pure data objects, no business logic
+| Standard | Description |
+|----------|-------------|
+| [code-style.md](./code-style.md) | Formatting, naming conventions |
+| [documentation.md](./documentation.md) | README, AGENTS, CONTENTS file patterns |
 
-### Resilience
-- [resiliency-circuit-breakers](./resiliency-circuit-breakers.md) - Circuit breaker patterns
-- [resiliency-retries](./resiliency-retries.md) - Retry patterns with backoff
-- [resiliency-bulk-heads](./resiliency-bulk-heads.md) - Concurrency limiting
-- [resiliency-timeouts](./resiliency-timeouts.md) - Timeout patterns
+### Backend Standards (Spring/Gradle)
 
-### Caching
-- [caching](./caching.md) - Cache-aside, fallback-only, TTL guidelines
+See [backend/README.md](./backend/README.md) for the full list of 16 backend standards covering:
+- Architecture and models
+- Resilience (circuit breakers, retries, bulkheads, timeouts)
+- Caching and observability
+- Security, error handling, and validation
+- Testing (unit, integration, e2e)
 
-### Observability
-- [observability-logs](./observability-logs.md) - Structured JSON logging
-- [observability-metrics](./observability-metrics.md) - Prometheus metrics
-- [observability-traces](./observability-traces.md) - Distributed tracing
+### Frontend Standards (Nx/React/Vite)
 
-### Security
-- [security](./security.md) - Authentication, authorization, header validation
-
-### Error Handling
-- [error-handling](./error-handling.md) - Global error handling, fallback responses
-
-### Testing
-- [testing-unit](./testing-unit.md) - Unit test patterns
-- [testing-integration](./testing-integration.md) - Integration test patterns with Testcontainers
-- [testing-e2e](./testing-e2e.md) - End-to-end test patterns with k6
-
-### Code Quality
-- [code-style](./code-style.md) - Formatting, naming conventions
-- [documentation](./documentation.md) - README, AGENTS, CONTENTS patterns
-- [validation](./validation.md) - Request validation patterns
+See [frontend/README.md](./frontend/README.md) for frontend standards covering:
+- Architecture and components
+- Error handling and observability
+- Testing and state management
+- Code organization
 
 ## Creating a New Standard
 
-1. Create `docs/standards/{standard-name}.md`
-2. Follow this structure:
+1. Determine ecosystem: shared, `backend/`, or `frontend/`
+2. Create the file in the appropriate directory
+3. Follow this structure:
    - **Intent** - Why this standard exists
    - **Outcomes** - What following it achieves
    - **Patterns** - Pseudo-code, data structures, diagrams
    - **Anti-patterns** - What to avoid
    - **Reference** - Where to see it in action
-
-3. Add to CONTENTS.md
-4. Link from this README
+4. Add to the directory's README.md index
+5. Update CONTENTS.md

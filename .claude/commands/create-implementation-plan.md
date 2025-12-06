@@ -187,7 +187,11 @@ Phase4                ← Depends on Phase1
 
 These are available for reference. **Only include in the plan if directly applicable.**
 
-### Standards (docs/standards/)
+### Shared Standards (docs/standards/)
+- `code-style.md` - Formatting, naming conventions
+- `documentation.md` - README, AGENTS, CONTENTS file patterns
+
+### Backend Standards (docs/standards/backend/)
 - `architecture.md` - Layered architecture, package structure
 - `models.md` - Pure data objects
 - `resiliency-*.md` - Circuit breakers, retries, bulk-heads, timeouts
@@ -196,13 +200,35 @@ These are available for reference. **Only include in the plan if directly applic
 - `security.md` - OAuth2/JWT, authorization
 - `error-handling.md` - Global error handling
 - `testing-*.md` - Unit, integration, e2e patterns
-- `code-style.md` - Formatting, naming
 - `validation.md` - Request validation
 
-### Templates (docs/templates/)
+### Frontend Standards (docs/standards/frontend/)
+- `architecture.md` - Component layers, feature folders
+- `error-handling.md` - Error boundaries, ApiError, Query errors
+- `observability.md` - Structured logging, Web Vitals, tracing
+- `testing.md` - Testing Trophy, Ladle, Vitest, Playwright
+- `components.md` - Compound, headless, smart/presentational
+- `state-management.md` - TanStack Query, URL state
+- `code-organization.md` - Feature folders, barrel exports
+
+### Shared Templates (docs/templates/)
+- `_template_agents.md` - AGENTS.md file pattern
+- `_template_readme.md` - README.md file pattern
+- `_template_contents.md` - CONTENTS.md file pattern
+
+### Backend Templates (docs/templates/backend/)
 - `_template_controller.md` - Controller pattern
 - `_template_postgres_repository.md` - PostgreSQL repository
-- `_template_redis_repository.md` - Redis repository
+- `_template_redis_cache.md` - Redis cache pattern
+- `_template_redis_pubsub.md` - Redis pub/sub pattern
+
+### Frontend Templates (docs/templates/frontend/)
+- `_template_feature_component.md` - Smart component with data fetching
+- `_template_ui_component.md` - Presentational component with CVA
+- `_template_hook.md` - Custom React hook
+- `_template_page.md` - TanStack Router page
+- `_template_ladle_story.md` - Ladle component story
+- `_template_vitest.md` - Vitest + RTL test
 
 ### ADRs (docs/ADRs/)
 - `000-use-markdown-architectural-decision-records.md` - ADR format

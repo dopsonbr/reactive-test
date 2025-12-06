@@ -1,21 +1,22 @@
-package org.example.discount.client;
+package org.example.discount.repository.customer;
 
 import java.math.BigDecimal;
 import java.util.List;
-import org.example.discount.client.LoyaltyInfo.BenefitType;
-import org.example.discount.client.LoyaltyInfo.LoyaltyBenefit;
+import org.example.discount.domain.LoyaltyInfo;
+import org.example.discount.domain.LoyaltyInfo.BenefitType;
+import org.example.discount.domain.LoyaltyInfo.LoyaltyBenefit;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-/** Client for communicating with customer-service to retrieve loyalty information. */
-@Component
-public class CustomerServiceClient {
+/** Repository for communicating with customer-service to retrieve loyalty information. */
+@Repository
+public class CustomerRepository {
 
   private final WebClient webClient;
 
-  public CustomerServiceClient(
+  public CustomerRepository(
       WebClient.Builder webClientBuilder,
       @Value("${services.customer-service.url:http://localhost:8083}") String baseUrl) {
     this.webClient = webClientBuilder.baseUrl(baseUrl).build();

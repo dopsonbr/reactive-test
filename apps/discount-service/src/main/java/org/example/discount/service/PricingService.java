@@ -5,16 +5,16 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import org.example.discount.client.CustomerServiceClient;
-import org.example.discount.client.LoyaltyInfo;
-import org.example.discount.client.LoyaltyInfo.BenefitType;
-import org.example.discount.client.UserContext;
-import org.example.discount.client.UserServiceClient;
 import org.example.discount.controller.dto.CartItem;
 import org.example.discount.controller.dto.PricingRequest;
 import org.example.discount.controller.dto.ShippingOption;
+import org.example.discount.domain.LoyaltyInfo;
+import org.example.discount.domain.LoyaltyInfo.BenefitType;
+import org.example.discount.domain.UserContext;
 import org.example.discount.repository.DiscountRepository;
 import org.example.discount.repository.MarkdownRepository;
+import org.example.discount.repository.customer.CustomerRepository;
+import org.example.discount.repository.user.UserRepository;
 import org.example.model.discount.AppliedPromotion;
 import org.example.model.discount.Discount;
 import org.example.model.discount.DiscountScope;
@@ -36,18 +36,18 @@ public class PricingService {
 
   private final DiscountRepository discountRepository;
   private final MarkdownRepository markdownRepository;
-  private final CustomerServiceClient customerClient;
-  private final UserServiceClient userClient;
+  private final CustomerRepository customerRepository;
+  private final UserRepository userRepository;
 
   public PricingService(
       DiscountRepository discountRepository,
       MarkdownRepository markdownRepository,
-      CustomerServiceClient customerClient,
-      UserServiceClient userClient) {
+      CustomerRepository customerRepository,
+      UserRepository userRepository) {
     this.discountRepository = discountRepository;
     this.markdownRepository = markdownRepository;
-    this.customerClient = customerClient;
-    this.userClient = userClient;
+    this.customerRepository = customerRepository;
+    this.userRepository = userRepository;
   }
 
   /**
@@ -77,7 +77,7 @@ public class PricingService {
     if (customerId == null || customerId.isEmpty()) {
       return Mono.just(new LoyaltyInfo("NONE", 0L, List.of()));
     }
-    return customerClient
+    return customerRepository
         .getCustomerLoyalty(customerId)
         .defaultIfEmpty(new LoyaltyInfo("NONE", 0L, List.of()));
   }
@@ -86,7 +86,7 @@ public class PricingService {
     if (userId == null || userId.isEmpty()) {
       return Mono.just(UserContext.anonymous());
     }
-    return userClient.getUser(userId).defaultIfEmpty(UserContext.anonymous());
+    return userRepository.getUser(userId).defaultIfEmpty(UserContext.anonymous());
   }
 
   private Mono<List<Discount>> getApplicableDiscounts(PricingRequest request) {

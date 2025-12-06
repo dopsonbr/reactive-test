@@ -1,4 +1,4 @@
-package org.example.cart.model;
+package org.example.cart.domain;
 
 import java.time.Instant;
 import java.util.ArrayList;

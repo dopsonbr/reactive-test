@@ -1,8 +1,8 @@
 package org.example.cart.graphql;
 
 import java.util.List;
+import org.example.cart.domain.Cart;
 import org.example.cart.graphql.validation.GraphQLInputValidator;
-import org.example.cart.model.Cart;
 import org.example.cart.service.CartService;
 import org.example.model.customer.CartCustomer;
 import org.example.model.discount.AppliedDiscount;

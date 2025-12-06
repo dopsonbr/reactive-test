@@ -2,6 +2,7 @@ package org.example.discount.controller;
 
 import org.example.discount.controller.dto.PricingRequest;
 import org.example.discount.service.PricingService;
+import org.example.discount.validation.DiscountRequestValidator;
 import org.example.model.discount.PricingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,9 +16,11 @@ import reactor.core.publisher.Mono;
 public class PricingController {
 
   private final PricingService pricingService;
+  private final DiscountRequestValidator validator;
 
-  public PricingController(PricingService pricingService) {
+  public PricingController(PricingService pricingService, DiscountRequestValidator validator) {
     this.pricingService = pricingService;
+    this.validator = validator;
   }
 
   /**
@@ -28,6 +31,8 @@ public class PricingController {
    */
   @PostMapping("/calculate")
   public Mono<PricingResult> calculateBestPrice(@RequestBody PricingRequest request) {
-    return pricingService.calculateBestPrice(request);
+    return validator
+        .validatePricingRequest(request)
+        .then(pricingService.calculateBestPrice(request));
   }
 }

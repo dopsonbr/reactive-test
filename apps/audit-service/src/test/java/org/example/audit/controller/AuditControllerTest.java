@@ -9,9 +9,11 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 import java.util.Map;
 import org.example.audit.service.AuditService;
+import org.example.audit.validation.AuditRequestValidator;
 import org.example.platform.audit.AuditEvent;
 import org.example.platform.audit.AuditEventType;
 import org.example.platform.audit.EntityType;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
@@ -29,6 +31,20 @@ class AuditControllerTest {
   @Autowired private WebTestClient webTestClient;
 
   @MockitoBean private AuditService auditService;
+
+  @MockitoBean private AuditRequestValidator auditRequestValidator;
+
+  @BeforeEach
+  void setupMocks() {
+    // Configure validator to pass all validation by default
+    when(auditRequestValidator.validateAuditEvent(any())).thenReturn(Mono.empty());
+    when(auditRequestValidator.validateEventId(anyString())).thenReturn(Mono.empty());
+    when(auditRequestValidator.validateEntityQuery(anyString(), anyString(), anyInt()))
+        .thenReturn(Mono.empty());
+    when(auditRequestValidator.validateUserQuery(anyString(), anyInt())).thenReturn(Mono.empty());
+    when(auditRequestValidator.validateStoreQuery(anyInt(), anyString(), anyInt()))
+        .thenReturn(Mono.empty());
+  }
 
   @Test
   void createEvent_returns201() {

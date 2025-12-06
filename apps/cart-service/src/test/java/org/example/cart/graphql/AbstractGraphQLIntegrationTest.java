@@ -7,10 +7,10 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.util.List;
-import org.example.cart.client.CustomerServiceClient;
-import org.example.cart.client.DiscountServiceClient;
-import org.example.cart.client.FulfillmentServiceClient;
-import org.example.cart.client.ProductServiceClient;
+import org.example.cart.repository.customer.CustomerRepository;
+import org.example.cart.repository.discount.DiscountRepository;
+import org.example.cart.repository.fulfillment.FulfillmentRepository;
+import org.example.cart.repository.product.ProductRepository;
 import org.example.model.customer.CartCustomer;
 import org.example.model.discount.AppliedDiscount;
 import org.example.model.discount.Discount;
@@ -51,11 +51,11 @@ public abstract class AbstractGraphQLIntegrationTest {
   static GenericContainer<?> redis;
   static boolean containersStarted = false;
 
-  // Mock external service clients to avoid actual HTTP calls in tests
-  @MockitoBean protected CustomerServiceClient customerServiceClient;
-  @MockitoBean protected ProductServiceClient productServiceClient;
-  @MockitoBean protected DiscountServiceClient discountServiceClient;
-  @MockitoBean protected FulfillmentServiceClient fulfillmentServiceClient;
+  // Mock external service repositories to avoid actual HTTP calls in tests
+  @MockitoBean protected CustomerRepository customerRepository;
+  @MockitoBean protected ProductRepository productRepository;
+  @MockitoBean protected DiscountRepository discountRepository;
+  @MockitoBean protected FulfillmentRepository fulfillmentRepository;
 
   static {
     // Initialize and start containers in static block to ensure they're ready before Spring context
@@ -88,20 +88,20 @@ public abstract class AbstractGraphQLIntegrationTest {
   @BeforeEach
   void setupMocks() {
     // Configure default mock responses
-    when(customerServiceClient.validateCustomer(any())).thenReturn(Mono.just(true));
-    when(customerServiceClient.getCustomer(any()))
+    when(customerRepository.validateCustomer(any())).thenReturn(Mono.just(true));
+    when(customerRepository.getCustomer(any()))
         .thenAnswer(
             invocation -> {
               String customerId = invocation.getArgument(0);
               return Mono.just(new CartCustomer(customerId, "Test Customer", "test@example.com"));
             });
-    when(productServiceClient.getProduct(anyLong(), anyInt(), any(), any(), any()))
+    when(productRepository.getProduct(anyLong(), anyInt(), any(), any(), any()))
         .thenAnswer(
             invocation -> {
               long sku = invocation.getArgument(0);
               return Mono.just(new Product(sku, "Test Product", "9.99", 100));
             });
-    when(discountServiceClient.validateDiscount(any()))
+    when(discountRepository.validateDiscount(any()))
         .thenAnswer(
             invocation -> {
               String code = invocation.getArgument(0);
@@ -120,7 +120,7 @@ public abstract class AbstractGraphQLIntegrationTest {
                       List.of(),
                       false));
             });
-    when(discountServiceClient.calculateDiscount(any(), any(), any()))
+    when(discountRepository.calculateDiscount(any(), any(), any()))
         .thenAnswer(
             invocation -> {
               String code = invocation.getArgument(0);
@@ -133,7 +133,7 @@ public abstract class AbstractGraphQLIntegrationTest {
                       BigDecimal.valueOf(1.00),
                       List.of()));
             });
-    when(fulfillmentServiceClient.calculateFulfillmentCost(any(FulfillmentType.class), any()))
+    when(fulfillmentRepository.calculateFulfillmentCost(any(FulfillmentType.class), any()))
         .thenReturn(Mono.just(BigDecimal.valueOf(5.99)));
   }
 

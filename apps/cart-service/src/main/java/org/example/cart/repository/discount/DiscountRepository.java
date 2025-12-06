@@ -1,4 +1,4 @@
-package org.example.cart.client;
+package org.example.cart.repository.discount;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -6,20 +6,20 @@ import org.example.model.discount.AppliedDiscount;
 import org.example.model.discount.Discount;
 import org.example.platform.resilience.ReactiveResilience;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-/** Client for communicating with discount-service. */
-@Component
-public class DiscountServiceClient {
+/** Repository for communicating with discount-service. */
+@Repository
+public class DiscountRepository {
 
   private static final String RESILIENCE_NAME = "discount";
 
   private final WebClient webClient;
   private final ReactiveResilience reactiveResilience;
 
-  public DiscountServiceClient(
+  public DiscountRepository(
       WebClient.Builder webClientBuilder,
       @Value("${services.discount.base-url:http://localhost:8084}") String baseUrl,
       ReactiveResilience reactiveResilience) {

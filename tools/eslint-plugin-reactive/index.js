@@ -1,15 +1,21 @@
 // tools/eslint-plugin-reactive/index.js
-module.exports = {
+import noHardcodedColors from './rules/no-hardcoded-colors.js';
+import noBarrelExports from './rules/no-barrel-exports.js';
+import requireAccessibleControls from './rules/require-accessible-controls.js';
+import tanstackQueryGuardrails from './rules/tanstack-query-guardrails.js';
+import requireColocatedTest from './rules/require-colocated-test.js';
+
+export default {
   meta: {
     name: 'eslint-plugin-reactive',
     version: '0.0.1',
   },
   rules: {
-    'no-hardcoded-colors': require('./rules/no-hardcoded-colors'),
-    'no-barrel-exports': require('./rules/no-barrel-exports'),
-    'require-accessible-controls': require('./rules/require-accessible-controls'),
-    'tanstack-query-guardrails': require('./rules/tanstack-query-guardrails'),
-    'require-colocated-test': require('./rules/require-colocated-test'),
+    'no-hardcoded-colors': noHardcodedColors,
+    'no-barrel-exports': noBarrelExports,
+    'require-accessible-controls': requireAccessibleControls,
+    'tanstack-query-guardrails': tanstackQueryGuardrails,
+    'require-colocated-test': requireColocatedTest,
   },
   configs: {
     recommended: {

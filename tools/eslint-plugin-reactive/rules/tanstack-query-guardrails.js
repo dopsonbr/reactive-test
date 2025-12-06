@@ -1,5 +1,5 @@
 // tools/eslint-plugin-reactive/rules/tanstack-query-guardrails.js
-module.exports = {
+export default {
   meta: {
     type: 'problem',
     docs: {

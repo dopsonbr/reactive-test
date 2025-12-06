@@ -1,5 +1,5 @@
 // tools/stylelint-plugin-tokens/index.js
-const stylelint = require('stylelint');
+import stylelint from 'stylelint';
 
 const ruleName = 'reactive/no-arbitrary-values';
 const messages = stylelint.utils.ruleMessages(ruleName, {
@@ -58,4 +58,4 @@ ruleFunction.ruleName = ruleName;
 ruleFunction.messages = messages;
 ruleFunction.meta = meta;
 
-module.exports = stylelint.createPlugin(ruleName, ruleFunction);
+export default stylelint.createPlugin(ruleName, ruleFunction);

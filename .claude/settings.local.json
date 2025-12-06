@@ -42,7 +42,13 @@
       "Bash(chmod:*)",
       "Bash(pnpm lint:styles)",
       "Bash(pnpm lint:ui:*)",
-      "Bash(pnpm lint:tests:*)"
+      "Bash(pnpm lint:tests:*)",
+      "Bash(pnpm install:*)",
+      "Bash(node tools/validate-tailwind-config.js:*)",
+      "Bash(node tools/check-service-ports.js:*)",
+      "Bash(node tools/validate-tailwind-config.mjs:*)",
+      "Bash(node tools/check-service-ports.mjs:*)",
+      "Bash(pnpm lint:tokens:*)"
     ],
     "deny": [],
     "ask": [

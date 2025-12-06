@@ -1,5 +1,5 @@
 // tools/eslint-plugin-reactive/rules/no-barrel-exports.js
-module.exports = {
+export default {
   meta: {
     type: 'problem',
     docs: {

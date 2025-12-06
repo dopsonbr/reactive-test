@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// tools/validate-tailwind-config.js
+// tools/validate-tailwind-config.mjs
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
 
 const configPath = path.resolve(process.cwd(), 'tailwind.config.js');
 
@@ -13,12 +13,13 @@ if (!fs.existsSync(configPath)) {
 
 async function validateConfig() {
   try {
-    const config = require(configPath);
+    const config = await import(configPath);
+    const configObj = config.default || config;
     const errors = [];
 
     // Check theme extends (should use tokens, not hardcoded values)
-    if (config.theme?.extend?.colors) {
-      const colors = config.theme.extend.colors;
+    if (configObj.theme?.extend?.colors) {
+      const colors = configObj.theme.extend.colors;
       Object.entries(colors).forEach(([key, value]) => {
         if (typeof value === 'string' && value.startsWith('#')) {
           errors.push(
@@ -29,8 +30,8 @@ async function validateConfig() {
     }
 
     // Check for arbitrary content in safelist
-    if (config.safelist) {
-      config.safelist.forEach((item, index) => {
+    if (configObj.safelist) {
+      configObj.safelist.forEach((item, index) => {
         const pattern = typeof item === 'string' ? item : item.pattern?.source;
         if (pattern && pattern.includes('[')) {
           errors.push(

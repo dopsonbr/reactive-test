@@ -2,6 +2,9 @@
   "name": "reactive-test-perf",
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "test": "node src/index.js",
     "generate": "node src/generate-input.js",

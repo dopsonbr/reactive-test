@@ -1,5 +1,5 @@
 // tools/eslint-plugin-reactive/rules/no-hardcoded-colors.js
-module.exports = {
+export default {
   meta: {
     type: 'problem',
     docs: {

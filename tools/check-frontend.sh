@@ -39,10 +39,11 @@ echo ""
 # ─────────────────────────────────────────
 echo -e "${YELLOW}[1/6] Validating environment...${NC}"
 
-# Check Node.js version
+# Check Node.js version (must be exactly 24.x)
 NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-if [ "$NODE_VERSION" -lt 18 ]; then
-  echo -e "${RED}  ✗ Node.js 18+ required (found: $(node -v))${NC}"
+if [ "$NODE_VERSION" -ne 24 ]; then
+  echo -e "${RED}  ✗ Node.js 24.x required (found: $(node -v))${NC}"
+  echo -e "${RED}    Install Node 24: nvm install 24 && nvm use 24${NC}"
   FAILURES+=("Node.js version")
 else
   echo -e "${GREEN}  ✓ Node.js $(node -v)${NC}"

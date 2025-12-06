@@ -1,5 +1,5 @@
 // tools/eslint-plugin-reactive/rules/require-accessible-controls.js
-module.exports = {
+export default {
   meta: {
     type: 'problem',
     docs: {

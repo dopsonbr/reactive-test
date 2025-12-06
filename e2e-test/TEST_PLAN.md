@@ -349,7 +349,7 @@ docker compose --profile test-product --profile chaos-product down -v
 
 ## Prerequisites
 
-- Node.js 22+
+- Node.js 24.x (required, see .nvmrc)
 - k6 installed (`brew install k6` or equivalent)
 - WireMock standalone JAR
 - Java 21 (for Spring Boot app)

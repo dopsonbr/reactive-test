@@ -1,8 +1,8 @@
 // tools/eslint-plugin-reactive/rules/require-colocated-test.js
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
 
-module.exports = {
+export default {
   meta: {
     type: 'suggestion',
     docs: {

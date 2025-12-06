@@ -289,7 +289,7 @@ All services expect these headers for context propagation:
 | loki | 3100 | Logs |
 | tempo | 3200 | Traces |
 
-Run `node tools/check-service-ports.js` to verify port configuration.
+Run `node tools/check-service-ports.mjs` to verify port configuration.
 
 ## Frontend Lint Expectations
 

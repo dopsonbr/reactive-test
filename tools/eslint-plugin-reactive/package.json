@@ -2,7 +2,8 @@
   "name": "eslint-plugin-reactive",
   "version": "0.0.1",
   "private": true,
-  "main": "index.js",
+  "type": "module",
+  "exports": "./index.js",
   "peerDependencies": {
     "eslint": ">=8.0.0"
   }

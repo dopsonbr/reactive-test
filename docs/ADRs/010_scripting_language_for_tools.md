@@ -67,7 +67,7 @@ Gradle should only be used for tasks that meet **all** of these criteria:
 
 - Natural integration with Nx ecosystem and plugins
 - Leverages existing `ci/` infrastructure (`ci/lib/gradle.js`, `ci/lib/logger.js`)
-- Single runtime (Node.js 18+) for most tooling
+- Single runtime (Node.js 24.x) for most tooling
 - TypeScript optional for type safety in complex tools
 - pnpm workspace (per 020_NX_MONOREPO_IMPLEMENTATION.md) manages script dependencies
 

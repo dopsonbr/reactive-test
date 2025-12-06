@@ -2,7 +2,8 @@
   "name": "stylelint-plugin-tokens",
   "version": "0.0.1",
   "private": true,
-  "main": "index.js",
+  "type": "module",
+  "exports": "./index.js",
   "peerDependencies": {
     "stylelint": ">=16.0.0"
   }

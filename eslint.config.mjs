@@ -1,8 +1,5 @@
 import nx from '@nx/eslint-plugin';
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
-const reactivePlugin = require('./tools/eslint-plugin-reactive');
+import reactivePlugin from './tools/eslint-plugin-reactive/index.js';
 
 export default [
   {

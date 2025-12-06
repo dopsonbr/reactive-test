@@ -1,12 +1,15 @@
 {
   "name": "reactive-platform",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@9.15.0",
   "engines": {
-    "node": ">=22.0.0",
+    "node": "24.x",
     "pnpm": ">=9.0.0"
   },
   "scripts": {
+    "preinstall": "node scripts/setup-node.mjs",
+    "prepare": "node scripts/setup-node.mjs",
     "build": "nx run-many -t build",
     "test": "nx run-many -t test",
     "lint": "nx run-many -t lint",
@@ -19,7 +22,7 @@
     "lint:a11y": "tsx tools/lint-stories.ts --a11y",
     "lint:ui": "tsx tools/lint-stories.ts",
     "lint:tests": "tsx tools/lint-tests.ts",
-    "lint:tokens": "pnpm lint:styles && node tools/validate-tailwind-config.js",
+    "lint:tokens": "pnpm lint:styles && node tools/validate-tailwind-config.mjs",
     "lint:all": "pnpm lint:eslint && pnpm lint:styles && pnpm lint:ui && pnpm lint:tests && pnpm lint:md",
     "lint:fix": "nx run-many -t lint --all -- --fix && stylelint '**/*.css' --fix && markdownlint-cli2 --fix '**/*.md'",
     "check:docs-index": "bash tools/verify-docs-index.sh",

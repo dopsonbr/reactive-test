@@ -1,0 +1,49 @@
+# Order Service GraphQL Schema - Queries and Mutations
+
+type Query {
+    """Retrieve an order by ID"""
+    order(id: ID!): Order
+
+    """Retrieve an order by order number"""
+    orderByNumber(orderNumber: String!): Order
+
+    """Find orders for a store with optional status filter"""
+    orders(storeNumber: Int!, status: OrderStatus, limit: Int, offset: Int): [Order!]!
+
+    """Find orders for a customer"""
+    ordersByCustomer(customerId: String!): [Order!]!
+
+    """Search orders with multiple criteria"""
+    searchOrders(input: OrderSearchInput!): OrderSearchResult!
+}
+
+type Mutation {
+    """Update order status"""
+    updateOrderStatus(id: ID!, status: OrderStatus!): Order
+
+    """Update fulfillment details"""
+    updateFulfillment(id: ID!, input: UpdateFulfillmentInput!): Order
+
+    """Cancel an order"""
+    cancelOrder(id: ID!, reason: String!): Order
+
+    """Add a note to an order (stored in fulfillment instructions)"""
+    addOrderNote(id: ID!, note: String!): Order
+}
+
+input OrderSearchInput {
+    storeNumber: Int!
+    customerId: String
+    status: OrderStatus
+    startDate: String
+    endDate: String
+    limit: Int
+    offset: Int
+}
+
+input UpdateFulfillmentInput {
+    fulfillmentDate: String
+    trackingNumber: String
+    carrier: String
+    instructions: String
+}

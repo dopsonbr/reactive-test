@@ -1,0 +1,50 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: order-service
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:checkoutdb}
+    username: ${DB_USERNAME:checkout_user}
+    password: ${DB_PASSWORD:checkout_pass}
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
+    schema:
+      locations: classpath:graphql/
+      printer:
+        enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OAUTH_ISSUER_URI:http://localhost:8081/oauth}
+          jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
+
+app:
+  security:
+    enabled: true
+    jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
+    allowed-issuers:
+      - ${OAUTH_ISSUER_URI:http://localhost:8081/oauth}
+      - test-issuer
+    required-audience: ${OAUTH_AUDIENCE:reactive-test-api}
+    clock-skew-seconds: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}

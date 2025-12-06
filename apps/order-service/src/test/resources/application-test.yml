@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: order-service-test
+
+  # R2DBC - overridden by Testcontainers
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/checkoutdb
+    username: checkout_user
+    password: checkout_pass
+
+  # Disable OAuth2 for tests
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/oauth
+          jwk-set-uri: http://localhost:8081/oauth/.well-known/jwks.json
+
+  graphql:
+    graphiql:
+      enabled: false
+
+# Disable security for tests
+app:
+  security:
+    enabled: false

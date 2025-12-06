@@ -1,0 +1,99 @@
+# Order Service GraphQL Schema - Types and Enums
+
+type Order {
+    id: ID!
+    storeNumber: Int!
+    orderNumber: String!
+    customerId: String
+    status: OrderStatus!
+    paymentStatus: PaymentStatus!
+    fulfillmentType: FulfillmentType!
+    fulfillmentDate: String
+    subtotal: String!
+    discountTotal: String!
+    taxTotal: String!
+    fulfillmentCost: String!
+    grandTotal: String!
+    lineItems: [OrderLineItem!]!
+    appliedDiscounts: [AppliedDiscount!]!
+    customerSnapshot: CustomerSnapshot
+    fulfillmentDetails: FulfillmentDetails
+    createdAt: String!
+    updatedAt: String!
+}
+
+type OrderLineItem {
+    productId: String
+    sku: ID!
+    name: String!
+    quantity: Int!
+    unitPrice: String!
+    lineTotal: String!
+    discountAmount: String
+}
+
+type AppliedDiscount {
+    discountId: String!
+    discountCode: String
+    description: String
+    discountType: String!
+    amount: String!
+}
+
+type CustomerSnapshot {
+    customerId: String!
+    firstName: String
+    lastName: String
+    email: String
+    phone: String
+    loyaltyTier: String
+}
+
+type FulfillmentDetails {
+    type: FulfillmentType
+    scheduledDate: String
+    deliveryAddress: DeliveryAddress
+    pickupLocation: String
+    instructions: String
+    trackingNumber: String
+    carrier: String
+}
+
+type DeliveryAddress {
+    street1: String
+    street2: String
+    city: String
+    state: String
+    postalCode: String
+    country: String
+}
+
+enum OrderStatus {
+    CREATED
+    CONFIRMED
+    PROCESSING
+    SHIPPED
+    DELIVERED
+    CANCELLED
+    REFUNDED
+}
+
+enum PaymentStatus {
+    PENDING
+    AUTHORIZED
+    CAPTURED
+    REFUNDED
+    FAILED
+}
+
+enum FulfillmentType {
+    IMMEDIATE
+    WILL_CALL
+    DELIVERY
+}
+
+type OrderSearchResult {
+    orders: [Order!]!
+    totalCount: Int!
+    hasMore: Boolean!
+}

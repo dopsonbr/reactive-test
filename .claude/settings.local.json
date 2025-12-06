@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(ls:*)",
+      "Bash(pwd:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(tree:*)",
+      "Bash(file:*)",
+      "Bash(which:*)",
+      "Bash(./gradlew:*)",
+      "Bash(gradle:*)",
+      "Bash(java -version:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker images:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker compose:*)",
+      "Bash(docker exec:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(echo:*)",
+      "WebSearch",
+      "WebFetch(domain:spring.io)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:nx.dev)",
+      "WebFetch(domain:ui.shadcn.com)",
+      "SlashCommand(/create-adr)",
+      "SlashCommand(/create-implementation-plan)"
+    ],
+    "deny": [],
+    "ask": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -fd:*)",
+      "Bash(git clean -f:*)"
+    ]
+  }
+}

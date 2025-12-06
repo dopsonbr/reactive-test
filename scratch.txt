@@ -68,3 +68,12 @@ order service. purpose is to view, update and modify sold orders. it uses the or
 
 audit events. update all the services to emit audit events
 
+create system benchmark of cpu and memory utilization when running all the services together with some load. goal is to make sure we can run all the services with data locally for UIs
+
+adr about creating an integrated mono repo 
+
+e2e-tests need to be updated
+
+customer service needs documentation
+
+adr for design system. mui vs ant, vs shadcn or something else 

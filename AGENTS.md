@@ -147,6 +147,7 @@ docker compose logs -f cart-service
 | `discount-service` | 8084 | Discount pricing engine with promo codes, markdowns, and loyalty |
 | `fulfillment-service` | 8085 | Fulfillment and shipping |
 | `audit-service` | 8086 | Audit event processing |
+| `checkout-service` | 8087 | Order checkout and payment processing |
 | `ecommerce-web` | 3001 | E-commerce frontend (React + Vite) |
 
 ### Frontend Libraries (libs/shared-ui/, libs/shared-data/, libs/shared-design/)
@@ -243,6 +244,7 @@ Decorators apply in order (innermost to outermost): timeout → circuit breaker 
 | Platform libraries | `org.example.platform.{module}` |
 | Product service | `org.example.product.{subpackage}` |
 | Cart service | `org.example.cart.{subpackage}` |
+| Checkout service | `org.example.checkout.{subpackage}` |
 
 ## Request Headers
 
@@ -279,6 +281,7 @@ All services expect these headers for context propagation:
 | discount-service | 8084 | Discount pricing engine |
 | fulfillment-service | 8085 | Fulfillment and shipping |
 | audit-service | 8086 | Audit event processing |
+| checkout-service | 8087 | Order checkout and payment |
 | redis | 6379 | Cache backend |
 | postgres | 5432 | Database |
 | grafana | 3000 | Dashboards (admin/admin) |

@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: checkout-service-test
+
+  # R2DBC - overridden by Testcontainers
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/checkoutdb
+    username: checkout_user
+    password: checkout_pass
+
+  # Disable JDBC-based Flyway (using reactive ConnectionFactoryInitializer instead)
+  flyway:
+    enabled: false
+
+  # Disable OAuth2 for tests
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/oauth
+          jwk-set-uri: http://localhost:8081/oauth/.well-known/jwks.json
+
+# Disable security for tests
+app:
+  security:
+    enabled: false
+
+# External service URLs (mocked in tests)
+services:
+  cart:
+    base-url: http://localhost:8082
+  discount:
+    base-url: http://localhost:8084
+  fulfillment:
+    base-url: http://localhost:8085
+
+# Disable resilience patterns for tests
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 100
+        failure-rate-threshold: 100
+  retry:
+    configs:
+      default:
+        max-attempts: 1
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 30s

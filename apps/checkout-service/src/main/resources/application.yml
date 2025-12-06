@@ -1,0 +1,169 @@
+spring:
+  application:
+    name: checkout-service
+
+  # Jackson 2 compatibility for Spring Boot 4.0
+  jackson:
+    use-jackson2-defaults: true
+
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:checkoutdb}
+    username: ${DB_USERNAME:checkout_user}
+    password: ${DB_PASSWORD:checkout_pass}
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:checkoutdb}
+    user: ${DB_USERNAME:checkout_user}
+    password: ${DB_PASSWORD:checkout_pass}
+    locations: classpath:db/migration
+
+  security:
+    oauth2:
+      # Resource Server (inbound JWT validation)
+      resourceserver:
+        jwt:
+          issuer-uri: ${OAUTH_ISSUER_URI:http://localhost:8081/oauth}
+          jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
+      # Client (outbound client credentials for downstream services)
+      client:
+        registration:
+          downstream-services:
+            client-id: ${DOWNSTREAM_CLIENT_ID:checkout-service}
+            client-secret: ${DOWNSTREAM_CLIENT_SECRET:checkout-secret}
+            authorization-grant-type: client_credentials
+            scope: cart:read,cart:write,discount:read,fulfillment:read,fulfillment:write
+            provider: downstream-auth
+        provider:
+          downstream-auth:
+            token-uri: ${DOWNSTREAM_TOKEN_URI:http://localhost:8081/downstream-oauth/token}
+
+# Application Security Configuration
+app:
+  security:
+    enabled: true
+    jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
+    allowed-issuers:
+      - ${OAUTH_ISSUER_URI:http://localhost:8081/oauth}
+      - test-issuer
+    required-audience: ${OAUTH_AUDIENCE:reactive-test-api}
+    clock-skew-seconds: 30
+
+# External service URLs
+services:
+  cart:
+    base-url: ${CART_SERVICE_URL:http://localhost:8082}
+  discount:
+    base-url: ${DISCOUNT_SERVICE_URL:http://localhost:8084}
+  fulfillment:
+    base-url: ${FULFILLMENT_SERVICE_URL:http://localhost:8085}
+
+# Logging
+logging:
+  file:
+    name: logs/checkout-application.log
+
+# Actuator & Management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,circuitbreakers,retries
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+# Server port
+server:
+  port: 8087
+
+# Resilience4j Configuration
+resilience4j:
+  # Circuit Breaker
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+    instances:
+      cart:
+        base-config: default
+      discount:
+        base-config: default
+      fulfillment:
+        base-config: default
+      payment:
+        base-config: default
+        failure-rate-threshold: 30
+
+  # Retry
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientResponseException$ServiceUnavailable
+          - org.springframework.web.reactive.function.client.WebClientResponseException$GatewayTimeout
+        ignore-exceptions:
+          - org.springframework.web.reactive.function.client.WebClientResponseException$BadRequest
+          - org.springframework.web.reactive.function.client.WebClientResponseException$NotFound
+    instances:
+      cart:
+        base-config: default
+      discount:
+        base-config: default
+      fulfillment:
+        base-config: default
+      payment:
+        max-attempts: 2
+        wait-duration: 100ms
+
+  # Timeout
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 3s
+        cancel-running-future: true
+    instances:
+      cart:
+        base-config: default
+      discount:
+        timeout-duration: 2s
+      fulfillment:
+        base-config: default
+      payment:
+        timeout-duration: 5s
+
+  # Bulkhead (concurrency limiting)
+  bulkhead:
+    configs:
+      default:
+        max-concurrent-calls: 25
+        max-wait-duration: 0s
+    instances:
+      cart:
+        base-config: default
+      discount:
+        max-concurrent-calls: 15
+      fulfillment:
+        max-concurrent-calls: 15
+      payment:
+        max-concurrent-calls: 10

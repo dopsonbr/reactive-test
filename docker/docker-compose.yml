@@ -394,6 +394,56 @@ services:
     networks:
       - observability
 
+  checkout-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.checkout-service
+    container_name: checkout-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVER_PORT=8080
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/checkoutdb
+      - SPRING_R2DBC_USERNAME=checkout_user
+      - SPRING_R2DBC_PASSWORD=checkout_pass
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/checkoutdb
+      - SPRING_FLYWAY_USER=checkout_user
+      - SPRING_FLYWAY_PASSWORD=checkout_pass
+      - CART_SERVICE_URL=http://cart-service:8080
+      - DISCOUNT_SERVICE_URL=http://discount-service:8084
+      - FULFILLMENT_SERVICE_URL=http://fulfillment-service:8085
+      - APP_SECURITY_ENABLED=false
+      - OTEL_SERVICE_NAME=checkout-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_PROPAGATORS=tracecontext,baggage
+      - OTEL_INSTRUMENTATION_SPRING_WEBFLUX_ENABLED=true
+    volumes:
+      - app-logs:/app/logs
+    ports:
+      - "8087:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+      cart-service:
+        condition: service_healthy
+      discount-service:
+        condition: service_healthy
+      fulfillment-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
   # === Frontend Applications ===
   ecommerce-web:
     build:

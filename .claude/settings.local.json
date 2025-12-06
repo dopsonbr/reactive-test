@@ -57,7 +57,20 @@
       "Bash(npx madge:*)",
       "Bash(VITE_MSW_ENABLED=true pnpm nx serve:*)",
       "Bash(JAVA_HOME=/Users/BXD5017/Library/Java/JavaVirtualMachines/corretto-21.0.9/Contents/Home ./gradlew:*)",
-      "Bash(/usr/libexec/java_home:*)"
+      "Bash(/usr/libexec/java_home:*)",
+      "Bash(sdk list:*)",
+      "Bash(unzip:*)",
+      "Bash(python3:*)",
+      "Bash(pkill:*)",
+      "Bash(030_ACTUATOR_PROFILES.md )",
+      "Bash(AGENTS.md )",
+      "Bash(.claude/settings.local.json )",
+      "Bash(apps/*/src/main/resources/application.yml)",
+      "Bash(apps/*/src/main/resources/application-prod.yml)",
+      "Bash(apps/*/src/main/java/org/example/*/security/SecurityConfig.java)",
+      "Bash(docker/docker-compose.yml )",
+      "Bash(libs/platform/platform-security/src/main/java/org/example/platform/security/ActuatorProperties.java )",
+      "Bash(libs/platform/platform-security/src/main/resources/)"
     ],
     "deny": [],
     "ask": [

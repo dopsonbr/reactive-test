@@ -1,6 +1,6 @@
 # 030_ACTUATOR_PROFILES
 
-**Status: DRAFT**
+**Status: IMPLEMENTED**
 
 ---
 
@@ -337,10 +337,10 @@ curl http://localhost:8080/actuator/env       # 404 Not Found
 
 ## Checklist
 
-- [ ] Phase 1: Platform actuator config created
-- [ ] Phase 2: All 7 services updated with dev defaults
-- [ ] Phase 2: All 7 services have application-prod.yml
-- [ ] Phase 3: Docker health checks verified
-- [ ] All actuator endpoints accessible in dev mode
-- [ ] Only k8s endpoints accessible in prod mode
-- [ ] Documentation updated
+- [x] Phase 1: Platform actuator config created
+- [x] Phase 2: All 7 services updated with dev defaults
+- [x] Phase 2: All 7 services have application-prod.yml
+- [x] Phase 3: Docker health checks verified
+- [x] All actuator endpoints accessible in dev mode
+- [x] Only k8s endpoints accessible in prod mode
+- [x] Documentation updated

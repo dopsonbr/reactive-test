@@ -38,16 +38,10 @@ public class SecurityConfig {
     return http.authorizeExchange(
             exchanges ->
                 exchanges
-                    // Actuator endpoints - allow health checks without auth
-                    .pathMatchers("/actuator/health", "/actuator/health/**")
-                    .permitAll()
-                    .pathMatchers("/actuator/info")
-                    .permitAll()
-                    .pathMatchers("/actuator/prometheus")
-                    .permitAll()
-                    // All other actuator endpoints require authentication
+                    // Actuator endpoints - permit all (exposure config controls what's available)
+                    // In prod mode, only safe endpoints are exposed via application-prod.yml
                     .pathMatchers("/actuator/**")
-                    .authenticated()
+                    .permitAll()
                     // All API endpoints require authentication
                     .anyExchange()
                     .authenticated())

@@ -1,0 +1,22 @@
+# Production profile configuration
+# Activate with: SPRING_PROFILES_ACTIVE=prod
+
+# Actuator & Management - restricted for production
+management:
+  endpoints:
+    web:
+      exposure:
+        # Only expose k8s-required endpoints in production
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      # Only show health details to authenticated users
+      show-details: when_authorized
+
+# Application Security Configuration - production mode
+app:
+  security:
+    enabled: true
+  actuator:
+    expose-all: false
+    require-auth: true

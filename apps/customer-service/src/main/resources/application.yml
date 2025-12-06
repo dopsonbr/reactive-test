@@ -28,15 +28,19 @@ spring:
           jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
 
 # Application Security Configuration
+# Default: dev mode - no auth required for local development
 app:
   security:
-    enabled: true
+    enabled: false  # Dev mode: no auth required (use prod profile for auth)
     jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
     allowed-issuers:
       - ${OAUTH_ISSUER_URI:http://localhost:8081/oauth}
       - test-issuer
     required-audience: ${OAUTH_AUDIENCE:reactive-test-api}
     clock-skew-seconds: 30
+  actuator:
+    expose-all: true
+    require-auth: false
 
 # Logging
 logging:
@@ -44,14 +48,17 @@ logging:
     name: logs/customer-service.log
 
 # Actuator & Management
+# Default: expose ALL endpoints (dev mode) for debugging & development
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: "*"
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
 
 # Server port
 server:

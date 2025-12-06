@@ -391,6 +391,45 @@ All services expect these headers for context propagation:
 - `x-userid` - 6 alphanumeric chars
 - `x-sessionid` - UUID
 
+## Actuator Profiles
+
+Backend services support two actuator modes controlled by Spring profiles:
+
+### Dev Mode (Default)
+All actuator endpoints are exposed without authentication for maximum debugging capability:
+```bash
+# Start service (default - no profile needed)
+./gradlew :apps:product-service:bootRun
+
+# All endpoints accessible
+curl http://localhost:8080/actuator          # List all endpoints
+curl http://localhost:8080/actuator/env      # Environment variables
+curl http://localhost:8080/actuator/beans    # Spring beans
+curl http://localhost:8080/actuator/mappings # Request mappings
+curl http://localhost:8080/actuator/configprops # Configuration properties
+curl http://localhost:8080/actuator/loggers  # Logger levels
+```
+
+### Prod Mode
+Restricted to k8s-required endpoints only:
+```bash
+# Start service with prod profile
+SPRING_PROFILES_ACTIVE=prod ./gradlew :apps:product-service:bootRun
+
+# Only these endpoints accessible
+curl http://localhost:8080/actuator/health     # Health check
+curl http://localhost:8080/actuator/info       # Application info
+curl http://localhost:8080/actuator/metrics    # Metrics
+curl http://localhost:8080/actuator/prometheus # Prometheus scrape endpoint
+```
+
+### Docker Compose
+Docker Compose runs services in dev mode by default. For production-like testing:
+```yaml
+environment:
+  - SPRING_PROFILES_ACTIVE=prod
+```
+
 ## Adding a New Service
 
 1. Create module directory: `apps/new-service/`

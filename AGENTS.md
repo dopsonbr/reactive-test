@@ -148,6 +148,7 @@ docker compose logs -f cart-service
 | `fulfillment-service` | 8085 | Fulfillment and shipping |
 | `audit-service` | 8086 | Audit event processing |
 | `checkout-service` | 8087 | Order checkout and payment processing |
+| `order-service` | 8088 | Order viewing and management (REST + GraphQL) |
 | `ecommerce-web` | 3001 | E-commerce frontend (React + Vite) |
 
 ### Frontend Libraries (libs/shared-ui/, libs/shared-data/, libs/shared-design/)
@@ -245,6 +246,7 @@ Decorators apply in order (innermost to outermost): timeout → circuit breaker 
 | Product service | `org.example.product.{subpackage}` |
 | Cart service | `org.example.cart.{subpackage}` |
 | Checkout service | `org.example.checkout.{subpackage}` |
+| Order service | `org.example.order.{subpackage}` |
 
 ## Request Headers
 
@@ -282,6 +284,7 @@ All services expect these headers for context propagation:
 | fulfillment-service | 8085 | Fulfillment and shipping |
 | audit-service | 8086 | Audit event processing |
 | checkout-service | 8087 | Order checkout and payment |
+| order-service | 8088 | Order viewing and management |
 | redis | 6379 | Cache backend |
 | postgres | 5432 | Database |
 | grafana | 3000 | Dashboards (admin/admin) |

@@ -3,6 +3,7 @@ package org.example.audit.controller;
 import java.time.Instant;
 import org.example.audit.domain.TimeRange;
 import org.example.audit.service.AuditService;
+import org.example.audit.validation.AuditRequestValidator;
 import org.example.platform.audit.AuditEvent;
 import org.example.platform.error.NotFoundException;
 import org.slf4j.Logger;
@@ -27,9 +28,11 @@ public class AuditController {
   private static final Logger log = LoggerFactory.getLogger(AuditController.class);
 
   private final AuditService auditService;
+  private final AuditRequestValidator validator;
 
-  public AuditController(AuditService auditService) {
+  public AuditController(AuditService auditService, AuditRequestValidator validator) {
     this.auditService = auditService;
+    this.validator = validator;
   }
 
   /**
@@ -41,18 +44,25 @@ public class AuditController {
   @PostMapping("/events")
   @ResponseStatus(HttpStatus.CREATED)
   public Mono<AuditEvent> createEvent(@RequestBody AuditEvent event) {
-    log.info(
-        "Creating audit event via API: eventType={}, entityId={}",
-        event.eventType(),
-        event.entityId());
-    return auditService.save(event);
+    return validator
+        .validateAuditEvent(event)
+        .then(
+            Mono.defer(
+                () -> {
+                  log.info(
+                      "Creating audit event via API: eventType={}, entityId={}",
+                      event.eventType(),
+                      event.entityId());
+                  return auditService.save(event);
+                }));
   }
 
   /** Gets an audit event by ID. */
   @GetMapping("/events/{eventId}")
   public Mono<AuditEvent> getEvent(@PathVariable String eventId) {
-    return auditService
-        .findById(eventId)
+    return validator
+        .validateEventId(eventId)
+        .then(auditService.findById(eventId))
         .switchIfEmpty(Mono.error(new NotFoundException("Audit event not found: " + eventId)));
   }
 
@@ -66,7 +76,9 @@ public class AuditController {
       @RequestParam(required = false) String eventType,
       @RequestParam(defaultValue = "100") int limit) {
     TimeRange timeRange = new TimeRange(startTime, endTime);
-    return auditService.findByEntity(entityType, entityId, timeRange, eventType, limit);
+    return validator
+        .validateEntityQuery(entityType, entityId, limit)
+        .thenMany(auditService.findByEntity(entityType, entityId, timeRange, eventType, limit));
   }
 
   /** Gets audit events for a specific user. */
@@ -77,7 +89,9 @@ public class AuditController {
       @RequestParam(required = false) Instant endTime,
       @RequestParam(defaultValue = "100") int limit) {
     TimeRange timeRange = new TimeRange(startTime, endTime);
-    return auditService.findByUser(userId, timeRange, limit);
+    return validator
+        .validateUserQuery(userId, limit)
+        .thenMany(auditService.findByUser(userId, timeRange, limit));
   }
 
   /** Gets audit events for a specific store and entity type. */
@@ -90,7 +104,10 @@ public class AuditController {
       @RequestParam(required = false) String eventType,
       @RequestParam(defaultValue = "100") int limit) {
     TimeRange timeRange = new TimeRange(startTime, endTime);
-    return auditService.findByStoreAndEntityType(
-        storeNumber, entityType, timeRange, eventType, limit);
+    return validator
+        .validateStoreQuery(storeNumber, entityType, limit)
+        .thenMany(
+            auditService.findByStoreAndEntityType(
+                storeNumber, entityType, timeRange, eventType, limit));
   }
 }

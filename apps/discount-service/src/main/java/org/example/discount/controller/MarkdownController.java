@@ -3,6 +3,7 @@ package org.example.discount.controller;
 import org.example.discount.controller.dto.ApplyMarkdownRequest;
 import org.example.discount.exception.UnauthorizedMarkdownException;
 import org.example.discount.service.MarkdownService;
+import org.example.discount.validation.DiscountRequestValidator;
 import org.example.model.discount.Markdown;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +24,11 @@ import reactor.core.publisher.Mono;
 public class MarkdownController {
 
   private final MarkdownService markdownService;
+  private final DiscountRequestValidator validator;
 
-  public MarkdownController(MarkdownService markdownService) {
+  public MarkdownController(MarkdownService markdownService, DiscountRequestValidator validator) {
     this.markdownService = markdownService;
+    this.validator = validator;
   }
 
   /**
@@ -39,8 +42,9 @@ public class MarkdownController {
   public Mono<ResponseEntity<Markdown>> applyMarkdown(
       @RequestBody ApplyMarkdownRequest request, @RequestHeader("x-userid") String userId) {
 
-    return markdownService
-        .applyMarkdown(request, userId)
+    return validator
+        .validateApplyMarkdown(request, userId)
+        .then(markdownService.applyMarkdown(request, userId))
         .map(ResponseEntity::ok)
         .onErrorResume(
             UnauthorizedMarkdownException.class,
@@ -55,7 +59,7 @@ public class MarkdownController {
    */
   @GetMapping("/cart/{cartId}")
   public Flux<Markdown> getMarkdownsForCart(@PathVariable String cartId) {
-    return markdownService.getMarkdownsForCart(cartId);
+    return validator.validateCartId(cartId).thenMany(markdownService.getMarkdownsForCart(cartId));
   }
 
   /**
@@ -66,8 +70,9 @@ public class MarkdownController {
    */
   @GetMapping("/{id}")
   public Mono<ResponseEntity<Markdown>> getMarkdown(@PathVariable String id) {
-    return markdownService
-        .findById(id)
+    return validator
+        .validateMarkdownId(id)
+        .then(markdownService.findById(id))
         .map(ResponseEntity::ok)
         .defaultIfEmpty(ResponseEntity.notFound().build());
   }
@@ -83,8 +88,9 @@ public class MarkdownController {
   public Mono<ResponseEntity<Void>> voidMarkdown(
       @PathVariable String id, @RequestHeader("x-userid") String userId) {
 
-    return markdownService
-        .voidMarkdown(id, userId)
+    return validator
+        .validateVoidMarkdown(id, userId)
+        .then(markdownService.voidMarkdown(id, userId))
         .then(Mono.just(ResponseEntity.noContent().<Void>build()))
         .onErrorResume(
             UnauthorizedMarkdownException.class,

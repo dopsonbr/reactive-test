@@ -2,6 +2,7 @@ package org.example.cart.graphql;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.example.cart.domain.Cart;
 import org.example.cart.graphql.input.AddFulfillmentInput;
 import org.example.cart.graphql.input.AddProductInput;
 import org.example.cart.graphql.input.ApplyDiscountInput;
@@ -10,7 +11,6 @@ import org.example.cart.graphql.input.SetCustomerInput;
 import org.example.cart.graphql.input.UpdateFulfillmentInput;
 import org.example.cart.graphql.input.UpdateProductInput;
 import org.example.cart.graphql.validation.GraphQLInputValidator;
-import org.example.cart.model.Cart;
 import org.example.cart.service.CartService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;

@@ -1,20 +1,21 @@
-package org.example.discount.client;
+package org.example.discount.repository.user;
 
 import java.util.Set;
-import org.example.discount.client.UserContext.Permission;
-import org.example.discount.client.UserContext.UserType;
+import org.example.discount.domain.UserContext;
+import org.example.discount.domain.UserContext.Permission;
+import org.example.discount.domain.UserContext.UserType;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-/** Client for communicating with user-service to retrieve user context information. */
-@Component
-public class UserServiceClient {
+/** Repository for communicating with user-service to retrieve user context information. */
+@Repository
+public class UserRepository {
 
   private final WebClient webClient;
 
-  public UserServiceClient(
+  public UserRepository(
       WebClient.Builder webClientBuilder,
       @Value("${services.user-service.url:http://localhost:8084}") String baseUrl) {
     this.webClient = webClientBuilder.baseUrl(baseUrl).build();

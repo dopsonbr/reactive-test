@@ -110,12 +110,13 @@ class ProductMapper {
 
 ### Model Categories
 
-| Category | Location | Example |
-|----------|----------|---------|
-| Domain models | `domain/` | `Product`, `Cart`, `CartItem` |
-| API requests | `controller/` or `validation/` | `CreateCartRequest` |
-| API responses | `controller/` or `domain/` | `ProductResponse` |
-| External responses | `repository/{service}/` | `MerchandiseResponse` |
+| Category | Package | Naming Pattern | Example |
+|----------|---------|----------------|---------|
+| Domain models | `domain/` | `{Entity}` | `Cart`, `Product`, `Customer` |
+| API requests | `controller/dto/` or `dto/` | `{Action}{Entity}Request` | `CreateCartRequest` |
+| API responses | `controller/dto/` or `dto/` | `{Entity}Response` | `CartResponse` |
+| External service DTOs | `repository/{service}/` | `{Service}Request/Response` | `MerchandiseResponse` |
+| GraphQL inputs | `graphql/input/` | `{Action}{Entity}Input` | `CreateCartInput` |
 
 ### Immutability
 

@@ -1,4 +1,4 @@
-package org.example.cart.model;
+package org.example.cart.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,9 +1,9 @@
 package org.example.cart.controller;
 
 import java.util.List;
+import org.example.cart.domain.Cart;
 import org.example.cart.dto.AddFulfillmentRequest;
 import org.example.cart.dto.UpdateFulfillmentRequest;
-import org.example.cart.model.Cart;
 import org.example.cart.service.CartService;
 import org.example.cart.validation.CartRequestValidator;
 import org.example.model.fulfillment.Fulfillment;

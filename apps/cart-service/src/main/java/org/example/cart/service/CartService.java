@@ -8,15 +8,15 @@ import java.util.Optional;
 import java.util.UUID;
 import org.example.cart.audit.AuditEvent;
 import org.example.cart.audit.AuditEventPublisher;
-import org.example.cart.client.CustomerServiceClient;
-import org.example.cart.client.DiscountServiceClient;
-import org.example.cart.client.FulfillmentServiceClient;
-import org.example.cart.client.ProductServiceClient;
+import org.example.cart.domain.Cart;
 import org.example.cart.event.CartEvent;
 import org.example.cart.event.CartEventType;
-import org.example.cart.model.Cart;
 import org.example.cart.pubsub.CartEventPublisher;
 import org.example.cart.repository.CartRepository;
+import org.example.cart.repository.customer.CustomerRepository;
+import org.example.cart.repository.discount.DiscountRepository;
+import org.example.cart.repository.fulfillment.FulfillmentRepository;
+import org.example.cart.repository.product.ProductRepository;
 import org.example.model.customer.CartCustomer;
 import org.example.model.discount.AppliedDiscount;
 import org.example.model.fulfillment.Fulfillment;
@@ -38,28 +38,28 @@ public class CartService {
   private static final String LOGGER_NAME = "cartservice";
 
   private final CartRepository cartRepository;
-  private final ProductServiceClient productServiceClient;
-  private final CustomerServiceClient customerServiceClient;
-  private final DiscountServiceClient discountServiceClient;
-  private final FulfillmentServiceClient fulfillmentServiceClient;
+  private final ProductRepository productRepository;
+  private final CustomerRepository customerRepository;
+  private final DiscountRepository discountRepository;
+  private final FulfillmentRepository fulfillmentRepository;
   private final AuditEventPublisher auditEventPublisher;
   private final CartEventPublisher cartEventPublisher;
   private final StructuredLogger structuredLogger;
 
   public CartService(
       CartRepository cartRepository,
-      ProductServiceClient productServiceClient,
-      CustomerServiceClient customerServiceClient,
-      DiscountServiceClient discountServiceClient,
-      FulfillmentServiceClient fulfillmentServiceClient,
+      ProductRepository productRepository,
+      CustomerRepository customerRepository,
+      DiscountRepository discountRepository,
+      FulfillmentRepository fulfillmentRepository,
       AuditEventPublisher auditEventPublisher,
       CartEventPublisher cartEventPublisher,
       StructuredLogger structuredLogger) {
     this.cartRepository = cartRepository;
-    this.productServiceClient = productServiceClient;
-    this.customerServiceClient = customerServiceClient;
-    this.discountServiceClient = discountServiceClient;
-    this.fulfillmentServiceClient = fulfillmentServiceClient;
+    this.productRepository = productRepository;
+    this.customerRepository = customerRepository;
+    this.discountRepository = discountRepository;
+    this.fulfillmentRepository = fulfillmentRepository;
     this.auditEventPublisher = auditEventPublisher;
     this.cartEventPublisher = cartEventPublisher;
     this.structuredLogger = structuredLogger;
@@ -156,7 +156,7 @@ public class CartService {
           return getCartOrError(cartId)
               .flatMap(
                   cart ->
-                      productServiceClient
+                      productRepository
                           .getProduct(sku, storeNumber, orderNumber, userId, sessionId)
                           .flatMap(
                               product -> {
@@ -317,7 +317,7 @@ public class CartService {
                     cart -> {
                       // Validate customer exists (optional - returns true if
                       // valid, false if not found)
-                      return customerServiceClient
+                      return customerRepository
                           .validateCustomer(customerId)
                           .flatMap(
                               valid -> {
@@ -411,7 +411,7 @@ public class CartService {
                       BigDecimal subtotal = cart.totals().subtotal();
                       List<Long> skus = cart.products().stream().map(CartProduct::sku).toList();
 
-                      return discountServiceClient
+                      return discountRepository
                           .calculateDiscount(code, subtotal, skus)
                           .flatMap(
                               appliedDiscount -> {
@@ -517,7 +517,7 @@ public class CartService {
             getCartOrError(cartId)
                 .flatMap(
                     cart ->
-                        fulfillmentServiceClient
+                        fulfillmentRepository
                             .calculateFulfillmentCost(type, skus)
                             .flatMap(
                                 cost -> {
@@ -596,7 +596,7 @@ public class CartService {
                                 HttpStatus.NOT_FOUND, "Fulfillment not found in cart"));
                       }
 
-                      return fulfillmentServiceClient
+                      return fulfillmentRepository
                           .calculateFulfillmentCost(type, skus)
                           .flatMap(
                               cost -> {

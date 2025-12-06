@@ -1,22 +1,22 @@
-package org.example.cart.client;
+package org.example.cart.repository.product;
 
 import org.example.model.product.Product;
 import org.example.platform.resilience.ReactiveResilience;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-/** Client for communicating with product-service. */
-@Component
-public class ProductServiceClient {
+/** Repository for communicating with product-service. */
+@Repository
+public class ProductRepository {
 
   private static final String RESILIENCE_NAME = "product";
 
   private final WebClient webClient;
   private final ReactiveResilience reactiveResilience;
 
-  public ProductServiceClient(
+  public ProductRepository(
       WebClient.Builder webClientBuilder,
       @Value("${services.product.base-url:http://localhost:8080}") String baseUrl,
       ReactiveResilience reactiveResilience) {

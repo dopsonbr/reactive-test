@@ -1,4 +1,4 @@
-package org.example.discount.client;
+package org.example.discount.domain;
 
 import java.math.BigDecimal;
 import java.util.List;

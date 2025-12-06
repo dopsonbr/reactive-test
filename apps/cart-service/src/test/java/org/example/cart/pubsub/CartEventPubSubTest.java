@@ -3,9 +3,9 @@ package org.example.cart.pubsub;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
+import org.example.cart.domain.Cart;
 import org.example.cart.event.CartEvent;
 import org.example.cart.event.CartEventType;
-import org.example.cart.model.Cart;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;

@@ -27,6 +27,46 @@ org.example.{app}/
 └── validation/                 # Request validators
 ```
 
+### Package Naming Conventions
+
+| Package | Purpose | Naming | Contents |
+|---------|---------|--------|----------|
+| `domain/` | Business domain models | Always `domain/`, never `model/` | Java records, enums, value objects |
+| `repository/` | External service integration | `repository/{serviceName}/` | WebClient calls, resilience, caching |
+| `controller/` | HTTP API endpoints | `controller/` | REST controllers |
+| `controller/dto/` | API request/response DTOs | Nested under controller | `*Request`, `*Response` records |
+| `service/` | Business logic | `service/` | Service classes |
+| `validation/` | Input validation | `validation/` | `*Validator` components |
+| `config/` | Spring configuration | `config/` | `*Config`, `*Properties` classes |
+
+#### Repository Package Structure
+
+Each external service gets its own sub-package:
+
+```
+repository/
+├── merchandise/
+│   ├── MerchandiseRepository.java    # WebClient + resilience
+│   └── MerchandiseResponse.java      # External API response DTO
+├── price/
+│   ├── PriceRepository.java
+│   ├── PriceRequest.java             # External API request DTO
+│   └── PriceResponse.java
+└── inventory/
+    ├── InventoryRepository.java
+    └── InventoryResponse.java
+```
+
+#### Anti-pattern: Using `client/` or `model/` packages
+
+```
+# DON'T - inconsistent naming
+├── client/                    # Use repository/{serviceName}/ instead
+│   └── ProductServiceClient.java
+├── model/                     # Use domain/ instead
+│   └── Cart.java
+```
+
 ### Layer Dependencies
 
 ```

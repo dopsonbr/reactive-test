@@ -3,11 +3,11 @@ package org.example.discount.service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-import org.example.discount.client.UserContext;
-import org.example.discount.client.UserServiceClient;
 import org.example.discount.controller.dto.ApplyMarkdownRequest;
+import org.example.discount.domain.UserContext;
 import org.example.discount.exception.UnauthorizedMarkdownException;
 import org.example.discount.repository.MarkdownRepository;
+import org.example.discount.repository.user.UserRepository;
 import org.example.model.discount.Markdown;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -18,11 +18,11 @@ import reactor.core.publisher.Mono;
 public class MarkdownService {
 
   private final MarkdownRepository repository;
-  private final UserServiceClient userClient;
+  private final UserRepository userRepository;
 
-  public MarkdownService(MarkdownRepository repository, UserServiceClient userClient) {
+  public MarkdownService(MarkdownRepository repository, UserRepository userRepository) {
     this.repository = repository;
-    this.userClient = userClient;
+    this.userRepository = userRepository;
   }
 
   /**
@@ -38,7 +38,7 @@ public class MarkdownService {
   }
 
   private Mono<Void> validateEmployeePermission(String userId) {
-    return userClient
+    return userRepository
         .getUser(userId)
         .filter(UserContext::canApplyMarkdown)
         .switchIfEmpty(

@@ -1,6 +1,6 @@
 package org.example.cart.repository;
 
-import org.example.cart.model.Cart;
+import org.example.cart.domain.Cart;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

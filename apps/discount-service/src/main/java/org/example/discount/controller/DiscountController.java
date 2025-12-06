@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.util.List;
 import org.example.discount.exception.InvalidDiscountException;
 import org.example.discount.service.DiscountService;
+import org.example.discount.validation.DiscountRequestValidator;
 import org.example.model.discount.AppliedDiscount;
 import org.example.model.discount.Discount;
 import org.springframework.http.HttpStatus;
@@ -24,9 +25,11 @@ import reactor.core.publisher.Mono;
 public class DiscountController {
 
   private final DiscountService discountService;
+  private final DiscountRequestValidator validator;
 
-  public DiscountController(DiscountService discountService) {
+  public DiscountController(DiscountService discountService, DiscountRequestValidator validator) {
     this.discountService = discountService;
+    this.validator = validator;
   }
 
   /**
@@ -39,8 +42,9 @@ public class DiscountController {
   @GetMapping("/validate")
   public Mono<Discount> validateDiscount(
       @RequestParam String code, @RequestParam(defaultValue = "1") int storeNumber) {
-    return discountService
-        .validateCode(code, storeNumber)
+    return validator
+        .validateDiscountCode(code, storeNumber)
+        .then(discountService.validateCode(code, storeNumber))
         .onErrorResume(
             InvalidDiscountException.class,
             e -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage())));
@@ -54,7 +58,9 @@ public class DiscountController {
    */
   @GetMapping("/active")
   public Flux<Discount> getActiveDiscounts(@RequestParam(defaultValue = "1") int storeNumber) {
-    return discountService.getActiveDiscounts(storeNumber);
+    return validator
+        .validateStoreNumber(storeNumber)
+        .thenMany(discountService.getActiveDiscounts(storeNumber));
   }
 
   /**
@@ -67,8 +73,9 @@ public class DiscountController {
   public Mono<AppliedDiscount> calculateDiscount(@RequestBody CalculateDiscountRequest request) {
     int storeNumber = request.storeNumber() != null ? request.storeNumber() : 1;
 
-    return discountService
-        .validateCode(request.code(), storeNumber)
+    return validator
+        .validateCalculateDiscount(request)
+        .then(discountService.validateCode(request.code(), storeNumber))
         .map(
             discount -> {
               BigDecimal subtotal = new BigDecimal(request.subtotal());

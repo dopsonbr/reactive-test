@@ -1,24 +1,24 @@
-package org.example.cart.client;
+package org.example.cart.repository.fulfillment;
 
 import java.math.BigDecimal;
 import java.util.List;
 import org.example.model.fulfillment.FulfillmentType;
 import org.example.platform.resilience.ReactiveResilience;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-/** Client for communicating with fulfillment-service. */
-@Component
-public class FulfillmentServiceClient {
+/** Repository for communicating with fulfillment-service. */
+@Repository
+public class FulfillmentRepository {
 
   private static final String RESILIENCE_NAME = "fulfillment";
 
   private final WebClient webClient;
   private final ReactiveResilience reactiveResilience;
 
-  public FulfillmentServiceClient(
+  public FulfillmentRepository(
       WebClient.Builder webClientBuilder,
       @Value("${services.fulfillment.base-url:http://localhost:8085}") String baseUrl,
       ReactiveResilience reactiveResilience) {

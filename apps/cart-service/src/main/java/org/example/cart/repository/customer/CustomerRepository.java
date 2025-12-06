@@ -1,24 +1,24 @@
-package org.example.cart.client;
+package org.example.cart.repository.customer;
 
 import org.example.model.customer.CartCustomer;
 import org.example.platform.resilience.ReactiveResilience;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
-/** Client for communicating with customer-service. */
-@Component
-public class CustomerServiceClient {
+/** Repository for communicating with customer-service. */
+@Repository
+public class CustomerRepository {
 
   private static final String RESILIENCE_NAME = "customer";
 
   private final WebClient webClient;
   private final ReactiveResilience reactiveResilience;
 
-  public CustomerServiceClient(
+  public CustomerRepository(
       WebClient.Builder webClientBuilder,
       @Value("${services.customer.base-url:http://localhost:8083}") String baseUrl,
       ReactiveResilience reactiveResilience) {

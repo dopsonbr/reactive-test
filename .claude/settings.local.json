@@ -64,7 +64,10 @@
       "Bash(JAVA_HOME=/Users/BXD5017/Library/Java/JavaVirtualMachines/corretto-21.0.9/Contents/Home ./gradlew:*)",
       "Bash(done)",
       "Bash(for svc in checkout-service customer-service discount-service fulfillment-service audit-service cart-service order-service product-service)",
-      "Bash(do echo:*)"
+      "Bash(do echo:*)",
+      "Bash(unzip:*)",
+      "Bash(python3:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": [

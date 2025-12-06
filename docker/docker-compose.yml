@@ -169,6 +169,8 @@ services:
       - observability
 
   # === Applications ===
+  # Backend services run in dev mode by default (all actuator endpoints exposed, no auth)
+  # For production-like testing, add: SPRING_PROFILES_ACTIVE=prod
   product-service:
     build:
       context: ..

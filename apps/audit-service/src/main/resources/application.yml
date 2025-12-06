@@ -35,6 +35,15 @@ audit:
     max-retries: 3
     retry-delay: 1s
 
+# Application Security Configuration
+# Default: dev mode - no auth required for local development
+app:
+  security:
+    enabled: false  # Dev mode: no auth required (use prod profile for auth)
+  actuator:
+    expose-all: true
+    require-auth: false
+
 # Logging
 logging:
   file:
@@ -43,14 +52,17 @@ logging:
     org.example.audit: DEBUG
 
 # Actuator & Management
+# Default: expose ALL endpoints (dev mode) for debugging & development
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: "*"
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
 
 # Server port
 server:

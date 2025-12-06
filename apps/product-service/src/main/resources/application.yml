@@ -33,9 +33,10 @@ spring:
             token-uri: ${DOWNSTREAM_TOKEN_URI:http://localhost:8081/downstream-oauth/token}
 
 # Application Security Configuration
+# Default: dev mode - no auth required for local development
 app:
   security:
-    enabled: true
+    enabled: false  # Dev mode: no auth required (use prod profile for auth)
     # JWK Set URI (used by JwtValidatorConfig)
     jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
     # Allowed issuers for inbound JWT validation
@@ -46,6 +47,9 @@ app:
     required-audience: ${OAUTH_AUDIENCE:reactive-test-api}
     # Clock skew tolerance for token expiration (seconds)
     clock-skew-seconds: 30
+  actuator:
+    expose-all: true
+    require-auth: false
 
 # Cache TTL Configuration (all configurable)
 cache:
@@ -76,14 +80,17 @@ logging:
     name: logs/application.log
 
 # Actuator & Management
+# Default: expose ALL endpoints (dev mode) for debugging & development
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus,circuitbreakers,retries
+        include: "*"
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
   health:
     circuitbreakers:
       enabled: true

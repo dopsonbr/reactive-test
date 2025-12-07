@@ -26,18 +26,20 @@ public class SearchRequestValidator {
   public Mono<Void> validate(SearchCriteria criteria) {
     List<ValidationError> errors = new ArrayList<>();
 
-    // Query validation
-    if (criteria.query() == null || criteria.query().isBlank()) {
-      errors.add(new ValidationError("q", "Search query is required"));
-    } else if (criteria.query().length() < MIN_QUERY_LENGTH) {
-      errors.add(
-          new ValidationError(
-              "q", "Search query must be at least " + MIN_QUERY_LENGTH + " characters"));
-    } else if (criteria.query().length() > MAX_QUERY_LENGTH) {
-      errors.add(
-          new ValidationError(
-              "q", "Search query must not exceed " + MAX_QUERY_LENGTH + " characters"));
+    // Query validation - query is optional (for category browsing / listing all products)
+    // Only validate length constraints if query is provided and non-blank
+    if (criteria.query() != null && !criteria.query().isBlank()) {
+      if (criteria.query().length() < MIN_QUERY_LENGTH) {
+        errors.add(
+            new ValidationError(
+                "q", "Search query must be at least " + MIN_QUERY_LENGTH + " characters"));
+      } else if (criteria.query().length() > MAX_QUERY_LENGTH) {
+        errors.add(
+            new ValidationError(
+                "q", "Search query must not exceed " + MAX_QUERY_LENGTH + " characters"));
+      }
     }
+    // Empty or null query is allowed for category-only browsing or listing all products
 
     // Price validation
     criteria

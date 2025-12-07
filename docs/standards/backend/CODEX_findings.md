@@ -1,0 +1,4 @@
+• - [P1] Multiple “Reference” sections point to libs/platform/... paths that don’t exist (they live under libs/backend/platform/...): observability-logs.md:290-291, caching.md:296-298, validation.md:387-388, resiliency-bulk-heads.md:275,
+    resiliency-retries.md (similar reference near end), resiliency-timeouts.md (similar), testing-integration.md:468-469, testing-unit.md:414, error-handling.md:320-321, architecture.md:228. Readers following these links will fail to locate the
+    platform libraries—please update the paths to include backend/.
+  - [P2] k6 command examples still use the old path e2e/load-test.js etc. (testing-e2e.md:247-255, 282). Scripts were moved to e2e/k6/, so the documented commands 404; adjust the examples to k6 run e2e/k6/load-test.js (and the other k6 scripts).

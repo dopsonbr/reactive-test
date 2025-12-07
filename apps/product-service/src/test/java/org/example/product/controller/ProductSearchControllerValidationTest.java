@@ -70,11 +70,11 @@ class ProductSearchControllerValidationTest {
         .expectStatus()
         .isOk()
         .expectBody()
-        .jsonPath("$.totalItems")
+        .jsonPath("$.total")
         .isEqualTo(1)
-        .jsonPath("$.items[0].sku")
+        .jsonPath("$.products[0].sku")
         .isEqualTo(123456)
-        .jsonPath("$.items[0].description")
+        .jsonPath("$.products[0].description")
         .isEqualTo("Laptop Computer");
   }
 

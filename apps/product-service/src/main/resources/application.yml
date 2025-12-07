@@ -23,6 +23,8 @@ spring:
 app:
   security:
     enabled: false  # Dev mode: no auth required (use prod profile for auth)
+    oauth2-client:
+      enabled: false  # Disable OAuth2 client for local dev (no downstream auth needed)
     # JWK Set URI (used by JwtValidatorConfig)
     jwk-set-uri: ${USER_SERVICE_URL:http://localhost:8089}/.well-known/jwks.json
     # Allowed issuers for inbound JWT validation

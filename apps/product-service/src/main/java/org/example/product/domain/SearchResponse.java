@@ -3,18 +3,18 @@ package org.example.product.domain;
 import java.util.List;
 
 public record SearchResponse<T>(
-    List<T> items,
-    long totalItems,
+    List<T> products,
+    long total,
     int totalPages,
-    int currentPage,
+    int page,
     int pageSize,
     String query,
     long searchTimeMs) {
   public boolean hasNext() {
-    return currentPage < totalPages - 1;
+    return page < totalPages - 1;
   }
 
   public boolean hasPrevious() {
-    return currentPage > 0;
+    return page > 0;
   }
 }

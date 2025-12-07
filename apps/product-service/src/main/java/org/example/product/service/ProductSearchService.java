@@ -68,7 +68,7 @@ public class ProductSearchService {
                       structuredLogger.logMessage(
                           ctx,
                           LOGGER_NAME,
-                          "Search completed with " + response.totalItems() + " results"));
+                          "Search completed with " + response.total() + " results"));
         });
   }
 

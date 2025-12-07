@@ -413,6 +413,7 @@ services:
       - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/checkoutdb
       - SPRING_FLYWAY_USER=checkout_user
       - SPRING_FLYWAY_PASSWORD=checkout_pass
+      - SPRING_DATA_REDIS_HOST=redis
       - CART_SERVICE_URL=http://cart-service:8080
       - DISCOUNT_SERVICE_URL=http://discount-service:8084
       - FULFILLMENT_SERVICE_URL=http://fulfillment-service:8085
@@ -432,6 +433,8 @@ services:
       - "8087:8080"
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       tempo:
         condition: service_healthy

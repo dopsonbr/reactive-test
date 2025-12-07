@@ -1,406 +1,545 @@
-#!/bin/bash
+#!/usr/bin/env node
 
-# powerstart - Start all reactive-platform services
-# A simple way to bring up the entire platform for local development
+/**
+ * powerstart - Start all reactive-platform services
+ * A simple way to bring up the entire platform for local development
+ */
 
-set -e
+import { execSync, spawn } from 'child_process';
+import { existsSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-NC='\033[0m' # No Color
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const DOCKER_DIR = join(__dirname, 'docker');
 
-# Get the directory where this script lives
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOCKER_DIR="$SCRIPT_DIR/docker"
+// ANSI colors
+const colors = {
+  red: '\x1b[0;31m',
+  green: '\x1b[0;32m',
+  yellow: '\x1b[1;33m',
+  blue: '\x1b[0;34m',
+  cyan: '\x1b[0;36m',
+  bold: '\x1b[1m',
+  nc: '\x1b[0m',
+};
 
-# Track what we started
-declare -a STARTED_SERVICES=()
-declare -a FAILED_SERVICES=()
+// Track state
+const startedServices = [];
+const failedServices = [];
+const alreadyRunning = new Set();
 
-# Logging functions
-log_header() {
-    echo ""
-    echo -e "${BOLD}${BLUE}══════════════════════════════════════════════════════════════${NC}"
-    echo -e "${BOLD}${BLUE}  $1${NC}"
-    echo -e "${BOLD}${BLUE}══════════════════════════════════════════════════════════════${NC}"
+// Logging functions
+function logHeader(msg) {
+  console.log('');
+  console.log(`${colors.bold}${colors.blue}${'═'.repeat(62)}${colors.nc}`);
+  console.log(`${colors.bold}${colors.blue}  ${msg}${colors.nc}`);
+  console.log(`${colors.bold}${colors.blue}${'═'.repeat(62)}${colors.nc}`);
 }
 
-log_step() {
-    echo -e "${CYAN}▶${NC} $1"
+function logStep(msg) {
+  console.log(`${colors.cyan}▶${colors.nc} ${msg}`);
 }
 
-log_success() {
-    echo -e "${GREEN}✓${NC} $1"
+function logSuccess(msg) {
+  console.log(`${colors.green}✓${colors.nc} ${msg}`);
 }
 
-log_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
+function logWarning(msg) {
+  console.log(`${colors.yellow}⚠${colors.nc} ${msg}`);
 }
 
-log_error() {
-    echo -e "${RED}✗${NC} $1"
+function logError(msg) {
+  console.log(`${colors.red}✗${colors.nc} ${msg}`);
 }
 
-log_info() {
-    echo -e "${BLUE}ℹ${NC} $1"
+function logInfo(msg) {
+  console.log(`${colors.blue}ℹ${colors.nc} ${msg}`);
 }
 
-# Check prerequisites
-check_prerequisites() {
-    log_header "Checking Prerequisites"
-
-    # Check Docker
-    if ! command -v docker &> /dev/null; then
-        log_error "Docker is not installed or not in PATH"
-        exit 1
-    fi
-    log_success "Docker is available"
-
-    # Check Docker is running
-    if ! docker info &> /dev/null; then
-        log_error "Docker daemon is not running"
-        exit 1
-    fi
-    log_success "Docker daemon is running"
-
-    # Check docker compose
-    if ! docker compose version &> /dev/null; then
-        log_error "Docker Compose is not available"
-        exit 1
-    fi
-    log_success "Docker Compose is available"
-
-    # Check if docker-compose.yml exists
-    if [ ! -f "$DOCKER_DIR/docker-compose.yml" ]; then
-        log_error "docker-compose.yml not found in $DOCKER_DIR"
-        exit 1
-    fi
-    log_success "docker-compose.yml found"
+// Execute command and return output
+function exec(cmd, options = {}) {
+  try {
+    return execSync(cmd, { encoding: 'utf8', stdio: options.silent ? 'pipe' : 'inherit', ...options });
+  } catch (e) {
+    if (options.ignoreError) return e.stdout || '';
+    throw e;
+  }
 }
 
-# Build JARs if needed
-build_jars() {
-    log_header "Building Application JARs"
-
-    log_step "Building bootJars for all services..."
-    log_info "This may take a few minutes on first run"
-
-    cd "$SCRIPT_DIR"
-
-    if ./gradlew bootJar --parallel -q 2>&1; then
-        log_success "All JARs built successfully"
-    else
-        log_error "JAR build failed"
-        exit 1
-    fi
+// Execute command silently and return output
+function execSilent(cmd) {
+  try {
+    return execSync(cmd, { encoding: 'utf8', stdio: 'pipe' });
+  } catch {
+    return '';
+  }
 }
 
-# Start infrastructure services
-start_infrastructure() {
-    log_header "Starting Infrastructure Services"
-
-    cd "$DOCKER_DIR"
-
-    log_step "Starting PostgreSQL, Redis, and WireMock..."
-    if docker compose up -d postgres redis wiremock 2>&1 | grep -v "^$"; then
-        log_success "Infrastructure containers started"
-    else
-        log_warning "Some infrastructure services may have issues"
-    fi
-
-    log_step "Waiting for infrastructure to be healthy..."
-
-    # Wait for postgres
-    local retries=30
-    while [ $retries -gt 0 ]; do
-        if docker compose exec -T postgres pg_isready -U postgres &> /dev/null; then
-            log_success "PostgreSQL is ready"
-            STARTED_SERVICES+=("postgres:5432")
-            break
-        fi
-        retries=$((retries - 1))
-        sleep 1
-    done
-    if [ $retries -eq 0 ]; then
-        log_error "PostgreSQL failed to start"
-        FAILED_SERVICES+=("postgres")
-    fi
-
-    # Wait for redis
-    retries=30
-    while [ $retries -gt 0 ]; do
-        if docker compose exec -T redis redis-cli ping &> /dev/null; then
-            log_success "Redis is ready"
-            STARTED_SERVICES+=("redis:6379")
-            break
-        fi
-        retries=$((retries - 1))
-        sleep 1
-    done
-    if [ $retries -eq 0 ]; then
-        log_error "Redis failed to start"
-        FAILED_SERVICES+=("redis")
-    fi
-
-    # Wait for wiremock
-    retries=30
-    while [ $retries -gt 0 ]; do
-        if curl -sf http://localhost:8082/__admin/mappings &> /dev/null; then
-            log_success "WireMock is ready"
-            STARTED_SERVICES+=("wiremock:8082")
-            break
-        fi
-        retries=$((retries - 1))
-        sleep 1
-    done
-    if [ $retries -eq 0 ]; then
-        log_error "WireMock failed to start"
-        FAILED_SERVICES+=("wiremock")
-    fi
+// Check if a port is in use
+function isPortInUse(port) {
+  const result = execSilent(`lsof -i :${port} -t`);
+  return result.trim().length > 0;
 }
 
-# Start observability stack
-start_observability() {
-    log_header "Starting Observability Stack"
-
-    cd "$DOCKER_DIR"
-
-    log_step "Starting Tempo, Loki, Prometheus, and Grafana..."
-    if docker compose up -d tempo loki prometheus grafana promtail redis-exporter 2>&1 | grep -v "^$"; then
-        log_success "Observability containers started"
-    else
-        log_warning "Some observability services may have issues"
-    fi
-
-    log_step "Waiting for observability stack to be healthy..."
-
-    # Wait for grafana (it depends on the others)
-    local retries=60
-    while [ $retries -gt 0 ]; do
-        if curl -sf http://localhost:3000/api/health &> /dev/null; then
-            log_success "Grafana is ready"
-            STARTED_SERVICES+=("grafana:3000")
-            STARTED_SERVICES+=("prometheus:9090")
-            STARTED_SERVICES+=("loki:3100")
-            STARTED_SERVICES+=("tempo:3200")
-            break
-        fi
-        retries=$((retries - 1))
-        sleep 2
-    done
-    if [ $retries -eq 0 ]; then
-        log_warning "Grafana may not be fully ready yet"
-    fi
+// Get PID using a port
+function getPortUser(port) {
+  return execSilent(`lsof -i :${port} -t`).trim().split('\n')[0];
 }
 
-# Start backend services
-start_backend_services() {
-    log_header "Starting Backend Services"
-
-    cd "$DOCKER_DIR"
-
-    # Start services in dependency order
-    local services=(
-        "product-service:8080"
-        "customer-service:8083"
-        "discount-service:8084"
-        "fulfillment-service:8085"
-        "audit-service:8086"
-        "cart-service:8081"
-        "checkout-service:8087"
-        "order-service:8088"
-    )
-
-    log_step "Starting all backend services..."
-    docker compose up -d \
-        product-service \
-        customer-service \
-        discount-service \
-        fulfillment-service \
-        audit-service \
-        cart-service \
-        checkout-service \
-        order-service 2>&1 | grep -v "^$" || true
-
-    log_step "Waiting for backend services to be healthy (this may take 1-2 minutes)..."
-
-    for service_port in "${services[@]}"; do
-        local service="${service_port%%:*}"
-        local port="${service_port##*:}"
-        local retries=90
-
-        echo -n "  Waiting for $service..."
-        while [ $retries -gt 0 ]; do
-            if curl -sf "http://localhost:$port/actuator/health" &> /dev/null; then
-                echo -e " ${GREEN}✓${NC}"
-                STARTED_SERVICES+=("$service:$port")
-                break
-            fi
-            retries=$((retries - 1))
-            sleep 2
-        done
-        if [ $retries -eq 0 ]; then
-            echo -e " ${RED}✗${NC}"
-            FAILED_SERVICES+=("$service")
-        fi
-    done
+// Get process name by PID
+function getProcessName(pid) {
+  if (!pid) return 'unknown';
+  return execSilent(`ps -p ${pid} -o comm=`).trim() || 'unknown';
 }
 
-# Start frontend
-start_frontend() {
-    log_header "Starting Frontend Application"
-
-    cd "$DOCKER_DIR"
-
-    log_step "Starting ecommerce-web..."
-    if docker compose up -d ecommerce-web 2>&1 | grep -v "^$"; then
-        log_success "Frontend container started"
-    else
-        log_warning "Frontend may have issues starting"
-    fi
-
-    log_step "Waiting for frontend to be healthy..."
-    local retries=60
-    while [ $retries -gt 0 ]; do
-        if curl -sf http://localhost:3001/health &> /dev/null || curl -sf http://localhost:3001 &> /dev/null; then
-            log_success "Frontend is ready"
-            STARTED_SERVICES+=("ecommerce-web:3001")
-            break
-        fi
-        retries=$((retries - 1))
-        sleep 2
-    done
-    if [ $retries -eq 0 ]; then
-        log_warning "Frontend may not be fully ready yet"
-        STARTED_SERVICES+=("ecommerce-web:3001")  # Add anyway, might just be slow
-    fi
+// Check if a Docker container is using a port
+function getContainerOnPort(port) {
+  const result = execSilent(`docker ps --filter "publish=${port}" --format "{{.Names}}"`);
+  return result.trim().split('\n')[0];
 }
 
-# Print summary
-print_summary() {
-    log_header "Startup Summary"
-
-    if [ ${#FAILED_SERVICES[@]} -gt 0 ]; then
-        echo -e "${RED}Some services failed to start:${NC}"
-        for service in "${FAILED_SERVICES[@]}"; do
-            echo -e "  ${RED}✗${NC} $service"
-        done
-        echo ""
-    fi
-
-    echo -e "${GREEN}${BOLD}Services Running:${NC}"
-    echo ""
-
-    # Infrastructure
-    echo -e "${BOLD}Infrastructure:${NC}"
-    echo -e "  ${CYAN}PostgreSQL${NC}        http://localhost:5432"
-    echo -e "                     Connect with: psql -h localhost -U postgres -d postgres"
-    echo ""
-    echo -e "  ${CYAN}Redis${NC}             http://localhost:6379"
-    echo -e "                     Connect with: redis-cli -h localhost"
-    echo ""
-    echo -e "  ${CYAN}WireMock${NC}          http://localhost:8082"
-    echo -e "                     View mappings at: http://localhost:8082/__admin/mappings"
-    echo ""
-
-    # Observability
-    echo -e "${BOLD}Observability:${NC}"
-    echo -e "  ${CYAN}Grafana${NC}           http://localhost:3000"
-    echo -e "                     Login with admin/admin to view dashboards and explore metrics."
-    echo ""
-    echo -e "  ${CYAN}Prometheus${NC}        http://localhost:9090"
-    echo -e "                     Query metrics directly using PromQL expressions."
-    echo ""
-    echo -e "  ${CYAN}Loki${NC}              http://localhost:3100"
-    echo -e "                     Query logs via Grafana Explore with LogQL."
-    echo ""
-    echo -e "  ${CYAN}Tempo${NC}             http://localhost:3200"
-    echo -e "                     View distributed traces via Grafana Explore."
-    echo ""
-
-    # Backend Services
-    echo -e "${BOLD}Backend Services:${NC}"
-    echo -e "  ${CYAN}product-service${NC}   http://localhost:8080"
-    echo -e "                     GET /products/{sku} with headers x-store-number, x-order-number, x-userid, x-sessionid."
-    echo ""
-    echo -e "  ${CYAN}cart-service${NC}      http://localhost:8081"
-    echo -e "                     POST /carts to create a cart, GET /carts/{id} to retrieve."
-    echo ""
-    echo -e "  ${CYAN}customer-service${NC}  http://localhost:8083"
-    echo -e "                     GET /customers/{id} to fetch customer details and loyalty info."
-    echo ""
-    echo -e "  ${CYAN}discount-service${NC}  http://localhost:8084"
-    echo -e "                     POST /pricing/calculate to compute discounts for cart items."
-    echo ""
-    echo -e "  ${CYAN}fulfillment-service${NC} http://localhost:8085"
-    echo -e "                     GET /fulfillment/options to retrieve shipping and pickup options."
-    echo ""
-    echo -e "  ${CYAN}audit-service${NC}     http://localhost:8086"
-    echo -e "                     GET /audit/events to query audit trail with filters."
-    echo ""
-    echo -e "  ${CYAN}checkout-service${NC}  http://localhost:8087"
-    echo -e "                     POST /checkout to initiate order checkout from cart."
-    echo ""
-    echo -e "  ${CYAN}order-service${NC}     http://localhost:8088"
-    echo -e "                     GET /orders/{id} for REST or POST /graphql for GraphQL queries."
-    echo ""
-
-    # Frontend
-    echo -e "${BOLD}Frontend:${NC}"
-    echo -e "  ${CYAN}ecommerce-web${NC}     http://localhost:3001"
-    echo -e "                     Browse products and add to cart in the web UI."
-    echo ""
-
-    # Quick test commands
-    echo -e "${BOLD}${YELLOW}Quick Test Commands:${NC}"
-    echo ""
-    echo -e "  # Health check all services"
-    echo -e "  curl -s http://localhost:8080/actuator/health | jq"
-    echo ""
-    echo -e "  # Get a product"
-    echo -e "  curl -s http://localhost:8080/products/SKU-001 \\"
-    echo -e "    -H 'x-store-number: 1' \\"
-    echo -e "    -H 'x-order-number: 550e8400-e29b-41d4-a716-446655440000' \\"
-    echo -e "    -H 'x-userid: abc123' \\"
-    echo -e "    -H 'x-sessionid: 550e8400-e29b-41d4-a716-446655440001' | jq"
-    echo ""
-    echo -e "  # View logs"
-    echo -e "  docker compose -f docker/docker-compose.yml logs -f product-service"
-    echo ""
-    echo -e "  # Stop everything"
-    echo -e "  docker compose -f docker/docker-compose.yml down"
-    echo ""
-
-    echo -e "${GREEN}${BOLD}Platform is ready!${NC} Open ${CYAN}http://localhost:3001${NC} to start."
+// Check if a service health endpoint is responding
+async function isHealthy(port, endpoint = '/actuator/health') {
+  try {
+    const response = await fetch(`http://localhost:${port}${endpoint}`, { signal: AbortSignal.timeout(2000) });
+    return response.ok;
+  } catch {
+    return false;
+  }
 }
 
-# Main execution
-main() {
-    echo -e "${BOLD}"
-    echo "  ____                          ____  _             _   "
-    echo " |  _ \\ _____      _____ _ __  / ___|| |_ __ _ _ __| |_ "
-    echo " | |_) / _ \\ \\ /\\ / / _ \\ '__| \\___ \\| __/ _\` | '__| __|"
-    echo " |  __/ (_) \\ V  V /  __/ |     ___) | || (_| | |  | |_ "
-    echo " |_|   \\___/ \\_/\\_/ \\___|_|    |____/ \\__\\__,_|_|   \\__|"
-    echo -e "${NC}"
-    echo -e "${BLUE}Starting the Reactive Platform...${NC}"
+// Wait for a service to be healthy
+async function waitForHealth(serviceName, port, endpoint = '/actuator/health', maxRetries = 90) {
+  process.stdout.write(`  Waiting for ${serviceName}...`);
 
-    check_prerequisites
-    build_jars
-    start_infrastructure
-    start_observability
-    start_backend_services
-    start_frontend
-    print_summary
+  for (let i = 0; i < maxRetries; i++) {
+    if (await isHealthy(port, endpoint)) {
+      console.log(` ${colors.green}✓${colors.nc}`);
+      return true;
+    }
+    await sleep(2000);
+  }
+
+  console.log(` ${colors.red}✗${colors.nc}`);
+  return false;
 }
 
-# Handle Ctrl+C gracefully
-trap 'echo -e "\n${YELLOW}Interrupted. Services may still be running.${NC}"; exit 1' INT
+// Sleep helper
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-# Run main
-main "$@"
+// Check prerequisites
+function checkPrerequisites() {
+  logHeader('Checking Prerequisites');
+
+  // Check Docker
+  try {
+    execSilent('docker --version');
+    logSuccess('Docker is available');
+  } catch {
+    logError('Docker is not installed or not in PATH');
+    process.exit(1);
+  }
+
+  // Check Docker daemon
+  try {
+    execSilent('docker info');
+    logSuccess('Docker daemon is running');
+  } catch {
+    logError('Docker daemon is not running');
+    process.exit(1);
+  }
+
+  // Check docker compose
+  try {
+    execSilent('docker compose version');
+    logSuccess('Docker Compose is available');
+  } catch {
+    logError('Docker Compose is not available');
+    process.exit(1);
+  }
+
+  // Check docker-compose.yml exists
+  if (!existsSync(join(DOCKER_DIR, 'docker-compose.yml'))) {
+    logError(`docker-compose.yml not found in ${DOCKER_DIR}`);
+    process.exit(1);
+  }
+  logSuccess('docker-compose.yml found');
+}
+
+// Check for port conflicts
+function checkPortConflicts() {
+  logHeader('Checking for Port Conflicts');
+
+  const ports = [
+    { port: 5432, service: 'PostgreSQL' },
+    { port: 6379, service: 'Redis' },
+    { port: 8080, service: 'product-service' },
+    { port: 8081, service: 'cart-service' },
+    { port: 8082, service: 'WireMock' },
+    { port: 8083, service: 'customer-service' },
+    { port: 8084, service: 'discount-service' },
+    { port: 8085, service: 'fulfillment-service' },
+    { port: 8086, service: 'audit-service' },
+    { port: 8087, service: 'checkout-service' },
+    { port: 8088, service: 'order-service' },
+    { port: 8089, service: 'user-service' },
+    { port: 3000, service: 'Grafana' },
+    { port: 3001, service: 'ecommerce-web' },
+  ];
+
+  const conflicts = [];
+
+  for (const { port, service } of ports) {
+    if (isPortInUse(port)) {
+      const container = getContainerOnPort(port);
+      if (container) {
+        alreadyRunning.add(service);
+        logInfo(`${service} already running on port ${port} (container: ${container})`);
+      } else {
+        conflicts.push({ port, service });
+      }
+    }
+  }
+
+  if (conflicts.length > 0) {
+    logError('Port conflicts detected!');
+    console.log('');
+    console.log(`${colors.red}The following ports are in use by other processes:${colors.nc}`);
+    for (const { port, service } of conflicts) {
+      const pid = getPortUser(port);
+      const process = getProcessName(pid);
+      console.log(`  ${colors.red}✗${colors.nc} Port ${port} (${service}) - used by PID ${pid} (${process})`);
+    }
+    console.log('');
+    console.log(`${colors.yellow}Solutions:${colors.nc}`);
+    console.log('  1. Stop the conflicting processes');
+    console.log('  2. Stop any running E2E stack: docker compose -f docker/docker-compose.e2e.yml down');
+    console.log('  3. Stop any running dev stack: docker compose -f docker/docker-compose.yml down');
+    console.log('');
+    process.exit(1);
+  }
+
+  if (alreadyRunning.size > 0) {
+    logSuccess('Some services already running - will skip starting them');
+  } else {
+    logSuccess('All ports are available');
+  }
+}
+
+// Build JARs
+function buildJars() {
+  logHeader('Building Application JARs');
+
+  logStep('Building bootJars for all services...');
+  logInfo('This may take a few minutes on first run');
+
+  try {
+    exec('./gradlew bootJar --parallel -q', { cwd: __dirname });
+    logSuccess('All JARs built successfully');
+  } catch {
+    logError('JAR build failed');
+    process.exit(1);
+  }
+}
+
+// Start infrastructure services
+async function startInfrastructure() {
+  logHeader('Starting Infrastructure Services');
+
+  const toStart = [];
+  if (!alreadyRunning.has('PostgreSQL')) toStart.push('postgres');
+  if (!alreadyRunning.has('Redis')) toStart.push('redis');
+  if (!alreadyRunning.has('WireMock')) toStart.push('wiremock');
+
+  if (toStart.length === 0) {
+    logSuccess('All infrastructure services already running');
+    startedServices.push('postgres:5432', 'redis:6379', 'wiremock:8082');
+    return;
+  }
+
+  logStep(`Starting ${toStart.join(', ')}...`);
+  exec(`docker compose up -d ${toStart.join(' ')}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  logSuccess('Infrastructure containers started');
+
+  logStep('Waiting for infrastructure to be healthy...');
+
+  // Wait for postgres
+  if (!alreadyRunning.has('PostgreSQL')) {
+    let ready = false;
+    for (let i = 0; i < 30; i++) {
+      try {
+        execSilent(`docker compose exec -T postgres pg_isready -U postgres`);
+        ready = true;
+        break;
+      } catch {
+        await sleep(1000);
+      }
+    }
+    if (ready) {
+      logSuccess('PostgreSQL is ready');
+      startedServices.push('postgres:5432');
+    } else {
+      logError('PostgreSQL failed to start');
+      failedServices.push('postgres');
+    }
+  } else {
+    startedServices.push('postgres:5432');
+  }
+
+  // Wait for redis
+  if (!alreadyRunning.has('Redis')) {
+    let ready = false;
+    for (let i = 0; i < 30; i++) {
+      try {
+        execSilent(`docker compose exec -T redis redis-cli ping`);
+        ready = true;
+        break;
+      } catch {
+        await sleep(1000);
+      }
+    }
+    if (ready) {
+      logSuccess('Redis is ready');
+      startedServices.push('redis:6379');
+    } else {
+      logError('Redis failed to start');
+      failedServices.push('redis');
+    }
+  } else {
+    startedServices.push('redis:6379');
+  }
+
+  // Wait for wiremock
+  if (!alreadyRunning.has('WireMock')) {
+    let ready = false;
+    for (let i = 0; i < 30; i++) {
+      if (await isHealthy(8082, '/__admin/mappings')) {
+        ready = true;
+        break;
+      }
+      await sleep(1000);
+    }
+    if (ready) {
+      logSuccess('WireMock is ready');
+      startedServices.push('wiremock:8082');
+    } else {
+      logError('WireMock failed to start');
+      failedServices.push('wiremock');
+    }
+  } else {
+    startedServices.push('wiremock:8082');
+  }
+}
+
+// Start observability stack
+async function startObservability() {
+  logHeader('Starting Observability Stack');
+
+  logStep('Starting Tempo, Loki, Prometheus, and Grafana...');
+  exec('docker compose up -d tempo loki prometheus grafana promtail redis-exporter', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  logSuccess('Observability containers started');
+
+  logStep('Waiting for observability stack to be healthy...');
+
+  // Wait for grafana
+  let ready = false;
+  for (let i = 0; i < 60; i++) {
+    if (await isHealthy(3000, '/api/health')) {
+      ready = true;
+      break;
+    }
+    await sleep(2000);
+  }
+
+  if (ready) {
+    logSuccess('Grafana is ready');
+    startedServices.push('grafana:3000', 'prometheus:9090', 'loki:3100', 'tempo:3200');
+  } else {
+    logWarning('Grafana may not be fully ready yet');
+  }
+}
+
+// Start backend services
+async function startBackendServices() {
+  logHeader('Starting Backend Services');
+
+  const services = [
+    { name: 'product-service', port: 8080 },
+    { name: 'customer-service', port: 8083 },
+    { name: 'discount-service', port: 8084 },
+    { name: 'fulfillment-service', port: 8085 },
+    { name: 'audit-service', port: 8086 },
+    { name: 'cart-service', port: 8081 },
+    { name: 'checkout-service', port: 8087 },
+    { name: 'order-service', port: 8088 },
+    { name: 'user-service', port: 8089 },
+  ];
+
+  const toStart = services.filter(s => !alreadyRunning.has(s.name)).map(s => s.name);
+
+  if (toStart.length === 0) {
+    logSuccess('All backend services already running');
+    services.forEach(s => startedServices.push(`${s.name}:${s.port}`));
+    return;
+  }
+
+  logStep(`Starting ${toStart.length} backend services: ${toStart.join(', ')}...`);
+  exec(`docker compose up -d ${toStart.join(' ')}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+
+  logStep('Waiting for backend services to be healthy (this may take 1-2 minutes)...');
+
+  for (const { name, port } of services) {
+    if (alreadyRunning.has(name)) {
+      console.log(`  ${name}... ${colors.green}✓${colors.nc} (already running)`);
+      startedServices.push(`${name}:${port}`);
+      continue;
+    }
+
+    if (await waitForHealth(name, port)) {
+      startedServices.push(`${name}:${port}`);
+    } else {
+      failedServices.push(name);
+    }
+  }
+}
+
+// Start frontend
+async function startFrontend() {
+  logHeader('Starting Frontend Application');
+
+  if (alreadyRunning.has('ecommerce-web')) {
+    logSuccess('Frontend already running');
+    startedServices.push('ecommerce-web:3001');
+    return;
+  }
+
+  logStep('Starting ecommerce-web...');
+  exec('docker compose up -d ecommerce-web', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  logSuccess('Frontend container started');
+
+  logStep('Waiting for frontend to be healthy...');
+  let ready = false;
+  for (let i = 0; i < 60; i++) {
+    if (await isHealthy(3001, '/health') || await isHealthy(3001, '/')) {
+      ready = true;
+      break;
+    }
+    await sleep(2000);
+  }
+
+  if (ready) {
+    logSuccess('Frontend is ready');
+  } else {
+    logWarning('Frontend may not be fully ready yet');
+  }
+  startedServices.push('ecommerce-web:3001');
+}
+
+// Print summary
+function printSummary() {
+  logHeader('Startup Summary');
+
+  if (failedServices.length > 0) {
+    console.log(`${colors.red}Some services failed to start:${colors.nc}`);
+    for (const service of failedServices) {
+      console.log(`  ${colors.red}✗${colors.nc} ${service}`);
+    }
+    console.log('');
+  }
+
+  console.log(`${colors.green}${colors.bold}Services Running:${colors.nc}`);
+  console.log('');
+
+  // Infrastructure
+  console.log(`${colors.bold}Infrastructure:${colors.nc}`);
+  console.log(`  ${colors.cyan}PostgreSQL${colors.nc}        http://localhost:5432`);
+  console.log('                     Connect with: psql -h localhost -U postgres -d postgres');
+  console.log('');
+  console.log(`  ${colors.cyan}Redis${colors.nc}             http://localhost:6379`);
+  console.log('                     Connect with: redis-cli -h localhost');
+  console.log('');
+  console.log(`  ${colors.cyan}WireMock${colors.nc}          http://localhost:8082`);
+  console.log('                     View mappings at: http://localhost:8082/__admin/mappings');
+  console.log('');
+
+  // Observability
+  console.log(`${colors.bold}Observability:${colors.nc}`);
+  console.log(`  ${colors.cyan}Grafana${colors.nc}           http://localhost:3000`);
+  console.log('                     Login with admin/admin to view dashboards and explore metrics.');
+  console.log('');
+  console.log(`  ${colors.cyan}Prometheus${colors.nc}        http://localhost:9090`);
+  console.log('');
+  console.log(`  ${colors.cyan}Loki${colors.nc}              http://localhost:3100`);
+  console.log('');
+  console.log(`  ${colors.cyan}Tempo${colors.nc}             http://localhost:3200`);
+  console.log('');
+
+  // Backend Services
+  console.log(`${colors.bold}Backend Services:${colors.nc}`);
+  console.log(`  ${colors.cyan}product-service${colors.nc}   http://localhost:8080`);
+  console.log(`  ${colors.cyan}cart-service${colors.nc}      http://localhost:8081`);
+  console.log(`  ${colors.cyan}customer-service${colors.nc}  http://localhost:8083`);
+  console.log(`  ${colors.cyan}discount-service${colors.nc}  http://localhost:8084`);
+  console.log(`  ${colors.cyan}fulfillment-service${colors.nc} http://localhost:8085`);
+  console.log(`  ${colors.cyan}audit-service${colors.nc}     http://localhost:8086`);
+  console.log(`  ${colors.cyan}checkout-service${colors.nc}  http://localhost:8087`);
+  console.log(`  ${colors.cyan}order-service${colors.nc}     http://localhost:8088`);
+  console.log(`  ${colors.cyan}user-service${colors.nc}      http://localhost:8089`);
+  console.log('');
+
+  // Frontend
+  console.log(`${colors.bold}Frontend:${colors.nc}`);
+  console.log(`  ${colors.cyan}ecommerce-web${colors.nc}     http://localhost:3001`);
+  console.log('');
+
+  // Quick commands
+  console.log(`${colors.bold}${colors.yellow}Quick Commands:${colors.nc}`);
+  console.log('');
+  console.log('  # View logs');
+  console.log('  docker compose -f docker/docker-compose.yml logs -f product-service');
+  console.log('');
+  console.log('  # Stop everything');
+  console.log('  docker compose -f docker/docker-compose.yml down');
+  console.log('');
+
+  console.log(`${colors.green}${colors.bold}Platform is ready!${colors.nc} Open ${colors.cyan}http://localhost:3001${colors.nc} to start.`);
+}
+
+// Print banner
+function printBanner() {
+  console.log(colors.bold);
+  console.log('  ____                          ____  _             _   ');
+  console.log(' |  _ \\ _____      _____ _ __  / ___|| |_ __ _ _ __| |_ ');
+  console.log(' | |_) / _ \\ \\ /\\ / / _ \\ \'__| \\___ \\| __/ _` | \'__| __|');
+  console.log(' |  __/ (_) \\ V  V /  __/ |     ___) | || (_| | |  | |_ ');
+  console.log(' |_|   \\___/ \\_/\\_/ \\___|_|    |____/ \\__\\__,_|_|   \\__|');
+  console.log(colors.nc);
+  console.log(`${colors.blue}Starting the Reactive Platform...${colors.nc}`);
+}
+
+// Main
+async function main() {
+  printBanner();
+  checkPrerequisites();
+  checkPortConflicts();
+  buildJars();
+  await startInfrastructure();
+  await startObservability();
+  await startBackendServices();
+  await startFrontend();
+  printSummary();
+}
+
+// Handle Ctrl+C
+process.on('SIGINT', () => {
+  console.log(`\n${colors.yellow}Interrupted. Services may still be running.${colors.nc}`);
+  process.exit(1);
+});
+
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});

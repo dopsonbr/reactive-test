@@ -65,7 +65,7 @@ GET /products/search?q={query}
 **Response:**
 ```json
 {
-  "items": [
+  "products": [
     {
       "sku": 123456,
       "description": "Product Name",
@@ -75,10 +75,10 @@ GET /products/search?q={query}
       "relevanceScore": 0.95
     }
   ],
-  "totalItems": 150,
+  "total": 150,
   "totalPages": 8,
   "page": 0,
-  "size": 20,
+  "pageSize": 20,
   "query": "laptop",
   "searchTimeMs": 45
 }

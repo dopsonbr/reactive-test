@@ -111,13 +111,13 @@ class ProductSearchIntegrationTest {
         .expectStatus()
         .isOk()
         .expectBody()
-        .jsonPath("$.totalItems")
+        .jsonPath("$.total")
         .isEqualTo(3)
         .jsonPath("$.query")
         .isEqualTo("laptop")
-        .jsonPath("$.items[0].sku")
+        .jsonPath("$.products[0].sku")
         .isEqualTo(123456)
-        .jsonPath("$.items[0].description")
+        .jsonPath("$.products[0].description")
         .isEqualTo("Laptop Computer");
   }
 
@@ -136,9 +136,9 @@ class ProductSearchIntegrationTest {
         .expectStatus()
         .isOk()
         .expectBody()
-        .jsonPath("$.totalItems")
+        .jsonPath("$.total")
         .isEqualTo(0)
-        .jsonPath("$.items")
+        .jsonPath("$.products")
         .isEmpty();
   }
 

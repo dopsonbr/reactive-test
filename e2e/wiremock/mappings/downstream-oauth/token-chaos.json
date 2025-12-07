@@ -1,0 +1,84 @@
+{
+  "mappings": [
+    {
+      "name": "Token Endpoint - Timeout Scenario",
+      "scenarioName": "downstream-oauth-chaos",
+      "requiredScenarioState": "timeout",
+      "request": {
+        "method": "POST",
+        "urlPath": "/downstream-oauth/token"
+      },
+      "response": {
+        "status": 200,
+        "fixedDelayMilliseconds": 5000,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "access_token": "delayed-token",
+          "token_type": "Bearer",
+          "expires_in": 3600
+        }
+      }
+    },
+    {
+      "name": "Token Endpoint - 500 Error Scenario",
+      "scenarioName": "downstream-oauth-chaos",
+      "requiredScenarioState": "error-500",
+      "request": {
+        "method": "POST",
+        "urlPath": "/downstream-oauth/token"
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "server_error",
+          "error_description": "Internal server error"
+        }
+      }
+    },
+    {
+      "name": "Token Endpoint - 503 Service Unavailable",
+      "scenarioName": "downstream-oauth-chaos",
+      "requiredScenarioState": "error-503",
+      "request": {
+        "method": "POST",
+        "urlPath": "/downstream-oauth/token"
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "Content-Type": "application/json",
+          "Retry-After": "5"
+        },
+        "jsonBody": {
+          "error": "temporarily_unavailable",
+          "error_description": "Service temporarily unavailable"
+        }
+      }
+    },
+    {
+      "name": "Token Endpoint - Expired Token Scenario",
+      "scenarioName": "downstream-oauth-chaos",
+      "requiredScenarioState": "expired-token",
+      "request": {
+        "method": "POST",
+        "urlPath": "/downstream-oauth/token"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "access_token": "expired-token",
+          "token_type": "Bearer",
+          "expires_in": 1
+        }
+      }
+    }
+  ]
+}

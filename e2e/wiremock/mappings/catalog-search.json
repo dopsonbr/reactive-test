@@ -1,0 +1,584 @@
+{
+  "mappings": [
+    {
+      "name": "catalog-search-default",
+      "priority": 10,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [
+            {
+              "sku": 1001,
+              "description": "Wireless Headphones - Premium Noise Canceling",
+              "price": 299.99,
+              "availableQuantity": 50,
+              "category": "Electronics",
+              "relevanceScore": 1.0
+            },
+            {
+              "sku": 1002,
+              "description": "Smart Watch - Fitness Tracker",
+              "price": 199.99,
+              "availableQuantity": 30,
+              "category": "Electronics",
+              "relevanceScore": 0.95
+            },
+            {
+              "sku": 1003,
+              "description": "Laptop Stand - Ergonomic Aluminum",
+              "price": 79.99,
+              "availableQuantity": 100,
+              "category": "Electronics",
+              "relevanceScore": 0.90
+            },
+            {
+              "sku": 1004,
+              "description": "Mechanical Keyboard - RGB Cherry MX",
+              "price": 149.99,
+              "availableQuantity": 25,
+              "category": "Electronics",
+              "relevanceScore": 0.85
+            },
+            {
+              "sku": 1005,
+              "description": "Running Shoes - Lightweight Mesh",
+              "price": 129.99,
+              "availableQuantity": 75,
+              "category": "Sports",
+              "relevanceScore": 0.80
+            },
+            {
+              "sku": 1006,
+              "description": "Yoga Mat - Premium Non-Slip",
+              "price": 49.99,
+              "availableQuantity": 200,
+              "category": "Sports",
+              "relevanceScore": 0.75
+            },
+            {
+              "sku": 1007,
+              "description": "Cotton T-Shirt - Organic Classic Fit",
+              "price": 29.99,
+              "availableQuantity": 500,
+              "category": "Clothing",
+              "relevanceScore": 0.70
+            },
+            {
+              "sku": 1008,
+              "description": "Denim Jacket - Vintage Wash",
+              "price": 89.99,
+              "availableQuantity": 0,
+              "category": "Clothing",
+              "relevanceScore": 0.65
+            },
+            {
+              "sku": 1009,
+              "description": "Ceramic Planter - Hand Crafted",
+              "price": 34.99,
+              "availableQuantity": 60,
+              "category": "Home",
+              "relevanceScore": 0.60
+            },
+            {
+              "sku": 1010,
+              "description": "Throw Blanket - Cozy Knitted",
+              "price": 59.99,
+              "availableQuantity": 40,
+              "category": "Home",
+              "relevanceScore": 0.55
+            }
+          ],
+          "totalCount": 10,
+          "totalPages": 1,
+          "page": 0,
+          "size": 20,
+          "query": "",
+          "searchTimeMs": 45
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 50,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "catalog-search-electronics",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": {
+              "expression": "$.category",
+              "equalTo": "Electronics"
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [
+            {
+              "sku": 1001,
+              "description": "Wireless Headphones - Premium Noise Canceling",
+              "price": 299.99,
+              "availableQuantity": 50,
+              "category": "Electronics",
+              "relevanceScore": 1.0
+            },
+            {
+              "sku": 1002,
+              "description": "Smart Watch - Fitness Tracker",
+              "price": 199.99,
+              "availableQuantity": 30,
+              "category": "Electronics",
+              "relevanceScore": 0.95
+            },
+            {
+              "sku": 1003,
+              "description": "Laptop Stand - Ergonomic Aluminum",
+              "price": 79.99,
+              "availableQuantity": 100,
+              "category": "Electronics",
+              "relevanceScore": 0.90
+            },
+            {
+              "sku": 1004,
+              "description": "Mechanical Keyboard - RGB Cherry MX",
+              "price": 149.99,
+              "availableQuantity": 25,
+              "category": "Electronics",
+              "relevanceScore": 0.85
+            }
+          ],
+          "totalCount": 4,
+          "totalPages": 1,
+          "page": 0,
+          "size": 20,
+          "query": "",
+          "searchTimeMs": 35
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 40,
+          "sigma": 0.3
+        }
+      }
+    },
+    {
+      "name": "catalog-search-sports",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": {
+              "expression": "$.category",
+              "equalTo": "Sports"
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [
+            {
+              "sku": 1005,
+              "description": "Running Shoes - Lightweight Mesh",
+              "price": 129.99,
+              "availableQuantity": 75,
+              "category": "Sports",
+              "relevanceScore": 1.0
+            },
+            {
+              "sku": 1006,
+              "description": "Yoga Mat - Premium Non-Slip",
+              "price": 49.99,
+              "availableQuantity": 200,
+              "category": "Sports",
+              "relevanceScore": 0.95
+            }
+          ],
+          "totalCount": 2,
+          "totalPages": 1,
+          "page": 0,
+          "size": 20,
+          "query": "",
+          "searchTimeMs": 28
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 35,
+          "sigma": 0.3
+        }
+      }
+    },
+    {
+      "name": "catalog-search-clothing",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": {
+              "expression": "$.category",
+              "equalTo": "Clothing"
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [
+            {
+              "sku": 1007,
+              "description": "Cotton T-Shirt - Organic Classic Fit",
+              "price": 29.99,
+              "availableQuantity": 500,
+              "category": "Clothing",
+              "relevanceScore": 1.0
+            },
+            {
+              "sku": 1008,
+              "description": "Denim Jacket - Vintage Wash",
+              "price": 89.99,
+              "availableQuantity": 0,
+              "category": "Clothing",
+              "relevanceScore": 0.95
+            }
+          ],
+          "totalCount": 2,
+          "totalPages": 1,
+          "page": 0,
+          "size": 20,
+          "query": "",
+          "searchTimeMs": 25
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 35,
+          "sigma": 0.3
+        }
+      }
+    },
+    {
+      "name": "catalog-search-home",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": {
+              "expression": "$.category",
+              "equalTo": "Home"
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [
+            {
+              "sku": 1009,
+              "description": "Ceramic Planter - Hand Crafted",
+              "price": 34.99,
+              "availableQuantity": 60,
+              "category": "Home",
+              "relevanceScore": 1.0
+            },
+            {
+              "sku": 1010,
+              "description": "Throw Blanket - Cozy Knitted",
+              "price": 59.99,
+              "availableQuantity": 40,
+              "category": "Home",
+              "relevanceScore": 0.95
+            }
+          ],
+          "totalCount": 2,
+          "totalPages": 1,
+          "page": 0,
+          "size": 20,
+          "query": "",
+          "searchTimeMs": 22
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 35,
+          "sigma": 0.3
+        }
+      }
+    },
+    {
+      "name": "catalog-search-query-headphones",
+      "priority": 4,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": {
+              "expression": "$.query",
+              "contains": "headphones"
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [
+            {
+              "sku": 1001,
+              "description": "Wireless Headphones - Premium Noise Canceling",
+              "price": 299.99,
+              "availableQuantity": 50,
+              "category": "Electronics",
+              "relevanceScore": 1.0
+            }
+          ],
+          "totalCount": 1,
+          "totalPages": 1,
+          "page": 0,
+          "size": 20,
+          "query": "headphones",
+          "searchTimeMs": 20
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.3
+        }
+      }
+    },
+    {
+      "name": "catalog-search-query-laptop",
+      "priority": 4,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": {
+              "expression": "$.query",
+              "contains": "laptop"
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [
+            {
+              "sku": 1003,
+              "description": "Laptop Stand - Ergonomic Aluminum",
+              "price": 79.99,
+              "availableQuantity": 100,
+              "category": "Electronics",
+              "relevanceScore": 1.0
+            }
+          ],
+          "totalCount": 1,
+          "totalPages": 1,
+          "page": 0,
+          "size": 20,
+          "query": "laptop",
+          "searchTimeMs": 20
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.3
+        }
+      }
+    },
+    {
+      "name": "catalog-search-no-results",
+      "priority": 3,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": {
+              "expression": "$.query",
+              "contains": "nonexistent"
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [],
+          "totalCount": 0,
+          "totalPages": 0,
+          "page": 0,
+          "size": 20,
+          "query": "nonexistent",
+          "searchTimeMs": 12
+        }
+      }
+    },
+    {
+      "name": "catalog-search-500",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "error-500",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search"
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Internal Server Error",
+          "message": "Catalog service unavailable"
+        }
+      }
+    },
+    {
+      "name": "catalog-search-503",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "error-503",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search"
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "Content-Type": "application/json",
+          "Retry-After": "5"
+        },
+        "jsonBody": {
+          "error": "Service Unavailable",
+          "message": "Catalog service is temporarily unavailable"
+        }
+      }
+    },
+    {
+      "name": "catalog-search-timeout",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "timeout",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [],
+          "totalCount": 0,
+          "totalPages": 0,
+          "page": 0,
+          "size": 20,
+          "query": "",
+          "searchTimeMs": 5000
+        },
+        "fixedDelayMilliseconds": 10000
+      }
+    },
+    {
+      "name": "catalog-search-slow",
+      "priority": 5,
+      "scenarioName": "catalog-chaos",
+      "requiredScenarioState": "slow",
+      "request": {
+        "method": "POST",
+        "urlPath": "/catalog/search"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "products": [
+            {
+              "sku": 1001,
+              "description": "Wireless Headphones - Premium Noise Canceling",
+              "price": 299.99,
+              "availableQuantity": 50,
+              "category": "Electronics",
+              "relevanceScore": 0.95
+            }
+          ],
+          "totalCount": 1,
+          "totalPages": 1,
+          "page": 0,
+          "size": 20,
+          "query": "",
+          "searchTimeMs": 2000
+        },
+        "delayDistribution": {
+          "type": "uniform",
+          "lower": 1500,
+          "upper": 2500
+        }
+      }
+    }
+  ]
+}

@@ -58,13 +58,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=e2e
+      - SPRING_PROFILES_ACTIVE=docker
       - APP_SECURITY_ENABLED=false
-      - MERCHANDISE_URL=http://wiremock:8080
-      - PRICE_URL=http://wiremock:8080
-      - INVENTORY_URL=http://wiremock:8080
-      - SPRING_DATA_REDIS_HOST=redis
-      - SPRING_DATA_REDIS_PORT=6379
+      - SERVICES_CATALOG_BASE_URL=http://wiremock:8080
     depends_on:
       redis:
         condition: service_healthy
@@ -146,7 +142,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.cart-service
     ports:
-      - "8081:8080"
+      - "8081:8082"
     environment:
       - SPRING_PROFILES_ACTIVE=e2e
       - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/cartdb
@@ -155,12 +151,16 @@ services:
       - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/cartdb
       - SPRING_FLYWAY_USER=cart_user
       - SPRING_FLYWAY_PASSWORD=cart_pass
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - PRODUCT_SERVICE_URL=http://product-service:8080
       - CUSTOMER_SERVICE_URL=http://customer-service:8083
       - DISCOUNT_SERVICE_URL=http://discount-service:8084
       - FULFILLMENT_SERVICE_URL=http://fulfillment-service:8085
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       product-service:
         condition: service_healthy
@@ -171,7 +171,7 @@ services:
       fulfillment-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 10s
       timeout: 5s
       start_period: 60s
@@ -186,6 +186,9 @@ services:
       dockerfile: docker/Dockerfile.ecommerce-web
     ports:
       - "4200:3000"
+    volumes:
+      # Override nginx config for E2E (no user-service dependency)
+      - ./nginx-frontend-e2e.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       product-service:
         condition: service_healthy

@@ -1,0 +1,90 @@
+{
+  "name": "k6-perf",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "e2e/k6",
+  "projectType": "application",
+  "tags": ["scope:platform", "type:e2e", "platform:perf"],
+  "implicitDependencies": ["product-service", "cart-service"],
+  "targets": {
+    "load-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "k6 run e2e/k6/load-test.js",
+        "cwd": "{workspaceRoot}"
+      },
+      "configurations": {
+        "docker": {
+          "command": "docker compose --profile test-product up k6-product --abort-on-container-exit",
+          "cwd": "{workspaceRoot}/docker"
+        }
+      }
+    },
+    "cart-load-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "k6 run e2e/k6/cart-load-test.js",
+        "cwd": "{workspaceRoot}"
+      },
+      "configurations": {
+        "docker": {
+          "command": "docker compose --profile test-cart up k6-cart --abort-on-container-exit",
+          "cwd": "{workspaceRoot}/docker"
+        }
+      }
+    },
+    "resilience-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "k6 run e2e/k6/resilience-test.js",
+        "cwd": "{workspaceRoot}"
+      },
+      "configurations": {
+        "docker": {
+          "command": "docker compose --profile chaos-product up k6-product-resilience --abort-on-container-exit",
+          "cwd": "{workspaceRoot}/docker"
+        }
+      }
+    },
+    "circuit-breaker-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "k6 run e2e/k6/circuit-breaker-test.js",
+        "cwd": "{workspaceRoot}"
+      },
+      "configurations": {
+        "docker": {
+          "command": "docker compose --profile chaos-product run k6-product-circuit-breaker",
+          "cwd": "{workspaceRoot}/docker"
+        }
+      }
+    },
+    "product-search-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "k6 run e2e/k6/product-search-test.js",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "oauth-chaos-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "k6 run e2e/k6/oauth-chaos-test.js",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "oauth-circuit-breaker-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "k6 run e2e/k6/oauth-circuit-breaker-test.js",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "generate-data": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node src/generate-input.js 1000",
+        "cwd": "{workspaceRoot}/e2e"
+      }
+    }
+  }
+}

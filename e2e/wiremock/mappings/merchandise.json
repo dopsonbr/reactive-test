@@ -1,0 +1,112 @@
+{
+  "mappings": [
+    {
+      "name": "merchandise-success",
+      "priority": 10,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/merchandise/.*"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "description": "Test Product Description"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "merchandise-500",
+      "priority": 5,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "error-500",
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/merchandise/.*"
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Internal Server Error",
+          "message": "Failed to retrieve merchandise data"
+        }
+      }
+    },
+    {
+      "name": "merchandise-503",
+      "priority": 5,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "error-503",
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/merchandise/.*"
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Service Unavailable",
+          "message": "Merchandise service is temporarily unavailable"
+        }
+      }
+    },
+    {
+      "name": "merchandise-timeout",
+      "priority": 5,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "timeout",
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/merchandise/.*"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "description": "Delayed Response"
+        },
+        "fixedDelayMilliseconds": 10000
+      }
+    },
+    {
+      "name": "merchandise-slow",
+      "priority": 5,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "slow",
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/merchandise/.*"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "description": "Test Product Description"
+        },
+        "delayDistribution": {
+          "type": "uniform",
+          "lower": 1500,
+          "upper": 2500
+        }
+      }
+    }
+  ]
+}

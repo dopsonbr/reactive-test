@@ -1,0 +1,112 @@
+{
+  "mappings": [
+    {
+      "name": "price-success",
+      "priority": 10,
+      "scenarioName": "price-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "POST",
+        "urlPath": "/price"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "price": "99.99"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "price-500",
+      "priority": 5,
+      "scenarioName": "price-chaos",
+      "requiredScenarioState": "error-500",
+      "request": {
+        "method": "POST",
+        "urlPath": "/price"
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Internal Server Error",
+          "message": "Database connection failed"
+        }
+      }
+    },
+    {
+      "name": "price-503",
+      "priority": 5,
+      "scenarioName": "price-chaos",
+      "requiredScenarioState": "error-503",
+      "request": {
+        "method": "POST",
+        "urlPath": "/price"
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Service Unavailable",
+          "message": "Service is temporarily unavailable"
+        }
+      }
+    },
+    {
+      "name": "price-timeout",
+      "priority": 5,
+      "scenarioName": "price-chaos",
+      "requiredScenarioState": "timeout",
+      "request": {
+        "method": "POST",
+        "urlPath": "/price"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "price": "99.99"
+        },
+        "fixedDelayMilliseconds": 10000
+      }
+    },
+    {
+      "name": "price-slow",
+      "priority": 5,
+      "scenarioName": "price-chaos",
+      "requiredScenarioState": "slow",
+      "request": {
+        "method": "POST",
+        "urlPath": "/price"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "price": "99.99"
+        },
+        "delayDistribution": {
+          "type": "uniform",
+          "lower": 1500,
+          "upper": 2500
+        }
+      }
+    }
+  ]
+}

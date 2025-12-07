@@ -1,0 +1,14 @@
+{
+  "k6": {
+    "vus": 50,
+    "iterations": 10000,
+    "maxDuration": "10m"
+  },
+  "wiremock": {
+    "port": 8081
+  },
+  "app": {
+    "port": 8080,
+    "logFile": "../logs/application.log"
+  }
+}

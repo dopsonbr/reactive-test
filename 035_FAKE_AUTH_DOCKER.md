@@ -1,6 +1,8 @@
 # 035_FAKE_AUTH_DOCKER
 
-**Status: DRAFT**
+**Status: PARTIALLY COMPLETED**
+
+> **Note:** Phases 1-2 implemented. Phase 3 (backend JWT validation) deferred - backend services run with security disabled, tokens are sent but not validated.
 
 ---
 
@@ -264,8 +266,28 @@ location /fake-auth {
 
 ## Checklist
 
-- [ ] Phase 1: WireMock fake auth endpoint
-- [ ] Phase 2: Frontend login component
-- [ ] Phase 3: Backend security configuration
-- [ ] Manual testing in Docker complete
+- [x] Phase 1: WireMock fake auth endpoint
+- [x] Phase 2: Frontend login component
+- [ ] Phase 3: Backend security configuration (deferred)
+- [x] Manual testing in Docker complete (frontend auth flow only)
 - [ ] Documentation updated
+
+---
+
+## Implementation Notes
+
+**Actual file locations (differ from plan):**
+
+| Planned | Actual |
+|---------|--------|
+| `docker/wiremock/mappings/fake-auth.json` | `e2e-test/wiremock/mappings/fake-auth/token.json` |
+| `docker/wiremock/mappings/fake-auth-users.json` | Combined in `token.json` |
+| `docker/wiremock/mappings/fake-auth-cors.json` | Combined in `token.json` |
+| `tools/generate-test-jwt.mjs` | `tools/generate-fake-auth-tokens.mjs` |
+| `apps/ecommerce-web/src/context/AuthContext.tsx` | `apps/ecommerce-web/src/features/auth/context/AuthContext.tsx` |
+| `apps/ecommerce-web/src/features/auth/components/LoginForm.tsx` | `apps/ecommerce-web/src/features/auth/components/LoginDialog.tsx` |
+
+**Implementation used RS256 (asymmetric) instead of HS256:**
+- JWKS endpoint at `/fake-auth/.well-known/jwks.json`
+- Pre-signed tokens with 1-year expiry
+- Tokens valid for backend validation when Phase 3 is implemented

@@ -32,6 +32,8 @@ Extract reusable commerce components and hooks from `ecommerce-web` into shared 
 **Prereqs:** Existing `ui-components` library
 **Blockers:** None
 
+> **Decision:** All primitives in this phase—including `NumericKeypad`, `QuantitySelector`, `PriceDisplay`, `Badge`, `Spinner`, and `Alert`—must live in `libs/frontend/shared-ui/ui-components`. Keeping them here ensures kiosk and ecommerce apps share the same low-level building blocks while `commerce-ui` stays focused on composite commerce widgets.
+
 ### 1.1 NumericKeypad Component
 
 **Files:**
@@ -178,6 +180,8 @@ const alertVariants = cva('...', {
 
 Path alias: `@reactive-platform/commerce-ui`
 
+> **Constraint:** Components in this package cannot import TanStack Router, lucide-react, or other app-level dependencies. They must expose navigation and icon needs via props/slots so both ecommerce and kiosk apps remain in control of routing and icon bundles.
+
 ### 2.2 ProductCard Component
 
 **Files:**
@@ -197,7 +201,7 @@ interface ProductCardProps {
 }
 ```
 
-Extract from `apps/ecommerce-web/src/features/products/components/ProductCard.tsx`, removing TanStack Router dependency.
+Extract from `apps/ecommerce-web/src/features/products/components/ProductCard.tsx`, stripping TanStack Router `Link` usage and passing navigation intent through `onNavigate` so kiosk can route differently.
 
 ### 2.3 CartItemRow Component
 
@@ -280,7 +284,7 @@ Path alias: `@reactive-platform/commerce-hooks`
 - CREATE: `libs/frontend/shared-data/commerce-hooks/src/types/index.ts`
 
 **Implementation:**
-Extract types from `apps/ecommerce-web/src/features/*/types/`:
+Extract types from `apps/ecommerce-web/src/features/*/types/` and treat these as the canonical DTOs for both apps **and** the MSW handlers introduced in `038D`:
 - Product, ProductSearchParams, ProductSearchResult
 - Cart, CartItem, AddToCartRequest, UpdateCartItemRequest
 - Customer, LoyaltyInfo
@@ -319,13 +323,20 @@ export const cartKeys = {
   detail: (id: string) => [...cartKeys.all, id] as const,
 };
 
-export function useCart(cartId?: string) { ... }
-export function useCreateCart() { ... }
-export function useAddToCart() { ... }
-export function useUpdateCartItem() { ... }
-export function useRemoveFromCart() { ... }
-export function useClearCart() { ... }  // For kiosk reset
+interface CartScope {
+  cartId: string;
+  headers?: Record<string, string>; // e.g., kiosk session headers
+}
+
+export function useCart(scope: CartScope) { ... }
+export function useCreateCart(scope: CartScope) { ... }
+export function useAddToCart(scope: CartScope) { ... }
+export function useUpdateCartItem(scope: CartScope) { ... }
+export function useRemoveFromCart(scope: CartScope) { ... }
+export function useClearCart(scope: CartScope) { ... }  // For kiosk reset
 ```
+
+> **Important:** These hooks must never read or mutate `sessionStorage`. Callers (ecommerce-web wrappers, kiosk session context, tests) are responsible for providing the cart ID and any required headers so both apps stay in sync with their own session lifecycles.
 
 ### 3.5 Customer Hooks
 
@@ -379,6 +390,16 @@ Thin wrappers that re-export shared code with app-specific defaults:
 // apps/ecommerce-web/src/features/products/api/useProducts.ts
 export { useProducts, useProduct, productKeys } from '@reactive-platform/commerce-hooks';
 export type { Product, ProductSearchParams } from '@reactive-platform/commerce-hooks';
+
+// apps/ecommerce-web/src/features/cart/api/useCart.ts
+const cartScope = () => ({
+  cartId: ensureCartIdInSessionStorage(),
+  headers: buildSessionHeaders(),
+});
+
+export function useCart() {
+  return sharedUseCart(cartScope());
+}
 ```
 
 ### 4.2 Verify No Regressions

@@ -231,7 +231,17 @@ interface KioskSession {
   completeTransaction: () => void;
   resetTransaction: () => void;
 }
+
+// Derived helpers
+interface CartScope {
+  cartId: string;
+  headers: Record<string, string>; // forwarded into commerce-hooks
+}
+
+function useCartScope(): CartScope;
 ```
+
+> Expose a `useCartScope()` hook (or equivalent selector) from the session provider so kiosk features can call the shared commerce hooks without reinventing cart ID/header plumbing. This keeps kiosk aligned with the `commerce-hooks` contract introduced in 038A.
 
 ### 3.2 Session Storage Integration
 

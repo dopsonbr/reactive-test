@@ -91,8 +91,8 @@ export function useScannerInput(options: ScannerInputOptions) {
 ```typescript
 export function useProductScan() {
   const queryClient = useQueryClient();
-  const { setCartId } = useKioskSession();
-  const addToCart = useAddToCart();
+  const { setCartId, cartScope } = useKioskSession();
+  const addToCart = useAddToCart(cartScope());
 
   const lookupMutation = useMutation({
     mutationFn: (sku: string) => apiClient<Product>(`/products/${sku}`),
@@ -234,7 +234,8 @@ interface ScanFeedbackProps {
 **Implementation:**
 ```typescript
 export function CartPage() {
-  const { data: cart, isLoading } = useCart();
+  const { cartScope } = useKioskSession();
+  const { data: cart, isLoading } = useCart(cartScope());
   const navigate = useNavigate();
 
   if (!cart || cart.items.length === 0) {

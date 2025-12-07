@@ -61,6 +61,8 @@ Comprehensive E2E testing strategy for the kiosk application, including shared M
 
 Path alias: `@reactive-platform/mock-handlers`
 
+> **Dependency:** Mock handlers must import DTOs from `@reactive-platform/commerce-hooks` (types folder) rather than app-local definitions. This keeps mocks, ecommerce-web, and kiosk-web aligned on the same contracts.
+
 ### 1.2 Product Mock Handlers
 
 **Files:**

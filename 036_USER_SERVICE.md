@@ -1789,17 +1789,291 @@ This plan supersedes 035_FAKE_AUTH_DOCKER. The transition path:
 
 ---
 
+## Phase 10: Standards Compliance Remediation
+
+**Date Audited:** 2025-12-07
+**Compliance Score:** 62.5% (20/32 checks passed)
+**Status:** NEEDS REMEDIATION
+
+The backend-standards-verifier agent identified the following issues that must be addressed before production deployment.
+
+### 10.1 Critical: Rename `model/` to `domain/`
+
+**Standard:** `docs/standards/backend/architecture.md` (line 34: "Always `domain/`, never `model/`")
+
+**Files to modify:**
+- RENAME: `apps/user-service/src/main/java/org/example/user/model/` → `apps/user-service/src/main/java/org/example/user/domain/`
+- UPDATE: All import statements referencing `org.example.user.model.*` → `org.example.user.domain.*`
+- UPDATE: Test files with model imports
+
+**Affected files:**
+- `UserServiceApplication.java`
+- `DevTokenController.java`
+- `UserController.java`
+- `UserService.java` / `UserServiceImpl.java`
+- `UserRepository.java` / `UserRepositoryImpl.java`
+- All test files
+
+### 10.2 Critical: Implement Validation Layer
+
+**Standard:** `docs/standards/backend/validation.md` (MANDATORY requirement)
+
+**Current state:** Empty `validation/` package exists but contains no validators.
+
+**Files to create:**
+- CREATE: `apps/user-service/src/main/java/org/example/user/validation/UserRequestValidator.java`
+
+**Implementation pattern (per validation.md lines 60-97):**
+
+```java
+package org.example.user.validation;
+
+import org.example.platform.error.ValidationException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Component
+public class UserRequestValidator {
+
+    public Mono<Void> validate(UUID id, HttpHeaders headers) {
+        return Mono.defer(() -> {
+            List<String> errors = new ArrayList<>();
+
+            // Validate required headers
+            if (headers.getFirst("x-userid") == null) {
+                errors.add("x-userid header is required");
+            }
+            if (headers.getFirst("x-sessionid") == null) {
+                errors.add("x-sessionid header is required");
+            }
+
+            if (!errors.isEmpty()) {
+                return Mono.error(new ValidationException(errors));
+            }
+            return Mono.empty();
+        });
+    }
+
+    public Mono<Void> validate(CreateUserRequest request, HttpHeaders headers) {
+        return Mono.defer(() -> {
+            List<String> errors = new ArrayList<>();
+
+            // Validate headers
+            if (headers.getFirst("x-userid") == null) {
+                errors.add("x-userid header is required");
+            }
+
+            // Validate request body
+            if (request.username() == null || request.username().isBlank()) {
+                errors.add("username is required");
+            }
+            if (request.userType() == null) {
+                errors.add("userType is required");
+            }
+
+            if (!errors.isEmpty()) {
+                return Mono.error(new ValidationException(errors));
+            }
+            return Mono.empty();
+        });
+    }
+}
+```
+
+**Files to modify:**
+- MODIFY: `UserController.java` - Inject `UserRequestValidator`, call before service methods
+- MODIFY: `DevTokenController.java` - Add header validation (optional for dev endpoints)
+
+### 10.3 Critical: Fix DevTokenController Layer Violation
+
+**Standard:** `docs/standards/backend/architecture.md` (line 80: "Controllers depend on services, never repositories directly")
+
+**Current violation:** `DevTokenController.java:36` directly injects `UserRepository`
+
+**Files to modify:**
+- MODIFY: `apps/user-service/src/main/java/org/example/user/controller/DevTokenController.java`
+- MODIFY: `apps/user-service/src/main/java/org/example/user/service/UserService.java`
+
+**Changes:**
+1. Add methods to `UserService`:
+   - `findOrCreateFakeUser(String username, UserType userType, Integer storeNumber)`
+   - `findAll()` (already exists via repository)
+2. Remove `UserRepository` injection from `DevTokenController`
+3. Only inject `JwtService` and `UserService` in controller
+
+### 10.4 Major: Move Business Logic from Domain Models
+
+**Standard:** `docs/standards/backend/models.md` (lines 32-42)
+
+**Violations:**
+- `User.java:21-23` - `canSearchCustomers()` method
+- `User.java:26-31` - `scopeString()` method
+- `UserType.java:6-19` - `getDefaultPermissions()` method
+
+**Files to modify:**
+- MODIFY: `apps/user-service/src/main/java/org/example/user/domain/User.java` - Remove business methods
+- MODIFY: `apps/user-service/src/main/java/org/example/user/domain/UserType.java` - Remove `getDefaultPermissions()`
+- MODIFY: `apps/user-service/src/main/java/org/example/user/service/UserService.java` - Add these methods
+- CREATE: `apps/user-service/src/main/java/org/example/user/service/PermissionService.java` (optional)
+
+**Refactored methods:**
+```java
+// UserService.java
+public boolean canSearchCustomers(User user) {
+    return user.userType() == UserType.EMPLOYEE
+        && user.permissions().contains(Permission.CUSTOMER_SEARCH);
+}
+
+public String scopeString(User user) {
+    return user.permissions().stream()
+        .map(p -> p.name().toLowerCase())
+        .reduce((a, b) -> a + " " + b)
+        .orElse("");
+}
+
+public Set<Permission> getDefaultPermissions(UserType userType) {
+    return switch (userType) {
+        case SERVICE_ACCOUNT -> Set.of(Permission.READ);
+        case CUSTOMER -> Set.of(Permission.READ, Permission.WRITE);
+        case EMPLOYEE -> Set.of(Permission.READ, Permission.WRITE, Permission.ADMIN, Permission.CUSTOMER_SEARCH);
+    };
+}
+```
+
+### 10.5 Major: Add StructuredLogger
+
+**Standard:** `docs/standards/backend/observability-logs.md` (lines 86-102)
+
+**Current state:** No `StructuredLogger` usage found in services.
+
+**Files to modify:**
+- MODIFY: `apps/user-service/src/main/java/org/example/user/service/UserServiceImpl.java`
+- MODIFY: `apps/user-service/src/main/java/org/example/user/service/JwtService.java`
+
+**Implementation pattern:**
+```java
+@Service
+public class UserServiceImpl implements UserService {
+    private final StructuredLogger logger;
+    private final UserRepository userRepository;
+
+    public UserServiceImpl(StructuredLogger logger, UserRepository userRepository) {
+        this.logger = logger;
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public Mono<User> createUser(CreateUserRequest request) {
+        return Mono.deferContextual(ctx -> {
+            logger.logMessage(ctx, "userservice",
+                "Creating user", Map.of("username", request.username()));
+            return userRepository.save(/* ... */);
+        });
+    }
+}
+```
+
+### 10.6 Warning: Expand Test Coverage
+
+**Current state:** Only 3 test files (controllers only)
+
+**Files to create:**
+- CREATE: `apps/user-service/src/test/java/org/example/user/service/UserServiceTest.java`
+- CREATE: `apps/user-service/src/test/java/org/example/user/service/JwtServiceTest.java`
+- CREATE: `apps/user-service/src/test/java/org/example/user/repository/UserRepositoryTest.java`
+- CREATE: `apps/user-service/src/test/java/org/example/user/validation/UserRequestValidatorTest.java`
+
+---
+
+## Standards Compliance Summary
+
+| Category | Status | Score | Notes |
+|----------|--------|-------|-------|
+| Package Structure | ❌ FAIL | 50% | Uses `model/` instead of `domain/` |
+| Validation | ❌ FAIL | 0% | No validators implemented |
+| Architecture | ⚠️ WARN | 75% | DevTokenController bypasses service layer |
+| Models | ⚠️ WARN | 60% | Business logic in domain models |
+| Observability | ❌ FAIL | 0% | No StructuredLogger |
+| Error Handling | ✅ PASS | 50% | Uses platform-error |
+| Testing | ⚠️ WARN | 50% | Missing service/repository tests |
+| Platform Integration | ✅ PASS | 100% | Correctly uses platform libraries |
+
+### Passed Checks
+- ✅ Package naming follows `org.example.user.{subpackage}` convention
+- ✅ Application properly scans platform library packages
+- ✅ Uses platform-bom for dependency management
+- ✅ Domain models use Java records (immutable)
+- ✅ No MDC usage (reactive-safe)
+- ✅ Proper Spring Boot reactive stack (WebFlux, R2DBC)
+- ✅ Flyway migrations
+- ✅ Test structure uses StepVerifier
+
+---
+
 ## Checklist
 
-- [ ] Phase 1: Project setup, database schema, seed users
-- [ ] Phase 2: Domain models and repository layer
-- [ ] Phase 3: Spring Authorization Server configuration
-- [ ] Phase 4: Dev token endpoint (`/dev/token`)
-- [ ] Phase 5: User management endpoints
-- [ ] Phase 6: Docker configuration
-- [ ] Phase 7: Integration tests
-- [ ] Phase 8: Update consuming services to use `issuer-uri`
-- [ ] Phase 9: Frontend integration (AuthContext, LoginDialog, OAuth callback)
-- [ ] All tests passing
+- [x] Phase 1: Project setup, database schema, seed users
+- [x] Phase 2: Domain models and repository layer
+- [x] Phase 3: Spring Authorization Server configuration (custom JWT implementation)
+- [x] Phase 4: Dev token endpoint (`/dev/token`)
+- [x] Phase 5: User management endpoints
+- [x] Phase 6: Docker configuration
+  - [x] Dockerfile uses `eclipse-temurin:25-jre` (Java 25)
+  - [x] Added `curl` for health checks
+  - [x] Fixed `JwtService` NPE (proper JWKSelector with JWKMatcher)
+- [x] Phase 7: Integration tests (12 tests passing)
+- [x] Phase 8: Update consuming services to use `issuer-uri`
+  - [x] discount-service OAuth2 resource server config added
+  - [x] product-service OAuth2 client registration for Docker
+- [x] Phase 9: Frontend integration (AuthContext, LoginDialog, OAuth callback)
+  - [x] `auth/config.ts` - auth mode detection
+  - [x] `AuthContext.tsx` - dual-mode support (loginDev + loginOAuth)
+  - [x] `LoginDialog.tsx` - quick user selection
+  - [x] `OAuthCallbackPage.tsx` - callback handler
+  - [x] `routes.tsx` - /callback route
+  - [x] `nginx-frontend.conf` - proxies for /dev/, /oauth2/, /.well-known/
+- [x] All tests passing (frontend: 53 tests, backend: 12 tests)
+- [ ] **Phase 10: Standards Compliance Remediation**
+  - [ ] 10.1 Rename `model/` → `domain/` package
+  - [ ] 10.2 Implement `UserRequestValidator` with header validation
+  - [ ] 10.3 Fix DevTokenController to use UserService (not repository)
+  - [ ] 10.4 Move business logic from domain models to services
+  - [ ] 10.5 Add StructuredLogger to services
+  - [ ] 10.6 Expand test coverage (service, repository, validator tests)
 - [ ] Documentation updated (CLAUDE.md, README.md)
 - [ ] Archive 035_FAKE_AUTH_DOCKER.md when complete
+
+---
+
+## Docker Notes
+
+### First-time Setup
+The PostgreSQL init script (`docker/postgres/init-databases.sql`) only runs on fresh volumes. If the database container was started before the init script was updated, manually create the database:
+
+```bash
+docker exec postgres psql -U postgres -c "CREATE DATABASE userdb;"
+docker exec postgres psql -U postgres -c "CREATE USER user_user WITH ENCRYPTED PASSWORD 'user_pass';"
+docker exec postgres psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE userdb TO user_user;"
+docker exec postgres psql -U postgres -d userdb -c "GRANT ALL ON SCHEMA public TO user_user;"
+```
+
+### Flyway Migrations
+If Flyway doesn't run automatically, manually apply migrations:
+
+```bash
+cat apps/user-service/src/main/resources/db/migration/V001__create_users_table.sql | docker exec -i postgres psql -U postgres -d userdb
+cat apps/user-service/src/main/resources/db/migration/V002__create_user_preferences.sql | docker exec -i postgres psql -U postgres -d userdb
+cat apps/user-service/src/main/resources/db/migration/V003__seed_dev_users.sql | docker exec -i postgres psql -U postgres -d userdb
+docker exec postgres psql -U postgres -d userdb -c "GRANT ALL ON TABLE users TO user_user; GRANT ALL ON TABLE user_preferences TO user_user;"
+```
+
+### Verified Endpoints
+After Docker setup, verify:
+- Health: `curl http://localhost:8089/actuator/health` → `{"status":"UP"}`
+- Dev users: `curl http://localhost:3001/dev/users` → 3 seeded users
+- Token generation: `curl -X POST -H "Content-Type: application/json" -d '{"username":"dev-employee"}' http://localhost:8089/dev/token`

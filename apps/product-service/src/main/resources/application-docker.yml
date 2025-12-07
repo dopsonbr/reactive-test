@@ -13,6 +13,13 @@ spring:
           issuer-uri: http://wiremock:8080/oauth
           jwk-set-uri: http://wiremock:8080/oauth/.well-known/jwks.json
       client:
+        registration:
+          downstream-services:
+            provider: downstream-auth
+            client-id: product-service
+            client-secret: product-secret
+            authorization-grant-type: client_credentials
+            scope: read,write
         provider:
           downstream-auth:
             token-uri: http://wiremock:8080/downstream-oauth/token

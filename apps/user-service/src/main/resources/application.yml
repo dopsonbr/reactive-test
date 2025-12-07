@@ -1,0 +1,47 @@
+server:
+  port: 8089
+
+spring:
+  application:
+    name: user-service
+
+  # Jackson 2 compatibility for Spring Boot 4.0
+  jackson:
+    use-jackson2-defaults: true
+
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:userdb}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+
+  flyway:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:userdb}
+    user: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    locations: classpath:db/migration
+
+# JWT configuration
+jwt:
+  issuer: http://localhost:8089
+
+# Logging
+logging:
+  file:
+    name: logs/user-service.log
+
+# Actuator & Management
+# Default: expose ALL endpoints (dev mode) for debugging & development
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true

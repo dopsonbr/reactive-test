@@ -1,4 +1,4 @@
-# Reactive Retail Platform
+me# Reactive Retail Platform
 
 Modern retail reference system built on Spring WebFlux. The original goal (reactive logging propagation) has evolved into a full-featured, multi-service retail stack with resilience, caching, observability, and planned frontends.
 

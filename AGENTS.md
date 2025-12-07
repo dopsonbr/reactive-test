@@ -281,6 +281,7 @@ docker compose logs -f cart-service
 | `audit-service`       | 8086 | Audit event processing                                           |
 | `checkout-service`    | 8087 | Order checkout and payment processing                            |
 | `order-service`       | 8088 | Order viewing and management (REST + GraphQL)                    |
+| `user-service`        | 8089 | User management and JWT token service                            |
 | `ecommerce-web`       | 3001 | E-commerce frontend (React + Vite)                               |
 
 ### Frontend Libraries (libs/frontend/)
@@ -519,6 +520,7 @@ environment:
 | audit-service       | 8086 | Audit event processing       |
 | checkout-service    | 8087 | Order checkout and payment   |
 | order-service       | 8088 | Order viewing and management |
+| user-service        | 8089 | User/auth service (JWT)      |
 | redis               | 6379 | Cache backend                |
 | postgres            | 5432 | Database                     |
 | grafana             | 3000 | Dashboards (admin/admin)     |

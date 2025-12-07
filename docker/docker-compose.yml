@@ -179,6 +179,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - APP_SECURITY_ENABLED=false
+      - USER_SERVICE_URL=http://user-service:8089
       - OTEL_SERVICE_NAME=product-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
@@ -224,6 +225,7 @@ services:
       - CUSTOMER_SERVICE_URL=http://customer-service:8083
       - DISCOUNT_SERVICE_URL=http://discount-service:8084
       - FULFILLMENT_SERVICE_URL=http://fulfillment-service:8085
+      - USER_SERVICE_URL=http://user-service:8089
       - OTEL_SERVICE_NAME=cart-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
@@ -271,6 +273,7 @@ services:
       - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/customerdb
       - SPRING_FLYWAY_USER=customer_user
       - SPRING_FLYWAY_PASSWORD=customer_pass
+      - USER_SERVICE_URL=http://user-service:8089
       - OTEL_SERVICE_NAME=customer-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
@@ -305,7 +308,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - CUSTOMER_SERVICE_URL=http://customer-service:8083
-      - USER_SERVICE_URL=http://user-service:8084
+      - USER_SERVICE_URL=http://user-service:8089
       - OTEL_SERVICE_NAME=discount-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
@@ -413,6 +416,7 @@ services:
       - CART_SERVICE_URL=http://cart-service:8080
       - DISCOUNT_SERVICE_URL=http://discount-service:8084
       - FULFILLMENT_SERVICE_URL=http://fulfillment-service:8085
+      - USER_SERVICE_URL=http://user-service:8089
       - APP_SECURITY_ENABLED=false
       - OTEL_SERVICE_NAME=checkout-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
@@ -457,6 +461,7 @@ services:
       - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/checkoutdb
       - SPRING_R2DBC_USERNAME=checkout_user
       - SPRING_R2DBC_PASSWORD=checkout_pass
+      - USER_SERVICE_URL=http://user-service:8089
       - APP_SECURITY_ENABLED=false
       - OTEL_SERVICE_NAME=order-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
@@ -477,6 +482,46 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
+  user-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.user-service
+    container_name: user-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/userdb
+      - SPRING_R2DBC_USERNAME=user_user
+      - SPRING_R2DBC_PASSWORD=user_pass
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/userdb
+      - SPRING_FLYWAY_USER=user_user
+      - SPRING_FLYWAY_PASSWORD=user_pass
+      - JWT_ISSUER=http://user-service:8089
+      - OTEL_SERVICE_NAME=user-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_PROPAGATORS=tracecontext,baggage
+      - OTEL_INSTRUMENTATION_SPRING_WEBFLUX_ENABLED=true
+    volumes:
+      - app-logs:/app/logs
+    ports:
+      - "8089:8089"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8089/actuator/health"]
       interval: 10s
       timeout: 5s
       start_period: 60s

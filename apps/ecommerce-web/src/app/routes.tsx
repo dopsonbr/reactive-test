@@ -8,6 +8,7 @@ import { RootLayout } from '../shared/layouts/RootLayout';
 import { ProductListPage } from '../features/products/pages/ProductListPage';
 import { ProductDetailPage } from '../features/products/pages/ProductDetailPage';
 import { CartPage } from '../features/cart/pages/CartPage';
+import { OAuthCallbackPage } from '../features/auth/pages/OAuthCallbackPage';
 
 // Root route with layout
 const rootRoute = createRootRoute({
@@ -35,11 +36,19 @@ const cartRoute = createRoute({
   component: CartPage,
 });
 
+// OAuth callback route
+const callbackRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/callback',
+  component: OAuthCallbackPage,
+});
+
 // Build route tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
   productDetailRoute,
   cartRoute,
+  callbackRoute,
 ]);
 
 // Create router

@@ -5,6 +5,11 @@ CREATE DATABASE cartdb;
 CREATE USER cart_user WITH ENCRYPTED PASSWORD 'cart_pass';
 GRANT ALL PRIVILEGES ON DATABASE cartdb TO cart_user;
 
+-- User Service Database
+CREATE DATABASE userdb;
+CREATE USER user_user WITH ENCRYPTED PASSWORD 'user_pass';
+GRANT ALL PRIVILEGES ON DATABASE userdb TO user_user;
+
 -- Customer Service Database
 CREATE DATABASE customerdb;
 CREATE USER customer_user WITH ENCRYPTED PASSWORD 'customer_pass';
@@ -23,6 +28,9 @@ GRANT ALL PRIVILEGES ON DATABASE checkoutdb TO checkout_user;
 -- Grant schema permissions
 \c cartdb
 GRANT ALL ON SCHEMA public TO cart_user;
+
+\c userdb
+GRANT ALL ON SCHEMA public TO user_user;
 
 \c customerdb
 GRANT ALL ON SCHEMA public TO customer_user;

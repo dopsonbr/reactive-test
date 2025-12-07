@@ -246,10 +246,10 @@ function injectFailure() {
 
 ```bash
 # Local development
-k6 run e2e-test/load-test.js
+k6 run e2e/load-test.js
 
 # With environment variables
-k6 run -e BASE_URL=http://localhost:8080 e2e-test/load-test.js
+k6 run -e BASE_URL=http://localhost:8080 e2e/load-test.js
 
 # Docker Compose profile
 docker compose --profile test-product up k6-product
@@ -279,7 +279,7 @@ k6 outputs summary to console:
 Export to JSON for CI:
 
 ```bash
-k6 run --out json=results.json e2e-test/load-test.js
+k6 run --out json=results.json e2e/load-test.js
 ```
 
 ### Performance Baselines
@@ -429,6 +429,6 @@ export const options = {
 
 ## Reference
 
-- `e2e-test/` - k6 test scripts
-- `e2e-test/TEST_PLAN.md` - Test plan documentation
+- `e2e/` - k6 test scripts
+- `e2e/TEST_PLAN.md` - Test plan documentation
 - `docker/docker-compose.yml` - Test profiles

@@ -40,7 +40,7 @@ services:
     ports:
       - "8082:8080"
     volumes:
-      - ../e2e-test/wiremock/mappings:/home/wiremock/mappings:ro
+      - ../e2e/wiremock/mappings:/home/wiremock/mappings:ro
     command: ["--global-response-templating", "--verbose"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/__admin/mappings"]

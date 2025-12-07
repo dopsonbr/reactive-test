@@ -27,8 +27,15 @@
 - `docker/` - Compose stack for apps, infra, and observability
 
 ## Tests
-- `perf-test/` - k6 load/chaos test plans
-- `e2e-test/` - End-to-end assets (k6, Playwright placeholders)
+
+All end-to-end and performance tests live under `e2e/`:
+
+| Directory | Type | When to Use |
+|-----------|------|-------------|
+| `e2e/k6/` | **Performance** | Load tests, chaos tests, circuit breaker validation |
+| `e2e/ecommerce-fullstack/` | **Full-Stack E2E** | Playwright tests against real Docker services (~10 min) |
+| `apps/ecommerce-web/e2e/` | **Mocked E2E** | Fast Playwright tests with MSW mocks (~2 min), every PR |
+| `e2e/wiremock/` | **API Mocks** | WireMock stub definitions for external services |
 
 ## Build/Config
 - `build.gradle.kts`, `settings.gradle.kts`, `buildSrc/`, `gradle/` - Gradle multi-module build

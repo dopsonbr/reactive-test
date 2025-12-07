@@ -9,11 +9,11 @@
 #
 
 ensure_test_data() {
-    local test_data_file="$ROOT_DIR/e2e-test/data/test-input.json"
+    local test_data_file="$ROOT_DIR/e2e/data/test-input.json"
 
     if [[ ! -f "$test_data_file" ]]; then
         echo "==> Test data not found, generating..."
-        cd "$ROOT_DIR/e2e-test"
+        cd "$ROOT_DIR/e2e"
         node src/generate-input.js 1000
         cd "$ROOT_DIR"
     fi

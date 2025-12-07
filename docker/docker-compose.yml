@@ -6,7 +6,7 @@ services:
     ports:
       - "8082:8080"
     volumes:
-      - ../e2e-test/wiremock/mappings:/home/wiremock/mappings:ro
+      - ../e2e/wiremock/mappings:/home/wiremock/mappings:ro
     command: ["--global-response-templating", "--verbose"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/__admin/mappings"]
@@ -554,8 +554,8 @@ services:
     image: grafana/k6:0.55.0
     container_name: k6-product
     volumes:
-      - ../e2e-test/k6:/scripts:ro
-      - ../e2e-test/data:/data:ro
+      - ../e2e/k6:/scripts:ro
+      - ../e2e/data:/data:ro
       - k6-output:/output
     environment:
       - K6_OUT=experimental-prometheus-rw
@@ -583,8 +583,8 @@ services:
     image: grafana/k6:0.55.0
     container_name: k6-product-resilience
     volumes:
-      - ../e2e-test/k6:/scripts:ro
-      - ../e2e-test/data:/data:ro
+      - ../e2e/k6:/scripts:ro
+      - ../e2e/data:/data:ro
       - k6-output:/output
     environment:
       - K6_OUT=experimental-prometheus-rw
@@ -609,8 +609,8 @@ services:
     image: grafana/k6:0.55.0
     container_name: k6-product-circuit-breaker
     volumes:
-      - ../e2e-test/k6:/scripts:ro
-      - ../e2e-test/data:/data:ro
+      - ../e2e/k6:/scripts:ro
+      - ../e2e/data:/data:ro
       - k6-output:/output
     environment:
       - K6_OUT=experimental-prometheus-rw
@@ -636,8 +636,8 @@ services:
     image: grafana/k6:0.55.0
     container_name: k6-oauth-chaos
     volumes:
-      - ../e2e-test/k6:/scripts:ro
-      - ../e2e-test/data:/data:ro
+      - ../e2e/k6:/scripts:ro
+      - ../e2e/data:/data:ro
       - k6-output:/output
     environment:
       - K6_OUT=experimental-prometheus-rw
@@ -662,8 +662,8 @@ services:
     image: grafana/k6:0.55.0
     container_name: k6-oauth-circuit-breaker
     volumes:
-      - ../e2e-test/k6:/scripts:ro
-      - ../e2e-test/data:/data:ro
+      - ../e2e/k6:/scripts:ro
+      - ../e2e/data:/data:ro
       - k6-output:/output
     environment:
       - K6_OUT=experimental-prometheus-rw

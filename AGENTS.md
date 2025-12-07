@@ -66,7 +66,7 @@ reactive-platform/
 │   ├── product-service/         # Product aggregation service
 │   └── cart-service/            # Shopping cart service
 ├── docker/                      # Docker Compose and observability stack
-└── e2e-test/                    # k6 end-to-end tests
+└── e2e/                         # End-to-end tests (k6, Playwright, WireMock)
 ```
 
 ---

@@ -387,17 +387,17 @@ record MarkdownOverrideRequest(
 ### 5.1 Fulfillment Slots Mock
 
 **Files:**
-- CREATE: `e2e-test/wiremock/mappings/fulfillment-slots.json`
+- CREATE: `e2e/wiremock/mappings/fulfillment-slots.json`
 
 ### 5.2 Customer Autocomplete Mock
 
 **Files:**
-- CREATE: `e2e-test/wiremock/mappings/customer-autocomplete.json`
+- CREATE: `e2e/wiremock/mappings/customer-autocomplete.json`
 
 ### 5.3 Multi-Fulfillment Mock
 
 **Files:**
-- MODIFY: `e2e-test/wiremock/mappings/checkout.json`
+- MODIFY: `e2e/wiremock/mappings/checkout.json`
 
 ---
 
@@ -413,7 +413,7 @@ record MarkdownOverrideRequest(
 | CREATE | `customer-service/controller/CustomerAutocompleteController.java` | Autocomplete API |
 | CREATE | `shared-model-discount/MarkdownPermissionTier.java` | Permission tiers |
 | CREATE | `discount-service/validation/MarkdownPermissionValidator.java` | Tier validation |
-| CREATE | `e2e-test/wiremock/mappings/*.json` | Mock mappings |
+| CREATE | `e2e/wiremock/mappings/*.json` | Mock mappings |
 
 ---
 

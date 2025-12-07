@@ -83,7 +83,9 @@
       "Bash(E2E_BASE_URL=http://localhost:3001 pnpm nx e2e:*)",
       "Bash(E2E_BASE_URL=http://localhost:3001 pnpm exec playwright test:*)",
       "Bash(jq:*)",
-      "Bash(docker restart:*)"
+      "Bash(docker restart:*)",
+      "Bash(xargs:*)",
+      "Bash(docker start:*)"
     ],
     "deny": [],
     "ask": [

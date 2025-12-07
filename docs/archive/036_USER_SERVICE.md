@@ -18,7 +18,7 @@ Create a User Service that provides OAuth 2.1 authorization server capabilities 
 
 **Existing Frontend Auth Code (from 035):**
 - `apps/ecommerce-web/src/features/auth/` - AuthContext, LoginDialog, UserMenu
-- `e2e-test/wiremock/mappings/fake-auth/` - WireMock stubs for fake tokens
+- `e2e/wiremock/mappings/fake-auth/` - WireMock stubs for fake tokens
 - `tools/generate-fake-auth-tokens.mjs` - Token generation script
 
 ---

@@ -24,32 +24,19 @@ spring:
 
   security:
     oauth2:
-      # Resource Server (inbound JWT validation)
+      # Resource Server (inbound JWT validation from user-service)
       resourceserver:
         jwt:
-          issuer-uri: ${OAUTH_ISSUER_URI:http://localhost:8081/oauth}
-          jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
-      # Client (outbound client credentials for downstream services)
-      client:
-        registration:
-          downstream-services:
-            client-id: ${DOWNSTREAM_CLIENT_ID:checkout-service}
-            client-secret: ${DOWNSTREAM_CLIENT_SECRET:checkout-secret}
-            authorization-grant-type: client_credentials
-            scope: cart:read,cart:write,discount:read,fulfillment:read,fulfillment:write
-            provider: downstream-auth
-        provider:
-          downstream-auth:
-            token-uri: ${DOWNSTREAM_TOKEN_URI:http://localhost:8081/downstream-oauth/token}
+          issuer-uri: ${USER_SERVICE_URL:http://localhost:8089}
 
 # Application Security Configuration
 # Default: dev mode - no auth required for local development
 app:
   security:
     enabled: false  # Dev mode: no auth required (use prod profile for auth)
-    jwk-set-uri: ${OAUTH_JWKS_URI:http://localhost:8081/oauth/.well-known/jwks.json}
+    jwk-set-uri: ${USER_SERVICE_URL:http://localhost:8089}/.well-known/jwks.json
     allowed-issuers:
-      - ${OAUTH_ISSUER_URI:http://localhost:8081/oauth}
+      - ${USER_SERVICE_URL:http://localhost:8089}
       - test-issuer
     required-audience: ${OAUTH_AUDIENCE:reactive-test-api}
     clock-skew-seconds: 30

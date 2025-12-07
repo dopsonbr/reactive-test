@@ -6,6 +6,13 @@ spring:
   jackson:
     use-jackson2-defaults: true
 
+  security:
+    oauth2:
+      # Resource Server (inbound JWT validation from user-service)
+      resourceserver:
+        jwt:
+          issuer-uri: ${USER_SERVICE_URL:http://localhost:8089}
+
 server:
   port: 8084
 
@@ -14,13 +21,19 @@ services:
   customer-service:
     url: ${CUSTOMER_SERVICE_URL:http://localhost:8083}
   user-service:
-    url: ${USER_SERVICE_URL:http://localhost:8084}
+    url: ${USER_SERVICE_URL:http://localhost:8089}
 
 # Application Security Configuration
 # Default: dev mode - no auth required for local development
 app:
   security:
     enabled: false  # Dev mode: no auth required (use prod profile for auth)
+    jwk-set-uri: ${USER_SERVICE_URL:http://localhost:8089}/.well-known/jwks.json
+    allowed-issuers:
+      - ${USER_SERVICE_URL:http://localhost:8089}
+      - test-issuer
+    required-audience: ${OAUTH_AUDIENCE:reactive-test-api}
+    clock-skew-seconds: 30
   actuator:
     expose-all: true
     require-auth: false

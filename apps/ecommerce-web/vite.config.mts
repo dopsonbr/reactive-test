@@ -15,6 +15,11 @@ export default defineConfig(() => ({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+      '/auth': {
+        target: 'http://localhost:8089',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/auth/, '/dev'),
+      },
     },
   },
   preview: {

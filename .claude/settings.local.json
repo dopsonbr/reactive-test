@@ -78,7 +78,12 @@
       "Bash(libs/frontend/shared-data/api-client/src/lib/api-client.ts )",
       "Bash(e2e-test/wiremock/mappings/fake-auth/ )",
       "Bash(tools/generate-fake-auth-tokens.mjs )",
-      "Bash(035_FAKE_AUTH_DOCKER.md)"
+      "Bash(035_FAKE_AUTH_DOCKER.md)",
+      "Bash(docker inspect:*)",
+      "Bash(E2E_BASE_URL=http://localhost:3001 pnpm nx e2e:*)",
+      "Bash(E2E_BASE_URL=http://localhost:3001 pnpm exec playwright test:*)",
+      "Bash(jq:*)",
+      "Bash(docker restart:*)"
     ],
     "deny": [],
     "ask": [

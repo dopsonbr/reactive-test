@@ -53,9 +53,16 @@ export function UserMenu() {
           <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-md border bg-background shadow-lg">
             <div className="border-b px-3 py-2">
               <p className="text-sm font-medium">{user?.username}</p>
-              <p className="text-xs text-muted-foreground">
-                {user?.scopes.length} permissions
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="rounded bg-secondary px-1.5 py-0.5 text-xs">
+                  {user?.userType}
+                </span>
+                {user?.storeNumber && (
+                  <span className="text-xs text-muted-foreground">
+                    Store #{user.storeNumber}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="p-1">
               <button

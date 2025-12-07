@@ -35,9 +35,10 @@ dependencies {
     // R2DBC PostgreSQL driver
     implementation("org.postgresql:r2dbc-postgresql")
 
-    // Flyway for database migrations (requires JDBC driver)
-    implementation("org.flywaydb:flyway-core")
+    // Flyway for database migrations (Spring Boot 4.0 starter includes flyway-core + autoconfiguration)
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.flywaydb:flyway-database-postgresql")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
     runtimeOnly("org.postgresql:postgresql")
 
     // Prometheus metrics
@@ -51,9 +52,6 @@ dependencies {
     // GraphQL test dependencies
     testImplementation("org.springframework.graphql:spring-graphql-test")
     testImplementation("org.springframework.security:spring-security-test")
-
-    // JDBC for Flyway in tests (Flyway needs JDBC DataSource, but app uses R2DBC)
-    testImplementation("org.springframework.boot:spring-boot-starter-jdbc")
 
     // H2 for in-memory database in unit tests (pub/sub tests don't need PostgreSQL)
     testImplementation("io.r2dbc:r2dbc-h2")

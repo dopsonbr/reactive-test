@@ -218,9 +218,14 @@ services:
       - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/cartdb
       - SPRING_R2DBC_USERNAME=cart_user
       - SPRING_R2DBC_PASSWORD=cart_pass
+      # JDBC DataSource for Flyway (required since app uses R2DBC for runtime)
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/cartdb
+      - SPRING_DATASOURCE_USERNAME=cart_user
+      - SPRING_DATASOURCE_PASSWORD=cart_pass
       - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/cartdb
       - SPRING_FLYWAY_USER=cart_user
       - SPRING_FLYWAY_PASSWORD=cart_pass
+      - APP_SECURITY_ENABLED=false
       - PRODUCT_SERVICE_URL=http://product-service:8080
       - CUSTOMER_SERVICE_URL=http://customer-service:8083
       - DISCOUNT_SERVICE_URL=http://discount-service:8084

@@ -1,0 +1,60 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#f8fafc"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="800" height="60" fill="#1e40af"/>
+  <text x="400" y="38" font-family="system-ui, sans-serif" font-size="20" fill="white" text-anchor="middle" font-weight="bold">
+    Link Your Loyalty Account
+  </text>
+
+  <!-- Main content area -->
+  <rect x="100" y="100" width="600" height="380" rx="12" fill="white" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- Icon -->
+  <circle cx="400" cy="170" r="40" fill="#dbeafe"/>
+  <text x="400" y="185" font-family="system-ui, sans-serif" font-size="40" fill="#3b82f6" text-anchor="middle">
+    ♥
+  </text>
+
+  <!-- Title -->
+  <text x="400" y="250" font-family="system-ui, sans-serif" font-size="24" fill="#1e293b" text-anchor="middle" font-weight="bold">
+    Earn Points &amp; Get Discounts!
+  </text>
+  <text x="400" y="280" font-family="system-ui, sans-serif" font-size="14" fill="#64748b" text-anchor="middle">
+    Enter your phone number or email to link your account
+  </text>
+
+  <!-- Input field -->
+  <rect x="180" y="310" width="440" height="50" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="200" y="342" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8">
+    Phone number or email...
+  </text>
+
+  <!-- Method toggle buttons -->
+  <rect x="180" y="375" width="210" height="45" rx="6" fill="#3b82f6"/>
+  <text x="285" y="403" font-family="system-ui, sans-serif" font-size="16" fill="white" text-anchor="middle" font-weight="bold">
+    📱 Use Phone
+  </text>
+
+  <rect x="410" y="375" width="210" height="45" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="515" y="403" font-family="system-ui, sans-serif" font-size="16" fill="#475569" text-anchor="middle">
+    ✉️ Use Email
+  </text>
+
+  <!-- Skip button -->
+  <text x="400" y="460" font-family="system-ui, sans-serif" font-size="16" fill="#6b7280" text-anchor="middle" text-decoration="underline">
+    Skip - Continue without linking
+  </text>
+
+  <!-- Benefits list -->
+  <rect x="100" y="500" width="600" height="60" fill="#f0fdf4" rx="8"/>
+  <text x="400" y="535" font-family="system-ui, sans-serif" font-size="14" fill="#16a34a" text-anchor="middle">
+    ✓ Earn 1 point per $1  •  ✓ Exclusive member pricing  •  ✓ Digital receipts
+  </text>
+
+  <!-- Footer -->
+  <text x="400" y="585" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">
+    WIREFRAME • Loyalty Lookup Screen
+  </text>
+</svg>

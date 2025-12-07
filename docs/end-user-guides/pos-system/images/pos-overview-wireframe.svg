@@ -1,0 +1,167 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#f1f5f9"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="60" fill="#1e293b"/>
+  <text x="80" y="38" font-family="system-ui, sans-serif" font-size="18" fill="white" font-weight="bold">
+    POS System
+  </text>
+  <text x="250" y="38" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">
+    Store #1234 - Main Street
+  </text>
+  <text x="1000" y="38" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">
+    John D. (Associate) | Reg: 01
+  </text>
+
+  <!-- Sidebar -->
+  <rect x="0" y="60" width="70" height="740" fill="#1e293b"/>
+
+  <!-- Sidebar icons -->
+  <rect x="15" y="80" width="40" height="40" rx="8" fill="#3b82f6"/>
+  <text x="35" y="105" font-family="system-ui, sans-serif" font-size="16" fill="white" text-anchor="middle">🏠</text>
+
+  <rect x="15" y="140" width="40" height="40" rx="8" fill="#334155"/>
+  <text x="35" y="165" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8" text-anchor="middle">🛒</text>
+
+  <rect x="15" y="200" width="40" height="40" rx="8" fill="#334155"/>
+  <text x="35" y="225" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8" text-anchor="middle">👥</text>
+
+  <rect x="15" y="260" width="40" height="40" rx="8" fill="#334155"/>
+  <text x="35" y="285" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8" text-anchor="middle">📦</text>
+
+  <!-- Main content area -->
+  <rect x="90" y="80" width="700" height="700" rx="8" fill="white" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- Item entry area -->
+  <text x="110" y="120" font-family="system-ui, sans-serif" font-size="18" fill="#1e293b" font-weight="bold">
+    Item Entry
+  </text>
+
+  <rect x="110" y="140" width="660" height="50" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="130" y="170" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8">
+    Scan or enter SKU...
+  </text>
+
+  <!-- Scanned items section -->
+  <text x="110" y="230" font-family="system-ui, sans-serif" font-size="16" fill="#64748b">
+    Recent Items
+  </text>
+
+  <rect x="110" y="250" width="660" height="80" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="130" y="285" font-family="system-ui, sans-serif" font-size="14" fill="#1e293b">
+    Wireless Mouse Pro - Black
+  </text>
+  <text x="130" y="310" font-family="system-ui, sans-serif" font-size="12" fill="#64748b">
+    SKU: WM-PRO-BLK • $49.99 × 2
+  </text>
+  <text x="720" y="295" font-family="system-ui, sans-serif" font-size="16" fill="#1e293b" text-anchor="end">
+    $99.98
+  </text>
+
+  <rect x="110" y="340" width="660" height="80" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="130" y="375" font-family="system-ui, sans-serif" font-size="14" fill="#1e293b">
+    USB-C Cable 6ft
+  </text>
+  <text x="130" y="400" font-family="system-ui, sans-serif" font-size="12" fill="#64748b">
+    SKU: USB-C-6FT • $14.99 × 1
+  </text>
+  <text x="720" y="385" font-family="system-ui, sans-serif" font-size="16" fill="#1e293b" text-anchor="end">
+    $14.99
+  </text>
+
+  <!-- Cart panel -->
+  <rect x="810" y="80" width="370" height="700" rx="8" fill="white" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- Cart header -->
+  <rect x="810" y="80" width="370" height="50" rx="8" fill="#f8fafc"/>
+  <text x="995" y="112" font-family="system-ui, sans-serif" font-size="18" fill="#1e293b" text-anchor="middle" font-weight="bold">
+    Cart (3 items)
+  </text>
+
+  <!-- Customer section -->
+  <rect x="830" y="150" width="330" height="60" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="850" y="175" font-family="system-ui, sans-serif" font-size="12" fill="#3b82f6">
+    CUSTOMER
+  </text>
+  <text x="850" y="195" font-family="system-ui, sans-serif" font-size="14" fill="#1e40af" font-weight="bold">
+    John Smith (Gold ⭐)
+  </text>
+
+  <!-- Cart items -->
+  <text x="850" y="240" font-family="system-ui, sans-serif" font-size="12" fill="#64748b">
+    Wireless Mouse Pro (2)
+  </text>
+  <text x="1130" y="240" font-family="system-ui, sans-serif" font-size="12" fill="#1e293b" text-anchor="end">
+    $99.98
+  </text>
+
+  <text x="850" y="270" font-family="system-ui, sans-serif" font-size="12" fill="#64748b">
+    USB-C Cable (1)
+  </text>
+  <text x="1130" y="270" font-family="system-ui, sans-serif" font-size="12" fill="#1e293b" text-anchor="end">
+    $14.99
+  </text>
+
+  <text x="850" y="300" font-family="system-ui, sans-serif" font-size="12" fill="#64748b">
+    Mouse Pad (1)
+  </text>
+  <text x="1130" y="300" font-family="system-ui, sans-serif" font-size="12" fill="#1e293b" text-anchor="end">
+    $19.99
+  </text>
+
+  <!-- Cart totals -->
+  <rect x="810" y="620" width="370" height="160" fill="#f8fafc"/>
+  <line x1="830" y1="620" x2="1160" y2="620" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="850" y="655" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">
+    Subtotal
+  </text>
+  <text x="1130" y="655" font-family="system-ui, sans-serif" font-size="14" fill="#64748b" text-anchor="end">
+    $134.96
+  </text>
+
+  <text x="850" y="685" font-family="system-ui, sans-serif" font-size="14" fill="#22c55e">
+    Loyalty Discount
+  </text>
+  <text x="1130" y="685" font-family="system-ui, sans-serif" font-size="14" fill="#22c55e" text-anchor="end">
+    -$10.00
+  </text>
+
+  <text x="850" y="715" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">
+    Tax (8.25%)
+  </text>
+  <text x="1130" y="715" font-family="system-ui, sans-serif" font-size="14" fill="#64748b" text-anchor="end">
+    $10.31
+  </text>
+
+  <line x1="830" y1="730" x2="1160" y2="730" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="850" y="760" font-family="system-ui, sans-serif" font-size="20" fill="#1e293b" font-weight="bold">
+    TOTAL
+  </text>
+  <text x="1130" y="760" font-family="system-ui, sans-serif" font-size="20" fill="#1e293b" font-weight="bold" text-anchor="end">
+    $135.27
+  </text>
+
+  <!-- Action buttons -->
+  <rect x="110" y="700" width="150" height="45" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="185" y="728" font-family="system-ui, sans-serif" font-size="14" fill="#475569" text-anchor="middle">
+    Suspend
+  </text>
+
+  <rect x="280" y="700" width="200" height="45" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="380" y="728" font-family="system-ui, sans-serif" font-size="14" fill="#475569" text-anchor="middle">
+    Fulfillment: Immediate
+  </text>
+
+  <rect x="500" y="700" width="150" height="45" rx="8" fill="#3b82f6"/>
+  <text x="575" y="728" font-family="system-ui, sans-serif" font-size="14" fill="white" text-anchor="middle" font-weight="bold">
+    Pay →
+  </text>
+
+  <!-- Watermark -->
+  <text x="600" y="790" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">
+    WIREFRAME • POS System Overview
+  </text>
+</svg>

@@ -16,8 +16,9 @@ export function useProducts(params: ProductSearchParams = {}) {
     queryFn: () =>
       apiClient<ProductSearchResult>('/products/search', {
         params: {
-          q: params.query || '',
-          category: params.category || '',
+          // Only include query and category if they have values
+          ...(params.query ? { q: params.query } : {}),
+          ...(params.category ? { category: params.category } : {}),
           page: String(params.page || 1),
           limit: String(params.limit || 20),
         },

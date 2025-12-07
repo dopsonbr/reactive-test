@@ -39,7 +39,8 @@ class SearchRequestValidatorTest {
   }
 
   @Test
-  void shouldRejectEmptyQuery() {
+  void shouldAcceptEmptyQuery() {
+    // Empty query is allowed for browsing all products
     SearchCriteria criteria =
         new SearchCriteria(
             "",
@@ -55,9 +56,49 @@ class SearchRequestValidatorTest {
             0,
             20);
 
-    StepVerifier.create(validator.validate(criteria))
-        .expectError(ValidationException.class)
-        .verify();
+    StepVerifier.create(validator.validate(criteria)).verifyComplete();
+  }
+
+  @Test
+  void shouldAcceptNullQuery() {
+    // Null query is allowed for browsing all products
+    SearchCriteria criteria =
+        new SearchCriteria(
+            null,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            "relevance",
+            SortDirection.DESC,
+            0,
+            20);
+
+    StepVerifier.create(validator.validate(criteria)).verifyComplete();
+  }
+
+  @Test
+  void shouldAcceptEmptyQueryWithCategory() {
+    // Category-only browsing with empty query
+    SearchCriteria criteria =
+        new SearchCriteria(
+            "",
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.of("Electronics"),
+            Optional.empty(),
+            Optional.empty(),
+            "relevance",
+            SortDirection.DESC,
+            0,
+            20);
+
+    StepVerifier.create(validator.validate(criteria)).verifyComplete();
   }
 
   @Test

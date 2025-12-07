@@ -47,7 +47,7 @@ public class ProductSearchController {
   @GetMapping
   @PreAuthorize("hasAuthority('SCOPE_product:read')")
   public Mono<SearchResponse<SearchProduct>> search(
-      @RequestParam String q,
+      @RequestParam(required = false, defaultValue = "") String q,
       @RequestParam(required = false) BigDecimal minPrice,
       @RequestParam(required = false) BigDecimal maxPrice,
       @RequestParam(required = false) Integer minAvailability,

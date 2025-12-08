@@ -99,7 +99,16 @@ public abstract class AbstractGraphQLIntegrationTest {
         .thenAnswer(
             invocation -> {
               long sku = invocation.getArgument(0);
-              return Mono.just(new Product(sku, "Test Product", "9.99", 100));
+              return Mono.just(
+                  new Product(
+                      sku,
+                      "Test Product",
+                      "Test Description",
+                      new BigDecimal("9.99"),
+                      null,
+                      100,
+                      "https://cdn.example.com/test.jpg",
+                      "General"));
             });
     when(discountRepository.validateDiscount(any()))
         .thenAnswer(

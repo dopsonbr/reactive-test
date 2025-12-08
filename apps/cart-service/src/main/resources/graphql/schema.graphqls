@@ -24,11 +24,16 @@ type CartCustomer {
 
 type CartProduct {
     sku: ID!
+    name: String!
     description: String!
     unitPrice: String!
+    originalUnitPrice: String
     quantity: Int!
     availableQuantity: Int!
+    imageUrl: String!
+    category: String!
     lineTotal: String!
+    inStock: Boolean!
 }
 
 type AppliedDiscount {

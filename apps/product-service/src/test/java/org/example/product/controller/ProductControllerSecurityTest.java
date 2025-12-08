@@ -75,7 +75,16 @@ class ProductControllerSecurityTest {
 
   @Test
   void shouldReturn200WithValidToken() {
-    Product product = new Product(123456L, "Test Product", "19.99", 10);
+    Product product =
+        new Product(
+            123456L,
+            "Test Product",
+            "Description",
+            new java.math.BigDecimal("19.99"),
+            null,
+            10,
+            "http://image.url",
+            "Category");
     when(productService.getProduct(anyLong())).thenReturn(Mono.just(product));
 
     String validToken = SecurityTestUtils.validToken("product:read");
@@ -98,7 +107,16 @@ class ProductControllerSecurityTest {
 
   @Test
   void shouldReturn200WithMultipleValidScopes() {
-    Product product = new Product(123456L, "Test Product", "19.99", 10);
+    Product product =
+        new Product(
+            123456L,
+            "Test Product",
+            "Description",
+            new java.math.BigDecimal("19.99"),
+            null,
+            10,
+            "http://image.url",
+            "Category");
     when(productService.getProduct(anyLong())).thenReturn(Mono.just(product));
 
     String validToken = SecurityTestUtils.validToken("product:read", "product:write");

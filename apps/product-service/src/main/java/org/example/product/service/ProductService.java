@@ -34,16 +34,25 @@ public class ProductService {
           structuredLogger.logMessage(ctx, LOGGER_NAME, "Starting product fetch for sku: " + sku);
 
           return Mono.zip(
-                  merchandiseRepository.getDescription(sku),
+                  merchandiseRepository.getMerchandise(sku),
                   priceRepository.getPrice(sku),
                   inventoryRepository.getAvailability(sku))
               .map(
-                  tuple ->
-                      new Product(
-                          sku,
-                          tuple.getT1().description(),
-                          tuple.getT2().price(),
-                          tuple.getT3().availableQuantity()))
+                  tuple -> {
+                    var merch = tuple.getT1();
+                    var pricing = tuple.getT2();
+                    var inv = tuple.getT3();
+
+                    return new Product(
+                        sku,
+                        merch.name(),
+                        merch.description(),
+                        pricing.price(),
+                        pricing.originalPrice(),
+                        inv.availableQuantity(),
+                        merch.imageUrl(),
+                        merch.category());
+                  })
               .doOnSuccess(
                   product ->
                       structuredLogger.logMessage(

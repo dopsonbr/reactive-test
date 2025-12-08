@@ -1,5 +1,6 @@
 package org.example.product.repository.price;
 
+import java.math.BigDecimal;
 import org.example.platform.cache.CacheKeyGenerator;
 import org.example.platform.cache.ReactiveCacheService;
 import org.example.platform.logging.StructuredLogger;
@@ -13,7 +14,8 @@ import reactor.core.publisher.Mono;
 public class PriceRepository {
   private static final String RESILIENCE_NAME = "price";
   private static final String LOGGER_NAME = "pricerepository";
-  private static final PriceResponse FALLBACK = new PriceResponse("0.00");
+  private static final PriceResponse FALLBACK =
+      new PriceResponse(new BigDecimal("0.00"), null, "USD");
 
   private final WebClient priceWebClient;
   private final ReactiveResilience resilience;

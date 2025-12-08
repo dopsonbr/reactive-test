@@ -14,7 +14,11 @@ public class MerchandiseRepository {
   private static final String RESILIENCE_NAME = "merchandise";
   private static final String LOGGER_NAME = "merchandiserepository";
   private static final MerchandiseResponse FALLBACK =
-      new MerchandiseResponse("Description unavailable");
+      new MerchandiseResponse(
+          "Unknown Product",
+          "Description unavailable",
+          "https://via.placeholder.com/300x300?text=No+Image",
+          "Unknown");
 
   private final WebClient merchandiseWebClient;
   private final ReactiveResilience resilience;
@@ -35,7 +39,7 @@ public class MerchandiseRepository {
     this.cacheProperties = cacheProperties;
   }
 
-  public Mono<MerchandiseResponse> getDescription(long sku) {
+  public Mono<MerchandiseResponse> getMerchandise(long sku) {
     String cacheKey = CacheKeyGenerator.merchandiseKey(sku);
 
     // Cache-Aside Pattern: Check cache first

@@ -23,6 +23,8 @@ spring:
     user: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
     locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 3
 
 # JWT configuration
 jwt:

@@ -1,6 +1,6 @@
 # 043 Urgent Fix: Services Startup Issues
 
-## Status: IN PROGRESS
+## Status: COMPLETE
 
 ## Problem Summary
 
@@ -69,34 +69,22 @@ public class FlywayConfiguration {
 
 **Verified Working**: Cart-service now runs Flyway migrations and creates/fetches carts successfully.
 
----
+### 4. Apply Flyway Fix to Other R2DBC Services (FIXED)
 
-## Remaining Work
+The same Flyway issue affected checkout-service, customer-service, and user-service.
 
-### 4. Apply Flyway Fix to Other R2DBC Services (IN PROGRESS)
+**Fixes Applied**:
 
-The same Flyway issue affects:
-- **checkout-service** - build.gradle.kts updated, needs FlywayConfiguration
-- **customer-service** - build.gradle.kts updated, needs FlywayConfiguration
-- **user-service** - build.gradle.kts updated, needs FlywayConfiguration
-
-#### For Each Service:
-
-1. **build.gradle.kts** - Already done for all three:
-```kotlin
-implementation("org.springframework.boot:spring-boot-starter-flyway")
-implementation("org.flywaydb:flyway-database-postgresql")
-implementation("org.springframework.boot:spring-boot-starter-jdbc")
-```
-
-2. **Create FlywayConfiguration.java** - PENDING:
+1. **FlywayConfiguration.java** - Created for all three services:
    - `apps/checkout-service/src/main/java/org/example/checkout/config/FlywayConfiguration.java`
    - `apps/customer-service/src/main/java/org/example/customer/config/FlywayConfiguration.java`
    - `apps/user-service/src/main/java/org/example/user/config/FlywayConfiguration.java`
 
-3. **Update docker-compose.yml** - Add `SPRING_DATASOURCE_*` for each service
+2. **docker-compose.yml** - Added `SPRING_DATASOURCE_*` env vars for all three services
 
-4. **Rebuild and test** each service
+3. **user-service special case** - Required additional Flyway configuration:
+   - Added `baseline-on-migrate: true` and `baseline-version: 3` to `application.yml`
+   - This was needed because the userdb already had tables from a previous manual setup
 
 ---
 
@@ -130,49 +118,33 @@ environment:
 | `apps/cart-service/build.gradle.kts` | Added spring-boot-starter-flyway + jdbc |
 | `apps/cart-service/src/main/java/org/example/cart/config/FlywayConfiguration.java` | Created new |
 | `apps/checkout-service/build.gradle.kts` | Added spring-boot-starter-flyway + jdbc |
+| `apps/checkout-service/src/main/java/org/example/checkout/config/FlywayConfiguration.java` | Created new |
 | `apps/customer-service/build.gradle.kts` | Added spring-boot-starter-flyway + jdbc |
+| `apps/customer-service/src/main/java/org/example/customer/config/FlywayConfiguration.java` | Created new |
 | `apps/user-service/build.gradle.kts` | Added spring-boot-starter-flyway + jdbc |
-| `docker/docker-compose.yml` | Added SPRING_DATASOURCE_* for cart-service |
+| `apps/user-service/src/main/java/org/example/user/config/FlywayConfiguration.java` | Created new |
+| `apps/user-service/src/main/resources/application.yml` | Added baseline-on-migrate + baseline-version |
+| `docker/docker-compose.yml` | Added SPRING_DATASOURCE_* for cart, checkout, customer, user services |
 
 ---
 
-## Verification Commands
+## Verification Results
 
-```bash
-# Test product-service
-curl -s "http://localhost:8080/products/search?query=test" \
-  -H "x-store-number: 1" -H "x-order-number: test-123" \
-  -H "x-userid: TEST01" -H "x-sessionid: sess-123"
-
-# Test cart-service (create)
-curl -s -X POST http://localhost:8081/carts \
-  -H "x-store-number: 1" -H "x-order-number: test-123" \
-  -H "x-userid: TEST01" -H "x-sessionid: sess-123" \
-  -H "Content-Type: application/json" \
-  -d '{"storeNumber": 1, "customerId": "CUST001"}'
-
-# Check service health
-curl -s http://localhost:8080/actuator/health
-curl -s http://localhost:8081/actuator/health
-curl -s http://localhost:8087/actuator/health
-curl -s http://localhost:8083/actuator/health
-curl -s http://localhost:8089/actuator/health
-
-# Check Flyway ran
-docker logs cart-service 2>&1 | grep -i flyway
-docker logs checkout-service 2>&1 | grep -i flyway
-docker logs customer-service 2>&1 | grep -i flyway
-docker logs user-service 2>&1 | grep -i flyway
-```
+All services verified healthy:
+- product-service (8080): UP
+- cart-service (8081): UP
+- checkout-service (8087): UP
+- customer-service (8083): UP
+- user-service (8089): UP
 
 ---
 
-## Next Steps
+## Key Lessons Learned
 
-1. Create `FlywayConfiguration.java` for checkout-service, customer-service, user-service
-2. Update docker-compose.yml with SPRING_DATASOURCE_* for those services
-3. Rebuild all affected services: `./gradlew bootJar`
-4. Rebuild Docker images: `docker compose build`
-5. Restart services and verify Flyway runs
-6. Test full application flow in browser
-7. Commit all fixes
+1. **Spring Boot 4.0 R2DBC/JDBC Conflict**: When using R2DBC, Spring Boot 4.0's `DataSourceAutoConfiguration` won't create a JDBC DataSource. For services that need both R2DBC (runtime) and JDBC (Flyway migrations), a manual `FlywayConfiguration` with `@FlywayDataSource` is required.
+
+2. **Import Paths Changed**: Spring Boot 4.0 modularized packages:
+   - `org.springframework.boot.flyway.autoconfigure.FlywayDataSource`
+   - `org.springframework.boot.jdbc.autoconfigure.DataSourceProperties`
+
+3. **Existing Database Baseline**: When adding Flyway to a service with an existing database, use `baseline-on-migrate: true` and set `baseline-version` to the highest migration version to skip already-applied migrations.

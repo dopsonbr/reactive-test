@@ -275,6 +275,10 @@ services:
       - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/customerdb
       - SPRING_R2DBC_USERNAME=customer_user
       - SPRING_R2DBC_PASSWORD=customer_pass
+      # JDBC DataSource for Flyway (required since app uses R2DBC for runtime)
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/customerdb
+      - SPRING_DATASOURCE_USERNAME=customer_user
+      - SPRING_DATASOURCE_PASSWORD=customer_pass
       - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/customerdb
       - SPRING_FLYWAY_USER=customer_user
       - SPRING_FLYWAY_PASSWORD=customer_pass
@@ -415,6 +419,10 @@ services:
       - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/checkoutdb
       - SPRING_R2DBC_USERNAME=checkout_user
       - SPRING_R2DBC_PASSWORD=checkout_pass
+      # JDBC DataSource for Flyway (required since app uses R2DBC for runtime)
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/checkoutdb
+      - SPRING_DATASOURCE_USERNAME=checkout_user
+      - SPRING_DATASOURCE_PASSWORD=checkout_pass
       - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/checkoutdb
       - SPRING_FLYWAY_USER=checkout_user
       - SPRING_FLYWAY_PASSWORD=checkout_pass
@@ -507,6 +515,10 @@ services:
       - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/userdb
       - SPRING_R2DBC_USERNAME=user_user
       - SPRING_R2DBC_PASSWORD=user_pass
+      # JDBC DataSource for Flyway (required since app uses R2DBC for runtime)
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/userdb
+      - SPRING_DATASOURCE_USERNAME=user_user
+      - SPRING_DATASOURCE_PASSWORD=user_pass
       - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/userdb
       - SPRING_FLYWAY_USER=user_user
       - SPRING_FLYWAY_PASSWORD=user_pass

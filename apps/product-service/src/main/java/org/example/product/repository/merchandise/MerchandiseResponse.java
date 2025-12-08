@@ -1,3 +1,5 @@
 package org.example.product.repository.merchandise;
 
-public record MerchandiseResponse(String description) {}
+/** Response from merchandise service. Includes all display metadata for a product. */
+public record MerchandiseResponse(
+    String name, String description, String imageUrl, String category) {}

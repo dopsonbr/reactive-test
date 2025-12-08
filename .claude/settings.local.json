@@ -113,7 +113,11 @@
       "Bash(docs/standards/frontend/CODEX_findings.md )",
       "Bash(docs/workflows/ )",
       "Bash(docs/end-user-guides/)",
-      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25.0.1-tem ./gradlew:*)"
+      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25.0.1-tem ./gradlew:*)",
+      "Bash(/Users/briandopson/github/dopsonbr/reactive-test-worktrees/043-model-alignment/gradlew :libs:backend:shared-model:shared-model-product:spotlessApply:*)",
+      "Bash(/Users/briandopson/github/dopsonbr/reactive-test-worktrees/043-model-alignment/gradlew :apps:product-service:spotlessApply:*)",
+      "Bash(/Users/briandopson/github/dopsonbr/reactive-test-worktrees/043-model-alignment/gradlew :apps:product-service:compileJava:*)",
+      "Bash(/Users/briandopson/github/dopsonbr/reactive-test-worktrees/043-model-alignment/gradlew :apps:cart-service:compileJava:*)"
     ],
     "deny": [],
     "ask": [

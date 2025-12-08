@@ -1,25 +1,41 @@
 export interface CartItem {
-  sku: string;
+  sku: number;
   name: string;
-  price: number;
+  description: string;
+  unitPrice: string;
+  originalUnitPrice?: string;
   quantity: number;
+  availableQuantity: number;
   imageUrl: string;
+  category: string;
+  lineTotal: string;
+  inStock: boolean;
+}
+
+export interface CartTotals {
+  subtotal: string;
+  discountTotal: string;
+  fulfillmentTotal: string;
+  taxTotal: string;
+  grandTotal: string;
 }
 
 export interface Cart {
   id: string;
-  items: CartItem[];
-  subtotal: number;
-  tax: number;
-  total: number;
+  storeNumber: number;
+  customerId?: string;
+  products: CartItem[];    // Note: backend uses 'products' not 'items'
+  totals: CartTotals;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AddToCartRequest {
-  sku: string;
+  sku: number;
   quantity: number;
 }
 
 export interface UpdateCartItemRequest {
-  sku: string;
+  sku: number;
   quantity: number;
 }

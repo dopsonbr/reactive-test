@@ -4,13 +4,16 @@ import { ProductCard } from './ProductCard';
 import type { Product } from '../types';
 
 const mockProduct: Product = {
-  sku: 'SKU-001',
+  sku: 1001,
   name: 'Test Product',
   description: 'A test product description',
-  price: 99.99,
+  price: '99.99',
+  originalPrice: '129.99',
+  availableQuantity: 50,
   imageUrl: 'https://example.com/image.jpg',
   category: 'Electronics',
   inStock: true,
+  onSale: true,
 };
 
 async function renderProductCard(props: Partial<Parameters<typeof ProductCard>[0]> = {}) {
@@ -60,7 +63,7 @@ describe('ProductCard', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /add to cart/i }));
 
-    expect(onAddToCart).toHaveBeenCalledWith('SKU-001');
+    expect(onAddToCart).toHaveBeenCalledWith(1001);
   });
 
   it('shows loading state when adding to cart', async () => {
@@ -72,14 +75,19 @@ describe('ProductCard', () => {
 
   it('renders original price with strikethrough when on sale', async () => {
     await renderProductCard({
-      product: { ...mockProduct, originalPrice: 149.99 },
+      product: { ...mockProduct, originalPrice: '149.99' },
     });
 
     expect(screen.getByText('$149.99')).toHaveClass('line-through');
   });
 
   it('does not render original price when not on sale', async () => {
-    await renderProductCard();
+    const productWithoutOriginalPrice: Product = {
+      ...mockProduct,
+      originalPrice: undefined,
+      onSale: false,
+    };
+    await renderProductCard({ product: productWithoutOriginalPrice });
 
     // Check that no element with line-through class contains a price
     const priceElements = screen.queryAllByText(/\$\d+\.\d{2}/);
@@ -90,6 +98,6 @@ describe('ProductCard', () => {
   it('has correct test id based on sku', async () => {
     await renderProductCard();
 
-    expect(screen.getByTestId('product-card-SKU-001')).toBeInTheDocument();
+    expect(screen.getByTestId('product-card-1001')).toBeInTheDocument();
   });
 });

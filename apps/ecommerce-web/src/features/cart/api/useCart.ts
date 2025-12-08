@@ -7,41 +7,20 @@ export const cartKeys = {
   detail: (id: string) => [...cartKeys.all, id] as const,
 };
 
-// Backend cart response shape (different from frontend Cart type)
-interface BackendCartProduct {
-  sku: number;
-  description: string;
-  price: string;
-  quantity: number;
-  imageUrl?: string;
-}
-
-interface BackendCart {
-  id: string;
-  products?: BackendCartProduct[];
-  totals?: {
-    subtotal: number;
-    tax: number;
-    grandTotal: number;
-  };
-}
-
-// Transform backend response to frontend Cart type
-function mapBackendCart(backendCart: BackendCart): Cart {
-  const items: CartItem[] = (backendCart.products || []).map((p) => ({
-    sku: String(p.sku),
-    name: p.description,
-    price: Number(p.price),
-    quantity: p.quantity,
-    imageUrl: p.imageUrl || '',
-  }));
-
+function emptyCart(id: string): Cart {
   return {
-    id: backendCart.id,
-    items,
-    subtotal: backendCart.totals?.subtotal || 0,
-    tax: backendCart.totals?.tax || 0,
-    total: backendCart.totals?.grandTotal || 0,
+    id,
+    storeNumber: 0,
+    products: [],
+    totals: {
+      subtotal: "0",
+      discountTotal: "0",
+      fulfillmentTotal: "0",
+      taxTotal: "0",
+      grandTotal: "0"
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
 }
 
@@ -64,18 +43,13 @@ export function useCart() {
     queryKey: cartKeys.detail(cartId),
     queryFn: async () => {
       try {
-        const backendCart = await apiClient<BackendCart>(`/carts/${cartId}`);
-        return mapBackendCart(backendCart);
+        // Backend now returns frontend-compatible shape
+        const cart = await apiClient<Cart>(`/carts/${cartId}`);
+        return cart;
       } catch (error) {
         // Return empty cart if not found
         if (error instanceof ApiError && error.status === 404) {
-          return {
-            id: cartId,
-            items: [],
-            subtotal: 0,
-            tax: 0,
-            total: 0,
-          } as Cart;
+          return emptyCart(cartId);
         }
         throw error;
       }
@@ -93,11 +67,11 @@ export function useAddToCart() {
 
   return useMutation({
     mutationFn: async (item: AddToCartRequest) => {
-      const backendCart = await apiClient<BackendCart>(`/carts/${cartId}/products`, {
+      const cart = await apiClient<Cart>(`/carts/${cartId}/products`, {
         method: 'POST',
         body: JSON.stringify(item),
       });
-      return mapBackendCart(backendCart);
+      return cart;
     },
     onSuccess: (data) => {
       queryClient.setQueryData(cartKeys.detail(cartId), data);
@@ -111,11 +85,11 @@ export function useUpdateCartItem() {
 
   return useMutation({
     mutationFn: async ({ sku, quantity }: UpdateCartItemRequest) => {
-      const backendCart = await apiClient<BackendCart>(`/carts/${cartId}/products/${sku}`, {
+      const cart = await apiClient<Cart>(`/carts/${cartId}/products/${sku}`, {
         method: 'PUT',
         body: JSON.stringify({ quantity }),
       });
-      return mapBackendCart(backendCart);
+      return cart;
     },
     onSuccess: (data) => {
       queryClient.setQueryData(cartKeys.detail(cartId), data);
@@ -128,11 +102,11 @@ export function useRemoveFromCart() {
   const cartId = getCartId();
 
   return useMutation({
-    mutationFn: async (sku: string) => {
-      const backendCart = await apiClient<BackendCart>(`/carts/${cartId}/products/${sku}`, {
+    mutationFn: async (sku: number) => {
+      const cart = await apiClient<Cart>(`/carts/${cartId}/products/${sku}`, {
         method: 'DELETE',
       });
-      return mapBackendCart(backendCart);
+      return cart;
     },
     onSuccess: (data) => {
       queryClient.setQueryData(cartKeys.detail(cartId), data);

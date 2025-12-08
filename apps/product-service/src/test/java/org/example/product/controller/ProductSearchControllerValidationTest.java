@@ -47,7 +47,15 @@ class ProductSearchControllerValidationTest {
     // Setup default mock responses
     SearchProduct product =
         new SearchProduct(
-            123456L, "Laptop Computer", new BigDecimal("999.99"), 50, "Electronics", 0.95);
+            123456L,
+            "Laptop Computer",
+            "High performance laptop for work and gaming",
+            new BigDecimal("999.99"),
+            new BigDecimal("1199.99"),
+            50,
+            "https://cdn.example.com/products/laptop.jpg",
+            "Electronics",
+            0.95);
     SearchResponse<SearchProduct> response =
         new SearchResponse<>(List.of(product), 1L, 1, 0, 20, "laptop", 45L);
     when(productSearchService.search(any())).thenReturn(Mono.just(response));

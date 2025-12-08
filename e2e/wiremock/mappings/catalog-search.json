@@ -17,7 +17,7 @@
         "jsonBody": {
           "products": [
             {
-              "sku": 1001,
+              "sku": 100001,
               "description": "Wireless Headphones - Premium Noise Canceling",
               "price": 299.99,
               "availableQuantity": 50,
@@ -25,7 +25,7 @@
               "relevanceScore": 1.0
             },
             {
-              "sku": 1002,
+              "sku": 100002,
               "description": "Smart Watch - Fitness Tracker",
               "price": 199.99,
               "availableQuantity": 30,
@@ -33,7 +33,7 @@
               "relevanceScore": 0.95
             },
             {
-              "sku": 1003,
+              "sku": 100003,
               "description": "Laptop Stand - Ergonomic Aluminum",
               "price": 79.99,
               "availableQuantity": 100,
@@ -41,7 +41,7 @@
               "relevanceScore": 0.90
             },
             {
-              "sku": 1004,
+              "sku": 100004,
               "description": "Mechanical Keyboard - RGB Cherry MX",
               "price": 149.99,
               "availableQuantity": 25,
@@ -49,7 +49,7 @@
               "relevanceScore": 0.85
             },
             {
-              "sku": 1005,
+              "sku": 100005,
               "description": "Running Shoes - Lightweight Mesh",
               "price": 129.99,
               "availableQuantity": 75,
@@ -57,7 +57,7 @@
               "relevanceScore": 0.80
             },
             {
-              "sku": 1006,
+              "sku": 100006,
               "description": "Yoga Mat - Premium Non-Slip",
               "price": 49.99,
               "availableQuantity": 200,
@@ -65,7 +65,7 @@
               "relevanceScore": 0.75
             },
             {
-              "sku": 1007,
+              "sku": 100007,
               "description": "Cotton T-Shirt - Organic Classic Fit",
               "price": 29.99,
               "availableQuantity": 500,
@@ -73,7 +73,7 @@
               "relevanceScore": 0.70
             },
             {
-              "sku": 1008,
+              "sku": 100008,
               "description": "Denim Jacket - Vintage Wash",
               "price": 89.99,
               "availableQuantity": 0,
@@ -81,7 +81,7 @@
               "relevanceScore": 0.65
             },
             {
-              "sku": 1009,
+              "sku": 100009,
               "description": "Ceramic Planter - Hand Crafted",
               "price": 34.99,
               "availableQuantity": 60,
@@ -89,7 +89,7 @@
               "relevanceScore": 0.60
             },
             {
-              "sku": 1010,
+              "sku": 100010,
               "description": "Throw Blanket - Cozy Knitted",
               "price": 59.99,
               "availableQuantity": 40,
@@ -136,7 +136,7 @@
         "jsonBody": {
           "products": [
             {
-              "sku": 1001,
+              "sku": 100001,
               "description": "Wireless Headphones - Premium Noise Canceling",
               "price": 299.99,
               "availableQuantity": 50,
@@ -144,7 +144,7 @@
               "relevanceScore": 1.0
             },
             {
-              "sku": 1002,
+              "sku": 100002,
               "description": "Smart Watch - Fitness Tracker",
               "price": 199.99,
               "availableQuantity": 30,
@@ -152,7 +152,7 @@
               "relevanceScore": 0.95
             },
             {
-              "sku": 1003,
+              "sku": 100003,
               "description": "Laptop Stand - Ergonomic Aluminum",
               "price": 79.99,
               "availableQuantity": 100,
@@ -160,7 +160,7 @@
               "relevanceScore": 0.90
             },
             {
-              "sku": 1004,
+              "sku": 100004,
               "description": "Mechanical Keyboard - RGB Cherry MX",
               "price": 149.99,
               "availableQuantity": 25,
@@ -207,7 +207,7 @@
         "jsonBody": {
           "products": [
             {
-              "sku": 1005,
+              "sku": 100005,
               "description": "Running Shoes - Lightweight Mesh",
               "price": 129.99,
               "availableQuantity": 75,
@@ -215,7 +215,7 @@
               "relevanceScore": 1.0
             },
             {
-              "sku": 1006,
+              "sku": 100006,
               "description": "Yoga Mat - Premium Non-Slip",
               "price": 49.99,
               "availableQuantity": 200,
@@ -262,7 +262,7 @@
         "jsonBody": {
           "products": [
             {
-              "sku": 1007,
+              "sku": 100007,
               "description": "Cotton T-Shirt - Organic Classic Fit",
               "price": 29.99,
               "availableQuantity": 500,
@@ -270,7 +270,7 @@
               "relevanceScore": 1.0
             },
             {
-              "sku": 1008,
+              "sku": 100008,
               "description": "Denim Jacket - Vintage Wash",
               "price": 89.99,
               "availableQuantity": 0,
@@ -317,7 +317,7 @@
         "jsonBody": {
           "products": [
             {
-              "sku": 1009,
+              "sku": 100009,
               "description": "Ceramic Planter - Hand Crafted",
               "price": 34.99,
               "availableQuantity": 60,
@@ -325,7 +325,7 @@
               "relevanceScore": 1.0
             },
             {
-              "sku": 1010,
+              "sku": 100010,
               "description": "Throw Blanket - Cozy Knitted",
               "price": 59.99,
               "availableQuantity": 40,
@@ -372,7 +372,7 @@
         "jsonBody": {
           "products": [
             {
-              "sku": 1001,
+              "sku": 100001,
               "description": "Wireless Headphones - Premium Noise Canceling",
               "price": 299.99,
               "availableQuantity": 50,
@@ -419,7 +419,7 @@
         "jsonBody": {
           "products": [
             {
-              "sku": 1003,
+              "sku": 100003,
               "description": "Laptop Stand - Ergonomic Aluminum",
               "price": 79.99,
               "availableQuantity": 100,
@@ -558,7 +558,7 @@
         "jsonBody": {
           "products": [
             {
-              "sku": 1001,
+              "sku": 100001,
               "description": "Wireless Headphones - Premium Noise Canceling",
               "price": 299.99,
               "availableQuantity": 50,

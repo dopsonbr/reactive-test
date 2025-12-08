@@ -30,10 +30,10 @@ export function ProductCard({ product, onAddToCart, isAddingToCart }: ProductCar
           {product.description}
         </p>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
-          {product.originalPrice && product.originalPrice > product.price && (
+          <span className="text-lg font-bold">${Number(product.price).toFixed(2)}</span>
+          {product.originalPrice && Number(product.originalPrice) > Number(product.price) && (
             <span className="text-sm text-muted-foreground line-through">
-              ${product.originalPrice.toFixed(2)}
+              ${Number(product.originalPrice).toFixed(2)}
             </span>
           )}
         </div>

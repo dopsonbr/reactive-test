@@ -15,7 +15,7 @@
           "Content-Type": "application/json"
         },
         "jsonBody": {
-          "price": "99.99"
+          "price": 99.99
         },
         "delayDistribution": {
           "type": "lognormal",
@@ -79,7 +79,7 @@
           "Content-Type": "application/json"
         },
         "jsonBody": {
-          "price": "99.99"
+          "price": 99.99
         },
         "fixedDelayMilliseconds": 10000
       }
@@ -99,7 +99,7 @@
           "Content-Type": "application/json"
         },
         "jsonBody": {
-          "price": "99.99"
+          "price": 99.99
         },
         "delayDistribution": {
           "type": "uniform",

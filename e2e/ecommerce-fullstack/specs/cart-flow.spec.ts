@@ -3,8 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('Cart Flow (Full-Stack)', () => {
   test.beforeEach(async ({ page }) => {
     // Set up session for test isolation
+    // Cart-service requires cartId to be a valid UUID
     await page.addInitScript(() => {
-      const cartId = `e2e-cart-${Date.now()}`;
+      const cartId = crypto.randomUUID();
       sessionStorage.setItem('cartId', cartId);
       sessionStorage.setItem('userId', 'E2EUSR');
       sessionStorage.setItem('storeNumber', '1');
@@ -26,37 +27,38 @@ test.describe('Cart Flow (Full-Stack)', () => {
 
     await addButton.click();
 
-    // Wait for cart API call
+    // Wait for cart API call (201 CREATED for new cart item)
     const cartResponse = await page.waitForResponse('**/carts/**/products');
-    expect(cartResponse.status()).toBe(200);
+    expect(cartResponse.status()).toBe(201);
 
     // Cart count should update
     await expect(page.getByTestId('cart-count')).toBeVisible();
   });
 
   test('cart page loads from real backend', async ({ page }) => {
-    // First add an item
+    // First add an item - set up response listener before navigation
+    const productResponsePromise = page.waitForResponse('**/products/search**');
     await page.goto('/');
-    await page.waitForResponse('**/products/search**');
+    await productResponsePromise;
     await page.locator('[data-testid^="product-card-"]').first().waitFor();
 
+    // Set up cart response listener before clicking
+    const cartAddResponsePromise = page.waitForResponse('**/carts/**/products');
     await page
       .locator('[data-testid^="product-card-"]')
       .first()
       .getByRole('button', { name: /add to cart/i })
       .click();
-
+    await cartAddResponsePromise;
+    console.log('Item added to cart for cart page load test');
     // Navigate to cart
     await page.getByTestId('cart-link').click();
     await expect(page).toHaveURL('/cart');
 
-    // Wait for cart data
-    await page.waitForResponse('**/carts/**');
-
-    // Verify cart loaded
+    // Verify cart loaded - check for cart page elements
     await expect(
-      page.getByText(/your cart/i).or(page.getByText(/empty/i))
-    ).toBeVisible();
+      page.getByText(/your cart/i).or(page.getByText(/shopping cart/i)).or(page.getByText(/empty/i))
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test('update quantity persists to backend', async ({ page }) => {

@@ -143,7 +143,7 @@ public class CartService {
 
   // ==================== Product Operations ====================
 
-  /** Add a product to the cart. */
+  /** Add a product to the cart. Auto-creates cart if it doesn't exist. */
   public Mono<Cart> addProduct(String cartId, long sku, int quantity) {
     return Mono.deferContextual(
         ctx -> {
@@ -153,7 +153,7 @@ public class CartService {
           String userId = metadata != null ? metadata.userId() : "";
           String sessionId = metadata != null ? metadata.sessionId() : "";
 
-          return getCartOrError(cartId)
+          return getCartOrCreate(cartId, storeNumber, ctx)
               .flatMap(
                   cart ->
                       productRepository
@@ -681,6 +681,37 @@ public class CartService {
         .findById(cartId)
         .switchIfEmpty(
             Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found")));
+  }
+
+  /**
+   * Get cart by ID or create a new empty cart with the provided ID. This enables "upsert" behavior
+   * for addProduct operations where the frontend generates client-side cart IDs.
+   */
+  private Mono<Cart> getCartOrCreate(
+      String cartId, int storeNumber, reactor.util.context.ContextView ctx) {
+    return cartRepository
+        .findById(cartId)
+        .switchIfEmpty(
+            Mono.defer(
+                () -> {
+                  structuredLogger.logMessage(
+                      ctx,
+                      LOGGER_NAME,
+                      String.format(
+                          "Cart %s not found, auto-creating for store %d", cartId, storeNumber));
+                  Cart newCart = Cart.create(cartId, storeNumber, null);
+                  return cartRepository
+                      .save(newCart)
+                      .flatMap(
+                          savedCart ->
+                              publishAuditEvent(
+                                      ctx,
+                                      "CART_CREATED",
+                                      savedCart,
+                                      Map.of("storeNumber", storeNumber, "autoCreated", true))
+                                  .then(publishCartEvent(CartEventType.CART_CREATED, savedCart))
+                                  .thenReturn(savedCart));
+                }));
   }
 
   private Mono<Void> publishAuditEvent(

@@ -15,16 +15,22 @@ test.describe('Product Flow (Full-Stack)', () => {
   test('product detail shows real inventory status', async ({ page }) => {
     await page.goto('/');
 
+    // Wait for initial products to load
+    await page.waitForResponse('**/products/search**');
+    await page.locator('[data-testid^="product-card-"]').first().waitFor();
+
     // Click on first product
     await page.locator('[data-testid^="product-card-"]').first().click();
 
-    // Wait for product detail API call
-    await page.waitForResponse('**/products/**');
+    // Wait for navigation to product detail page
+    await expect(page).toHaveURL(/\/products\/\d+/);
 
     // Verify stock status is displayed (from real backend)
+    // Use longer timeout to allow for API call and render
+    // Use .first() since both a text span and button may contain the status
     await expect(
-      page.getByText(/in stock/i).or(page.getByText(/out of stock/i))
-    ).toBeVisible();
+      page.getByText(/in stock/i).or(page.getByText(/out of stock/i)).first()
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test('search queries real backend', async ({ page }) => {

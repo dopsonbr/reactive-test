@@ -69,14 +69,14 @@ export function ProductDetail({ sku }: ProductDetailProps) {
           </div>
 
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold">${product.price.toFixed(2)}</span>
-            {product.originalPrice && product.originalPrice > product.price && (
+            <span className="text-2xl font-bold">${Number(product.price).toFixed(2)}</span>
+            {product.originalPrice && Number(product.originalPrice) > Number(product.price) && (
               <>
                 <span className="text-lg text-muted-foreground line-through">
-                  ${product.originalPrice.toFixed(2)}
+                  ${Number(product.originalPrice).toFixed(2)}
                 </span>
                 <span className="rounded bg-destructive px-2 py-0.5 text-xs text-destructive-foreground">
-                  Save ${(product.originalPrice - product.price).toFixed(2)}
+                  Save ${(Number(product.originalPrice) - Number(product.price)).toFixed(2)}
                 </span>
               </>
             )}

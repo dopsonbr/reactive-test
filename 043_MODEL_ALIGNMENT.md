@@ -1,6 +1,6 @@
 # 043_MODEL_ALIGNMENT
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 
@@ -118,10 +118,10 @@ pnpm nx e2e ecommerce-fullstack-e2e
 
 ## Checklist
 
-- [ ] 043A complete (config + stubs)
-- [ ] 043B complete (shared models)
-- [ ] 043C complete (backend services)
-- [ ] 043D complete (frontend + tests)
-- [ ] All builds pass
-- [ ] All tests pass
-- [ ] E2E flow works
+- [x] 043A complete (config + stubs)
+- [x] 043B complete (shared models)
+- [x] 043C complete (backend services)
+- [x] 043D complete (frontend + tests)
+- [x] All builds pass
+- [x] All tests pass (model-related; pre-existing ArchUnit failures unrelated)
+- [ ] E2E flow works (requires Docker infrastructure)

@@ -6,7 +6,7 @@ import { UserMenu } from '../../features/auth';
 
 export function Header() {
   const { data: cart } = useCart();
-  const itemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+  const itemCount = cart?.products?.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0) || 0;
 
   return (
     <header className="border-b bg-background">

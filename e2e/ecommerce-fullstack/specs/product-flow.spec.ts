@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test-base';
 
 test.describe('Product Flow (Full-Stack)', () => {
   test('loads product data from backend', async ({ page }) => {

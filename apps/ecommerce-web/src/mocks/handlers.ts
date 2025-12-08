@@ -47,7 +47,8 @@ export const handlers = [
   http.get(`${PRODUCT_API}/products/:sku`, async ({ params }) => {
     await delay(100);
 
-    const product = mockProducts.find((p) => p.sku === params.sku);
+    const sku = Number(params.sku);
+    const product = mockProducts.find((p) => p.sku === sku);
     if (!product) {
       return new HttpResponse(
         JSON.stringify({ message: 'Product not found', code: 'PRODUCT_NOT_FOUND' }),

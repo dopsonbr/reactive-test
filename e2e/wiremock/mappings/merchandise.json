@@ -17,7 +17,7 @@
         "jsonBody": {
           "name": "Test Product",
           "description": "Test Product Description with detailed information about the product.",
-          "imageUrl": "https://cdn.example.com/products/default.jpg",
+          "imageUrl": "https://picsum.photos/seed/product/400/400",
           "category": "General"
         },
         "delayDistribution": {
@@ -84,7 +84,7 @@
         "jsonBody": {
           "name": "Test Product",
           "description": "Test Product Description with detailed information about the product.",
-          "imageUrl": "https://cdn.example.com/products/default.jpg",
+          "imageUrl": "https://picsum.photos/seed/product/400/400",
           "category": "General"
         },
         "fixedDelayMilliseconds": 10000
@@ -107,7 +107,7 @@
         "jsonBody": {
           "name": "Test Product",
           "description": "Test Product Description with detailed information about the product.",
-          "imageUrl": "https://cdn.example.com/products/default.jpg",
+          "imageUrl": "https://picsum.photos/seed/product/400/400",
           "category": "General"
         },
         "delayDistribution": {

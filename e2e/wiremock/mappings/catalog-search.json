@@ -23,7 +23,7 @@
               "price": "299.99",
               "originalPrice": "349.99",
               "availableQuantity": 50,
-              "imageUrl": "https://cdn.example.com/products/headphones.jpg",
+              "imageUrl": "https://picsum.photos/seed/headphones/400/400",
               "category": "Electronics",
               "relevanceScore": 1.0
             },
@@ -34,7 +34,7 @@
               "price": "199.99",
               "originalPrice": null,
               "availableQuantity": 30,
-              "imageUrl": "https://cdn.example.com/products/smartwatch.jpg",
+              "imageUrl": "https://picsum.photos/seed/smartwatch/400/400",
               "category": "Electronics",
               "relevanceScore": 0.95
             },
@@ -45,7 +45,7 @@
               "price": "79.99",
               "originalPrice": null,
               "availableQuantity": 100,
-              "imageUrl": "https://cdn.example.com/products/laptop-stand.jpg",
+              "imageUrl": "https://picsum.photos/seed/laptopstand/400/400",
               "category": "Electronics",
               "relevanceScore": 0.90
             },
@@ -56,7 +56,7 @@
               "price": "149.99",
               "originalPrice": "179.99",
               "availableQuantity": 25,
-              "imageUrl": "https://cdn.example.com/products/keyboard.jpg",
+              "imageUrl": "https://picsum.photos/seed/keyboard/400/400",
               "category": "Electronics",
               "relevanceScore": 0.85
             },
@@ -67,7 +67,7 @@
               "price": "129.99",
               "originalPrice": null,
               "availableQuantity": 75,
-              "imageUrl": "https://cdn.example.com/products/running-shoes.jpg",
+              "imageUrl": "https://picsum.photos/seed/shoes/400/400",
               "category": "Sports",
               "relevanceScore": 0.80
             },
@@ -78,7 +78,7 @@
               "price": "49.99",
               "originalPrice": null,
               "availableQuantity": 200,
-              "imageUrl": "https://cdn.example.com/products/yoga-mat.jpg",
+              "imageUrl": "https://picsum.photos/seed/yogamat/400/400",
               "category": "Sports",
               "relevanceScore": 0.75
             },
@@ -89,7 +89,7 @@
               "price": "29.99",
               "originalPrice": null,
               "availableQuantity": 500,
-              "imageUrl": "https://cdn.example.com/products/tshirt.jpg",
+              "imageUrl": "https://picsum.photos/seed/tshirt/400/400",
               "category": "Clothing",
               "relevanceScore": 0.70
             },
@@ -100,7 +100,7 @@
               "price": "89.99",
               "originalPrice": "119.99",
               "availableQuantity": 0,
-              "imageUrl": "https://cdn.example.com/products/denim-jacket.jpg",
+              "imageUrl": "https://picsum.photos/seed/jacket/400/400",
               "category": "Clothing",
               "relevanceScore": 0.65
             },
@@ -111,7 +111,7 @@
               "price": "34.99",
               "originalPrice": null,
               "availableQuantity": 60,
-              "imageUrl": "https://cdn.example.com/products/planter.jpg",
+              "imageUrl": "https://picsum.photos/seed/planter/400/400",
               "category": "Home",
               "relevanceScore": 0.60
             },
@@ -122,7 +122,7 @@
               "price": "59.99",
               "originalPrice": null,
               "availableQuantity": 40,
-              "imageUrl": "https://cdn.example.com/products/blanket.jpg",
+              "imageUrl": "https://picsum.photos/seed/blanket/400/400",
               "category": "Home",
               "relevanceScore": 0.55
             }
@@ -172,7 +172,7 @@
               "price": "299.99",
               "originalPrice": "349.99",
               "availableQuantity": 50,
-              "imageUrl": "https://cdn.example.com/products/headphones.jpg",
+              "imageUrl": "https://picsum.photos/seed/headphones/400/400",
               "category": "Electronics",
               "relevanceScore": 1.0
             },
@@ -183,7 +183,7 @@
               "price": "199.99",
               "originalPrice": null,
               "availableQuantity": 30,
-              "imageUrl": "https://cdn.example.com/products/smartwatch.jpg",
+              "imageUrl": "https://picsum.photos/seed/smartwatch/400/400",
               "category": "Electronics",
               "relevanceScore": 0.95
             },
@@ -194,7 +194,7 @@
               "price": "79.99",
               "originalPrice": null,
               "availableQuantity": 100,
-              "imageUrl": "https://cdn.example.com/products/laptop-stand.jpg",
+              "imageUrl": "https://picsum.photos/seed/laptopstand/400/400",
               "category": "Electronics",
               "relevanceScore": 0.90
             },
@@ -205,7 +205,7 @@
               "price": "149.99",
               "originalPrice": "179.99",
               "availableQuantity": 25,
-              "imageUrl": "https://cdn.example.com/products/keyboard.jpg",
+              "imageUrl": "https://picsum.photos/seed/keyboard/400/400",
               "category": "Electronics",
               "relevanceScore": 0.85
             }
@@ -255,7 +255,7 @@
               "price": "129.99",
               "originalPrice": null,
               "availableQuantity": 75,
-              "imageUrl": "https://cdn.example.com/products/running-shoes.jpg",
+              "imageUrl": "https://picsum.photos/seed/shoes/400/400",
               "category": "Sports",
               "relevanceScore": 1.0
             },
@@ -266,7 +266,7 @@
               "price": "49.99",
               "originalPrice": null,
               "availableQuantity": 200,
-              "imageUrl": "https://cdn.example.com/products/yoga-mat.jpg",
+              "imageUrl": "https://picsum.photos/seed/yogamat/400/400",
               "category": "Sports",
               "relevanceScore": 0.95
             }
@@ -316,7 +316,7 @@
               "price": "29.99",
               "originalPrice": null,
               "availableQuantity": 500,
-              "imageUrl": "https://cdn.example.com/products/tshirt.jpg",
+              "imageUrl": "https://picsum.photos/seed/tshirt/400/400",
               "category": "Clothing",
               "relevanceScore": 1.0
             },
@@ -327,7 +327,7 @@
               "price": "89.99",
               "originalPrice": "119.99",
               "availableQuantity": 0,
-              "imageUrl": "https://cdn.example.com/products/denim-jacket.jpg",
+              "imageUrl": "https://picsum.photos/seed/jacket/400/400",
               "category": "Clothing",
               "relevanceScore": 0.95
             }
@@ -377,7 +377,7 @@
               "price": "34.99",
               "originalPrice": null,
               "availableQuantity": 60,
-              "imageUrl": "https://cdn.example.com/products/planter.jpg",
+              "imageUrl": "https://picsum.photos/seed/planter/400/400",
               "category": "Home",
               "relevanceScore": 1.0
             },
@@ -388,7 +388,7 @@
               "price": "59.99",
               "originalPrice": null,
               "availableQuantity": 40,
-              "imageUrl": "https://cdn.example.com/products/blanket.jpg",
+              "imageUrl": "https://picsum.photos/seed/blanket/400/400",
               "category": "Home",
               "relevanceScore": 0.95
             }
@@ -438,7 +438,7 @@
               "price": "299.99",
               "originalPrice": "349.99",
               "availableQuantity": 50,
-              "imageUrl": "https://cdn.example.com/products/headphones.jpg",
+              "imageUrl": "https://picsum.photos/seed/headphones/400/400",
               "category": "Electronics",
               "relevanceScore": 1.0
             }
@@ -488,7 +488,7 @@
               "price": "79.99",
               "originalPrice": null,
               "availableQuantity": 100,
-              "imageUrl": "https://cdn.example.com/products/laptop-stand.jpg",
+              "imageUrl": "https://picsum.photos/seed/laptopstand/400/400",
               "category": "Electronics",
               "relevanceScore": 1.0
             }
@@ -630,7 +630,7 @@
               "price": "299.99",
               "originalPrice": "349.99",
               "availableQuantity": 50,
-              "imageUrl": "https://cdn.example.com/products/headphones.jpg",
+              "imageUrl": "https://picsum.photos/seed/headphones/400/400",
               "category": "Electronics",
               "relevanceScore": 0.95
             }

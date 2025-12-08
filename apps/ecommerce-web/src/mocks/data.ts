@@ -1,15 +1,6 @@
 import type { Product } from '../features/products/types/product';
 import type { Cart } from '../features/cart/types/cart';
 
-// Generate a placeholder SVG image as a data URI
-function placeholderImage(text: string, bgColor: string = '#e2e8f0'): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-    <rect width="400" height="400" fill="${bgColor}"/>
-    <text x="200" y="200" font-family="system-ui, sans-serif" font-size="24" font-weight="500" fill="#64748b" text-anchor="middle" dominant-baseline="middle">${text}</text>
-  </svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-}
-
 export const mockProducts: Product[] = [
   {
     sku: 1001,
@@ -18,7 +9,7 @@ export const mockProducts: Product[] = [
     price: '299.99',
     originalPrice: '349.99',
     availableQuantity: 50,
-    imageUrl: placeholderImage('Headphones', '#dbeafe'),
+    imageUrl: 'https://picsum.photos/seed/headphones/400/400',
     category: 'Electronics',
     inStock: true,
     onSale: true,
@@ -29,7 +20,7 @@ export const mockProducts: Product[] = [
     description: 'Fitness tracking smartwatch with heart rate monitor, GPS, and 7-day battery life.',
     price: '199.99',
     availableQuantity: 30,
-    imageUrl: placeholderImage('Smart Watch', '#dbeafe'),
+    imageUrl: 'https://picsum.photos/seed/smartwatch/400/400',
     category: 'Electronics',
     inStock: true,
     onSale: false,
@@ -40,7 +31,7 @@ export const mockProducts: Product[] = [
     description: 'Ergonomic aluminum laptop stand with adjustable height and improved airflow cooling.',
     price: '79.99',
     availableQuantity: 100,
-    imageUrl: placeholderImage('Laptop Stand', '#dbeafe'),
+    imageUrl: 'https://picsum.photos/seed/laptopstand/400/400',
     category: 'Electronics',
     inStock: true,
     onSale: false,
@@ -52,7 +43,7 @@ export const mockProducts: Product[] = [
     price: '149.99',
     originalPrice: '179.99',
     availableQuantity: 25,
-    imageUrl: placeholderImage('Keyboard', '#dbeafe'),
+    imageUrl: 'https://picsum.photos/seed/keyboard/400/400',
     category: 'Electronics',
     inStock: true,
     onSale: true,
@@ -63,7 +54,7 @@ export const mockProducts: Product[] = [
     description: 'Lightweight running shoes with responsive cushioning and breathable mesh upper.',
     price: '129.99',
     availableQuantity: 75,
-    imageUrl: placeholderImage('Running Shoes', '#dcfce7'),
+    imageUrl: 'https://picsum.photos/seed/shoes/400/400',
     category: 'Sports',
     inStock: true,
     onSale: false,
@@ -74,7 +65,7 @@ export const mockProducts: Product[] = [
     description: 'Premium non-slip yoga mat with extra cushioning and alignment guides.',
     price: '49.99',
     availableQuantity: 200,
-    imageUrl: placeholderImage('Yoga Mat', '#dcfce7'),
+    imageUrl: 'https://picsum.photos/seed/yogamat/400/400',
     category: 'Sports',
     inStock: true,
     onSale: false,
@@ -85,7 +76,7 @@ export const mockProducts: Product[] = [
     description: 'Soft 100% organic cotton t-shirt in classic fit.',
     price: '29.99',
     availableQuantity: 500,
-    imageUrl: placeholderImage('T-Shirt', '#fef3c7'),
+    imageUrl: 'https://picsum.photos/seed/tshirt/400/400',
     category: 'Clothing',
     inStock: true,
     onSale: false,
@@ -97,7 +88,7 @@ export const mockProducts: Product[] = [
     price: '89.99',
     originalPrice: '119.99',
     availableQuantity: 0,
-    imageUrl: placeholderImage('Denim Jacket', '#fef3c7'),
+    imageUrl: 'https://picsum.photos/seed/jacket/400/400',
     category: 'Clothing',
     inStock: false,
     onSale: true,
@@ -108,7 +99,7 @@ export const mockProducts: Product[] = [
     description: 'Hand-crafted ceramic planter perfect for indoor plants.',
     price: '34.99',
     availableQuantity: 60,
-    imageUrl: placeholderImage('Planter', '#fce7f3'),
+    imageUrl: 'https://picsum.photos/seed/planter/400/400',
     category: 'Home',
     inStock: true,
     onSale: false,
@@ -119,7 +110,7 @@ export const mockProducts: Product[] = [
     description: 'Cozy knitted throw blanket in neutral tones.',
     price: '59.99',
     availableQuantity: 40,
-    imageUrl: placeholderImage('Blanket', '#fce7f3'),
+    imageUrl: 'https://picsum.photos/seed/blanket/400/400',
     category: 'Home',
     inStock: true,
     onSale: false,

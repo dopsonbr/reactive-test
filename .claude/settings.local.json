@@ -131,6 +131,8 @@
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "nx-mcp"
+    "nx-mcp",
+    "chrome-devtools",
+    "playwright"
   ]
 }

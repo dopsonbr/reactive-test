@@ -1,4 +1,4 @@
-# 039G_POS_E2E_TESTING
+# 045G_POS_E2E_TESTING
 
 **Status: DRAFT**
 
@@ -9,9 +9,9 @@
 Comprehensive end-to-end testing strategy and business documentation for the POS application. This plan emphasizes business scenario documentation, ensuring that tests serve as living documentation of retail operations.
 
 **Related Plans:**
-- `039_POS_SYSTEM.md` - Parent initiative
-- `039F_POS_ADVANCED_FEATURES.md` - Advanced features to test (prerequisite)
-- `038D_KIOSK_E2E_TESTING.md` - E2E patterns established
+- `045_POS_SYSTEM.md` - Parent initiative
+- `045F_POS_ADVANCED_FEATURES.md` - Advanced features to test (prerequisite)
+- `044D_KIOSK_E2E_TESTING.md` - E2E patterns established
 
 ## Goals
 
@@ -524,7 +524,7 @@ import { loginAsEmployee, startTransaction, addItem, processPayment } from '../.
  * Tests the most common retail transaction: customer walks in,
  * associate scans items, customer pays with card, and leaves with items.
  *
- * @see 039G_POS_E2E_TESTING.md - Scenario 1.1
+ * @see 045G_POS_E2E_TESTING.md - Scenario 1.1
  */
 test.describe('Quick Sale Transaction', () => {
   test.beforeEach(async ({ page }) => {
@@ -644,7 +644,7 @@ import { loginAsEmployee, startTransaction, addItem, openMarkdownDialog } from '
  * Tests the workflow when an associate requests a markdown that exceeds
  * their permission tier, requiring manager authorization.
  *
- * @see 039G_POS_E2E_TESTING.md - Scenario 1.4
+ * @see 045G_POS_E2E_TESTING.md - Scenario 1.4
  */
 test.describe('Manager Override for Markdown', () => {
   test.beforeEach(async ({ page }) => {

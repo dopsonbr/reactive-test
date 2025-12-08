@@ -1,4 +1,4 @@
-# 039C_POS_APP_SCAFFOLD
+# 045C_POS_APP_SCAFFOLD
 
 **Status: DRAFT**
 
@@ -9,10 +9,10 @@
 Create the `pos-web` Nx application with role-based authentication, navigation structure, and dashboard home page that supports future order management functionality.
 
 **Related Plans:**
-- `039_POS_SYSTEM.md` - Parent initiative
-- `039A_POS_BACKEND_ENHANCEMENTS.md` - Backend APIs used
-- `039B_POS_UI_COMPONENTS.md` - UI components used
-- `039D_POS_TRANSACTION_FLOW.md` - Depends on scaffold
+- `045_POS_SYSTEM.md` - Parent initiative
+- `045A_POS_BACKEND_ENHANCEMENTS.md` - Backend APIs used
+- `045B_POS_UI_COMPONENTS.md` - UI components used
+- `045D_POS_TRANSACTION_FLOW.md` - Depends on scaffold
 
 ## Goals
 

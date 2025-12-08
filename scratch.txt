@@ -115,3 +115,7 @@ fix ecommerce-web e2e and update standards docs for frontend e2e testing
 
 have gemini 3 create a montage based on git history, archived specs, file changes
 
+create implementatino plan for offline kiosk
+
+
+create implementation plan that finds every example command and script and validates that it works and is properly documented for humans and agents

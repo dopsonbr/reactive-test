@@ -1,4 +1,4 @@
-# 039F_POS_ADVANCED_FEATURES
+# 045F_POS_ADVANCED_FEATURES
 
 **Status: DRAFT**
 
@@ -9,10 +9,10 @@
 Advanced POS features including employee markdown system with permission tiers, multi-fulfillment order management, B2B-specific order flows, and remote payment capture for contact center and B2B sales.
 
 **Related Plans:**
-- `039_POS_SYSTEM.md` - Parent initiative
-- `039D_POS_TRANSACTION_FLOW.md` - Base transaction flow (prerequisite)
-- `039E_POS_CUSTOMER_MANAGEMENT.md` - Customer management (prerequisite)
-- `039A_POS_BACKEND_ENHANCEMENTS.md` - Backend APIs for these features
+- `045_POS_SYSTEM.md` - Parent initiative
+- `045D_POS_TRANSACTION_FLOW.md` - Base transaction flow (prerequisite)
+- `045E_POS_CUSTOMER_MANAGEMENT.md` - Customer management (prerequisite)
+- `045A_POS_BACKEND_ENHANCEMENTS.md` - Backend APIs for these features
 
 ## Goals
 
@@ -119,7 +119,7 @@ Associate attempts 30% markdown (exceeds 15% limit)
 
 ## Phase 1: Markdown System
 
-**Prereqs:** 039D complete, 039A markdown APIs
+**Prereqs:** 045D complete, 045A markdown APIs
 **Blockers:** None
 
 ### 1.1 Markdown Permission Context
@@ -320,7 +320,7 @@ interface MarkdownIndicatorProps {
 
 ## Phase 2: Multi-Fulfillment Orders
 
-**Prereqs:** Phase 1 complete, 039A fulfillment APIs
+**Prereqs:** Phase 1 complete, 045A fulfillment APIs
 **Blockers:** None
 
 ### 2.1 Fulfillment Selector Component
@@ -643,7 +643,7 @@ interface WalletCard {
 
 ## Phase 4: B2B Order Features
 
-**Prereqs:** Phase 3 complete, 039E B2B customer features
+**Prereqs:** Phase 3 complete, 045E B2B customer features
 **Blockers:** None
 
 ### 4.1 B2B Order Header

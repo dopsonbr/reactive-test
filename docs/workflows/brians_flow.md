@@ -35,6 +35,10 @@ try not to work on main branch as much as possible
 
 ## backend only change
 
+## other
+- claude superpowers
+
+
 ## future reading
 - https://www.claude.com/blog/improving-frontend-design-through-skills
 - https://github.com/anthropics/claude-cookbooks/blob/main/coding/prompting_for_frontend_aesthetics.ipynb

@@ -1,4 +1,4 @@
-# 038D_KIOSK_E2E_TESTING
+# 044D_KIOSK_E2E_TESTING
 
 **Status: DRAFT**
 
@@ -9,8 +9,8 @@
 Comprehensive E2E testing strategy for the kiosk application, including shared MSW handlers, Playwright test specs, and full-stack integration testing.
 
 **Related Plans:**
-- `038_SELF_CHECKOUT_KIOSK.md` - Parent initiative
-- `038C_KIOSK_FEATURES.md` - Features being tested
+- `044_SELF_CHECKOUT_KIOSK.md` - Parent initiative
+- `044C_KIOSK_FEATURES.md` - Features being tested
 
 ## Goals
 
@@ -357,7 +357,7 @@ enableMocking().then(() => {
 ## Phase 3: Playwright E2E Tests
 
 **Prereqs:** Phase 2 complete, kiosk app functional
-**Blockers:** 038C_KIOSK_FEATURES must be complete
+**Blockers:** 044C_KIOSK_FEATURES must be complete
 
 ### 3.1 E2E Project Setup
 

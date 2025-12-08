@@ -1,4 +1,4 @@
-# 039A_POS_BACKEND_ENHANCEMENTS
+# 045A_POS_BACKEND_ENHANCEMENTS
 
 **Status: DRAFT**
 
@@ -9,8 +9,8 @@
 Backend API enhancements required to support the full-featured POS system, including expanded payment types, enhanced fulfillment options, customer search improvements, and markdown permission tiers.
 
 **Related Plans:**
-- `039_POS_SYSTEM.md` - Parent initiative
-- `039C_POS_APP_SCAFFOLD.md` - Depends on these APIs
+- `045_POS_SYSTEM.md` - Parent initiative
+- `045C_POS_APP_SCAFFOLD.md` - Depends on these APIs
 
 ## Goals
 

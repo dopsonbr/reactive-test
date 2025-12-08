@@ -1,4 +1,4 @@
-# 039E_POS_CUSTOMER_MANAGEMENT
+# 045E_POS_CUSTOMER_MANAGEMENT
 
 **Status: DRAFT**
 
@@ -9,10 +9,10 @@
 Complete customer management functionality for the POS application, including advanced search, CRUD operations, B2B hierarchy management, and loyalty program integration.
 
 **Related Plans:**
-- `039_POS_SYSTEM.md` - Parent initiative
-- `039C_POS_APP_SCAFFOLD.md` - App foundation (prerequisite)
-- `039D_POS_TRANSACTION_FLOW.md` - Transaction customer integration
-- `039A_POS_BACKEND_ENHANCEMENTS.md` - Backend search APIs
+- `045_POS_SYSTEM.md` - Parent initiative
+- `045C_POS_APP_SCAFFOLD.md` - App foundation (prerequisite)
+- `045D_POS_TRANSACTION_FLOW.md` - Transaction customer integration
+- `045A_POS_BACKEND_ENHANCEMENTS.md` - Backend search APIs
 
 ## Goals
 
@@ -107,7 +107,7 @@ Complete customer management functionality for the POS application, including ad
 
 ## Phase 1: Customer Search
 
-**Prereqs:** 039C complete, 039A customer search APIs
+**Prereqs:** 045C complete, 045A customer search APIs
 **Blockers:** None
 
 ### 1.1 Customer Search Page

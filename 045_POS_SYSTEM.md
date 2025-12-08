@@ -1,4 +1,4 @@
-# 039_POS_SYSTEM
+# 045_POS_SYSTEM
 
 **Status: DRAFT**
 
@@ -14,13 +14,13 @@ This is an **initiative plan** with 7 sub-plans designed for parallel developmen
 
 | Plan | Description | Priority | Dependencies |
 |------|-------------|----------|--------------|
-| `039A_POS_BACKEND_ENHANCEMENTS.md` | Backend API gaps, payment types, fulfillment enhancements | P0 | None |
-| `039B_POS_UI_COMPONENTS.md` | New shared UI components (DataTable, forms, modals) | P0 | None |
-| `039C_POS_APP_SCAFFOLD.md` | App structure, auth, role-based routing, home dashboard | P1 | 039A, 039B |
-| `039D_POS_TRANSACTION_FLOW.md` | Core transaction: scan, cart, customer, checkout | P1 | 039C |
-| `039E_POS_CUSTOMER_MANAGEMENT.md` | Customer search, CRUD, B2B hierarchy, loyalty | P1 | 039C |
-| `039F_POS_ADVANCED_FEATURES.md` | Markdowns, multi-fulfillment, B2B orders, remote payments | P2 | 039D, 039E |
-| `039G_POS_E2E_TESTING.md` | Comprehensive E2E testing and business documentation | P2 | 039F |
+| `045A_POS_BACKEND_ENHANCEMENTS.md` | Backend API gaps, payment types, fulfillment enhancements | P0 | None |
+| `045B_POS_UI_COMPONENTS.md` | New shared UI components (DataTable, forms, modals) | P0 | None |
+| `045C_POS_APP_SCAFFOLD.md` | App structure, auth, role-based routing, home dashboard | P1 | 045A, 045B |
+| `045D_POS_TRANSACTION_FLOW.md` | Core transaction: scan, cart, customer, checkout | P1 | 045C |
+| `045E_POS_CUSTOMER_MANAGEMENT.md` | Customer search, CRUD, B2B hierarchy, loyalty | P1 | 045C |
+| `045F_POS_ADVANCED_FEATURES.md` | Markdowns, multi-fulfillment, B2B orders, remote payments | P2 | 045D, 045E |
+| `045G_POS_E2E_TESTING.md` | Comprehensive E2E testing and business documentation | P2 | 045F |
 
 ---
 
@@ -145,7 +145,7 @@ SIMPLE ◄───────────────────────�
 
 ```
                     ┌─────────────────────────────┐
-                    │ 038A Shared Commerce        │
+                    │ 044A Shared Commerce        │
                     │ (if not done)               │
                     └──────────────┬──────────────┘
                                    │
@@ -153,14 +153,14 @@ SIMPLE ◄───────────────────────�
          │                         │                         │
          ▼                         ▼                         │
 ┌─────────────────┐     ┌─────────────────┐                  │
-│ 039A: Backend   │     │ 039B: UI        │                  │
+│ 045A: Backend   │     │ 045B: UI        │                  │
 │ Enhancements    │     │ Components      │                  │
 └────────┬────────┘     └────────┬────────┘                  │
          │                       │                           │
          └───────────┬───────────┘                           │
                      │                                       │
             ┌────────▼────────┐                              │
-            │ 039C: App       │                              │
+            │ 045C: App       │                              │
             │ Scaffold        │                              │
             └────────┬────────┘                              │
                      │                                       │
@@ -168,7 +168,7 @@ SIMPLE ◄───────────────────────�
        │             │             │                         │
        ▼             ▼             │                         │
 ┌─────────────┐ ┌─────────────┐    │                         │
-│ 039D:       │ │ 039E:       │    │                         │
+│ 045D:       │ │ 045E:       │    │                         │
 │ Transaction │ │ Customer    │    │                         │
 │ Flow        │ │ Management  │    │                         │
 └──────┬──────┘ └──────┬──────┘    │                         │
@@ -176,12 +176,12 @@ SIMPLE ◄───────────────────────�
        └───────┬───────┘           │                         │
                │                   │                         │
       ┌────────▼────────┐          │                         │
-      │ 039F: Advanced  │◀─────────┘                         │
+      │ 045F: Advanced  │◀─────────┘                         │
       │ Features        │                                    │
       └────────┬────────┘                                    │
                │                                             │
       ┌────────▼────────┐                                    │
-      │ 039G: E2E       │◀───────────────────────────────────┘
+      │ 045G: E2E       │◀───────────────────────────────────┘
       │ Testing         │
       └─────────────────┘
 ```
@@ -301,7 +301,7 @@ apps/pos-web/                          # Port 3003
 
 ---
 
-## Backend API Gaps to Address (039A)
+## Backend API Gaps to Address (045A)
 
 ### New Endpoints Required
 
@@ -347,12 +347,12 @@ Each major feature will have:
 
 ## Checklist
 
-- [ ] 039A: Backend enhancements complete
-- [ ] 039B: UI components created
-- [ ] 039C: App scaffold functional
-- [ ] 039D: Transaction flow working
-- [ ] 039E: Customer management working
-- [ ] 039F: Advanced features complete
-- [ ] 039G: E2E tests passing, business docs complete
+- [ ] 045A: Backend enhancements complete
+- [ ] 045B: UI components created
+- [ ] 045C: App scaffold functional
+- [ ] 045D: Transaction flow working
+- [ ] 045E: Customer management working
+- [ ] 045F: Advanced features complete
+- [ ] 045G: E2E tests passing, business docs complete
 - [ ] All accessibility tests passing
 - [ ] Performance benchmarks met

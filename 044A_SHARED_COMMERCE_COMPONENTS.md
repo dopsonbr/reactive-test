@@ -1,4 +1,4 @@
-# 038A_SHARED_COMMERCE_COMPONENTS
+# 044A_SHARED_COMMERCE_COMPONENTS
 
 **Status: DRAFT**
 
@@ -9,8 +9,8 @@
 Extract reusable commerce components and hooks from `ecommerce-web` into shared libraries, enabling code reuse between the ecommerce web app and the new kiosk app.
 
 **Related Plans:**
-- `038_SELF_CHECKOUT_KIOSK.md` - Parent initiative
-- `038B_KIOSK_APP_SCAFFOLD.md` - Depends on this plan
+- `044_SELF_CHECKOUT_KIOSK.md` - Parent initiative
+- `044B_KIOSK_APP_SCAFFOLD.md` - Depends on this plan
 
 ## Goals
 
@@ -284,7 +284,7 @@ Path alias: `@reactive-platform/commerce-hooks`
 - CREATE: `libs/frontend/shared-data/commerce-hooks/src/types/index.ts`
 
 **Implementation:**
-Extract types from `apps/ecommerce-web/src/features/*/types/` and treat these as the canonical DTOs for both apps **and** the MSW handlers introduced in `038D`:
+Extract types from `apps/ecommerce-web/src/features/*/types/` and treat these as the canonical DTOs for both apps **and** the MSW handlers introduced in `044D`:
 - Product, ProductSearchParams, ProductSearchResult
 - Cart, CartItem, AddToCartRequest, UpdateCartItemRequest
 - Customer, LoyaltyInfo

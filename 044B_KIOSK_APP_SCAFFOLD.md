@@ -1,4 +1,4 @@
-# 038B_KIOSK_APP_SCAFFOLD
+# 044B_KIOSK_APP_SCAFFOLD
 
 **Status: DRAFT**
 
@@ -9,9 +9,9 @@
 Create the `kiosk-web` Nx application with session management, service account authentication, and touch-optimized layout infrastructure.
 
 **Related Plans:**
-- `038_SELF_CHECKOUT_KIOSK.md` - Parent initiative
-- `038A_SHARED_COMMERCE_COMPONENTS.md` - Prerequisite (shared libs)
-- `038C_KIOSK_FEATURES.md` - Depends on this plan
+- `044_SELF_CHECKOUT_KIOSK.md` - Parent initiative
+- `044A_SHARED_COMMERCE_COMPONENTS.md` - Prerequisite (shared libs)
+- `044C_KIOSK_FEATURES.md` - Depends on this plan
 
 ## Goals
 
@@ -241,7 +241,7 @@ interface CartScope {
 function useCartScope(): CartScope;
 ```
 
-> Expose a `useCartScope()` hook (or equivalent selector) from the session provider so kiosk features can call the shared commerce hooks without reinventing cart ID/header plumbing. This keeps kiosk aligned with the `commerce-hooks` contract introduced in 038A.
+> Expose a `useCartScope()` hook (or equivalent selector) from the session provider so kiosk features can call the shared commerce hooks without reinventing cart ID/header plumbing. This keeps kiosk aligned with the `commerce-hooks` contract introduced in 044A.
 
 ### 3.2 Session Storage Integration
 

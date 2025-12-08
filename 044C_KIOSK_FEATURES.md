@@ -1,4 +1,4 @@
-# 038C_KIOSK_FEATURES
+# 044C_KIOSK_FEATURES
 
 **Status: DRAFT**
 
@@ -9,10 +9,10 @@
 Implement the core kiosk features: product scanning, cart management, loyalty lookup, and checkout flow.
 
 **Related Plans:**
-- `038_SELF_CHECKOUT_KIOSK.md` - Parent initiative
-- `038A_SHARED_COMMERCE_COMPONENTS.md` - Prerequisite (shared UI/hooks)
-- `038B_KIOSK_APP_SCAFFOLD.md` - Prerequisite (app structure)
-- `038D_KIOSK_E2E_TESTING.md` - Test coverage for these features
+- `044_SELF_CHECKOUT_KIOSK.md` - Parent initiative
+- `044A_SHARED_COMMERCE_COMPONENTS.md` - Prerequisite (shared UI/hooks)
+- `044B_KIOSK_APP_SCAFFOLD.md` - Prerequisite (app structure)
+- `044D_KIOSK_E2E_TESTING.md` - Test coverage for these features
 
 ## Goals
 
@@ -32,7 +32,7 @@ Implement the core kiosk features: product scanning, cart management, loyalty lo
 
 ## Phase 1: Product Scanning
 
-**Prereqs:** 038B complete (app scaffold), product-service running
+**Prereqs:** 044B complete (app scaffold), product-service running
 **Blockers:** None
 
 ### 1.1 Scanner Input Hook

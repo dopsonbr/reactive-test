@@ -1,4 +1,4 @@
-# 039D_POS_TRANSACTION_FLOW
+# 045D_POS_TRANSACTION_FLOW
 
 **Status: DRAFT**
 
@@ -9,10 +9,10 @@
 Core transaction flow implementation for the POS application. This covers the primary use case of creating and completing a sale, from initial item entry through checkout and receipt generation.
 
 **Related Plans:**
-- `039_POS_SYSTEM.md` - Parent initiative
-- `039C_POS_APP_SCAFFOLD.md` - App foundation (prerequisite)
-- `039E_POS_CUSTOMER_MANAGEMENT.md` - Customer integration
-- `039F_POS_ADVANCED_FEATURES.md` - Advanced checkout features
+- `045_POS_SYSTEM.md` - Parent initiative
+- `045C_POS_APP_SCAFFOLD.md` - App foundation (prerequisite)
+- `045E_POS_CUSTOMER_MANAGEMENT.md` - Customer integration
+- `045F_POS_ADVANCED_FEATURES.md` - Advanced checkout features
 
 ## Goals
 
@@ -84,7 +84,7 @@ Core transaction flow implementation for the POS application. This covers the pr
 
 ## Phase 1: Transaction Context & State
 
-**Prereqs:** 039C complete (app scaffold, auth)
+**Prereqs:** 045C complete (app scaffold, auth)
 **Blockers:** None
 
 ### 1.1 Transaction State Model
@@ -425,7 +425,7 @@ interface QuantityInputProps {
 
 ## Phase 4: Customer Association
 
-**Prereqs:** Phase 3 complete, 039E started
+**Prereqs:** Phase 3 complete, 045E started
 **Blockers:** None (can use mock customer data initially)
 
 ### 4.1 Customer Panel Component
@@ -577,7 +577,7 @@ interface FulfillmentConfig {
 // - Pickup with date selection
 // - Delivery with address entry
 
-// Advanced fulfillment (039F):
+// Advanced fulfillment (045F):
 // - Multi-fulfillment (split items)
 // - Will-call with time windows
 // - Installation scheduling

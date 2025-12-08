@@ -1,4 +1,4 @@
-# 038_SELF_CHECKOUT_KIOSK
+# 044_SELF_CHECKOUT_KIOSK
 
 **Status: DRAFT**
 
@@ -14,10 +14,10 @@ This is an **initiative plan** with 4 sub-plans that can be worked in parallel b
 
 | Plan | Description | Dependencies |
 |------|-------------|--------------|
-| `038A_SHARED_COMMERCE_COMPONENTS.md` | Extract reusable product/cart components to shared libs | None |
-| `038B_KIOSK_APP_SCAFFOLD.md` | Create kiosk-web app with session management | 038A |
-| `038C_KIOSK_FEATURES.md` | Implement scan, loyalty, checkout flows | 038A, 038B |
-| `038D_KIOSK_E2E_TESTING.md` | E2E test strategy and MSW handlers | 038C |
+| `044A_SHARED_COMMERCE_COMPONENTS.md` | Extract reusable product/cart components to shared libs | None |
+| `044B_KIOSK_APP_SCAFFOLD.md` | Create kiosk-web app with session management | 044A |
+| `044C_KIOSK_FEATURES.md` | Implement scan, loyalty, checkout flows | 044A, 044B |
+| `044D_KIOSK_E2E_TESTING.md` | E2E test strategy and MSW handlers | 044C |
 
 ## Goals
 
@@ -103,7 +103,7 @@ This is an **initiative plan** with 4 sub-plans that can be worked in parallel b
                     └──────────────┬──────────────┘
                                    │
                     ┌──────────────▼──────────────┐
-                    │ 038A: Shared Components     │
+                    │ 044A: Shared Components     │
                     │ (extract from ecommerce)    │
                     └──────────────┬──────────────┘
                                    │
@@ -111,20 +111,20 @@ This is an **initiative plan** with 4 sub-plans that can be worked in parallel b
               │                    │                    │
               ▼                    ▼                    │
 ┌─────────────────────┐ ┌─────────────────────┐        │
-│ 038B: App Scaffold  │ │ 038D: E2E Testing   │        │
+│ 044B: App Scaffold  │ │ 044D: E2E Testing   │        │
 │ (can start early)   │ │ (MSW handlers)      │        │
 └──────────┬──────────┘ └──────────┬──────────┘        │
            │                       │                    │
            └───────────┬───────────┘                    │
                        │                                │
               ┌────────▼────────┐                       │
-              │ 038C: Features  │◀──────────────────────┘
+              │ 044C: Features  │◀──────────────────────┘
               │ (scan, loyalty, │
               │  checkout)      │
               └────────┬────────┘
                        │
               ┌────────▼────────┐
-              │ 038D: E2E Tests │
+              │ 044D: E2E Tests │
               │ (full specs)    │
               └─────────────────┘
 ```
@@ -175,7 +175,7 @@ apps/ecommerce-web/src/
 libs/frontend/
 ├── shared-ui/
 │   ├── ui-components/          (existing)
-│   └── commerce-ui/            (NEW - 038A)
+│   └── commerce-ui/            (NEW - 044A)
 │       ├── ProductCard/
 │       ├── CartItemRow/
 │       ├── CartSummary/
@@ -183,12 +183,12 @@ libs/frontend/
 │       └── QuantitySelector/
 ├── shared-data/
 │   ├── api-client/             (existing)
-│   └── commerce-hooks/         (NEW - 038A)
+│   └── commerce-hooks/         (NEW - 044A)
 │       ├── useProducts.ts
 │       ├── useCart.ts
 │       ├── useCustomerLookup.ts
 │       └── types/
-└── shared-testing/             (NEW - 038D)
+└── shared-testing/             (NEW - 044D)
     └── mock-handlers/
         ├── products.ts
         ├── cart.ts
@@ -200,8 +200,8 @@ libs/frontend/
 
 ## Checklist
 
-- [ ] 038A: Shared commerce components extracted
-- [ ] 038B: Kiosk app scaffolding complete
-- [ ] 038C: All kiosk features implemented
-- [ ] 038D: E2E tests passing
+- [ ] 044A: Shared commerce components extracted
+- [ ] 044B: Kiosk app scaffolding complete
+- [ ] 044C: All kiosk features implemented
+- [ ] 044D: E2E tests passing
 - [ ] Documentation updated

@@ -2,11 +2,17 @@
 
 **Status: DRAFT**
 
+**Prerequisites:**
+- `043_MODEL_ALIGNMENT.md` - **MUST BE COMPLETE** before starting this plan
+
 ---
 
 ## Overview
 
 Implement the frontend-backend domain model sharing strategy from ADR 012. This adds springdoc-openapi to all backend services, configures graphql-codegen for cart/order services, and establishes a committed-specs workflow where OpenAPI and GraphQL schemas are versioned in git for LLM agent discovery and offline TypeScript generation.
+
+**Prerequisite Plans:**
+- `043_MODEL_ALIGNMENT.md` - Backend/frontend model alignment (must complete first)
 
 **Related Plans:**
 - `040A_API_CODEGEN_DOCS.md` - Standards, templates, verification scripts, workflow documentation
@@ -14,13 +20,16 @@ Implement the frontend-backend domain model sharing strategy from ADR 012. This 
 **Related ADRs:**
 - `docs/ADRs/012_frontend_backend_model_sharing.md` - Architectural decision for code-first OpenAPI
 
+**Why 043 must complete first:**
+The OpenAPI codegen generates TypeScript types from backend Java models. If backend models lack fields the frontend needs (imageUrl, name, category), the generated types will be incomplete. Plan 043 extends backend models to include all frontend-required fields, ensuring generated types are immediately usable.
+
 ## Goals
 
-1. Add springdoc-openapi to all 8 backend services with consistent configuration
+1. Add springdoc-openapi to all 9 backend services with consistent configuration
 2. Generate TypeScript clients from OpenAPI specs for REST endpoints
 3. Generate TypeScript types/hooks from GraphQL schemas for cart-service and order-service
 4. Commit specs to repository for LLM discoverability and CI validation
-5. Replace hand-written frontend types with generated types
+5. Frontend imports generated types (model alignment done in 043)
 
 ## References
 
@@ -33,45 +42,52 @@ Implement the frontend-backend domain model sharing strategy from ADR 012. This 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         Backend Services                                 │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐       │
-│  │  product    │ │  customer   │ │  discount   │ │ fulfillment │  ...  │
-│  │  :8080      │ │  :8083      │ │  :8084      │ │  :8085      │       │
-│  │ REST+OpenAPI│ │ REST+OpenAPI│ │ REST+OpenAPI│ │ REST+OpenAPI│       │
-│  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘       │
-│         │               │               │               │               │
-│         └───────────────┴───────────────┴───────────────┘               │
-│                                 │                                        │
-│                      /v3/api-docs (JSON)                                │
-│  ┌─────────────┐ ┌─────────────┐                                        │
-│  │    cart     │ │    order    │                                        │
-│  │   :8081     │ │   :8088     │                                        │
-│  │ REST+GraphQL│ │ REST+GraphQL│                                        │
-│  └──────┬──────┘ └──────┬──────┘                                        │
-│         │               │                                                │
-│    /graphql + /v3/api-docs                                              │
-└─────────┬───────────────┴───────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         Backend Services (9 total)                           │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │
+│  │  product    │ │  customer   │ │  discount   │ │ fulfillment │           │
+│  │  :8080      │ │  :8083      │ │  :8084      │ │  :8085      │           │
+│  │ REST+OpenAPI│ │ REST+OpenAPI│ │ REST+OpenAPI│ │ REST+OpenAPI│           │
+│  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘           │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐                           │
+│  │   audit     │ │  checkout   │ │    user     │                           │
+│  │  :8086      │ │  :8087      │ │  :8089      │                           │
+│  │ REST+OpenAPI│ │ REST+OpenAPI│ │ REST+OpenAPI│                           │
+│  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘                           │
+│         │               │               │                                   │
+│         └───────────────┴───────────────┴───────────────────────────────┐   │
+│                                 │                                        │   │
+│                      /v3/api-docs (JSON)                                │   │
+│  ┌─────────────┐ ┌─────────────┐                                        │   │
+│  │    cart     │ │    order    │                                        │   │
+│  │   :8081     │ │   :8088     │                                        │   │
+│  │ REST+GraphQL│ │ REST+GraphQL│                                        │   │
+│  └──────┬──────┘ └──────┬──────┘                                        │   │
+│         │               │                                                │   │
+│    /graphql + /v3/api-docs                                              │   │
+└─────────┬───────────────┴───────────────────────────────────────────────┘   │
+          │                                                                     │
+          ▼                                                                     │
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    tools/openapi-codegen/specs/                             │
+│  product-service.json, cart-service.json, order-service.json,              │
+│  customer-service.json, discount-service.json, fulfillment-service.json,   │
+│  audit-service.json, checkout-service.json, user-service.json              │
+│                    tools/graphql-codegen/schemas/                           │
+│  cart-service.graphqls, order-service.graphqls                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+          │
+          ▼  openapi-generator-cli + graphql-codegen (Node ESM scripts)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│            libs/frontend/shared-data/api-client/src/generated/              │
+│  ├── rest/{service}/models/*.ts, api/*.ts                                   │
+│  └── graphql/{service}/types.ts, hooks.ts                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
           │
           ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    tools/openapi-codegen/specs/                         │
-│  product-service.json, cart-service.json, order-service.json, ...      │
-│                    tools/graphql-codegen/schemas/                       │
-│  cart-service.graphqls, order-service.graphqls                          │
-└─────────────────────────────────────────────────────────────────────────┘
-          │
-          ▼  openapi-generator-cli + graphql-codegen
-┌─────────────────────────────────────────────────────────────────────────┐
-│            libs/frontend/shared-data/api-client/src/generated/          │
-│  ├── rest/{service}/models/*.ts, api/*.ts                               │
-│  └── graphql/{service}/types.ts, hooks.ts                               │
-└─────────────────────────────────────────────────────────────────────────┘
-          │
-          ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│  ecommerce-web, kiosk-web, pos-web import from @reactive-platform/...   │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  ecommerce-web, kiosk-web, pos-web import from @reactive-platform/...       │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Dependency Order
@@ -146,6 +162,7 @@ api(libs.springdoc.openapi.starter.webflux.ui)
 - MODIFY: `apps/fulfillment-service/src/main/resources/application.yml`
 - MODIFY: `apps/checkout-service/src/main/resources/application.yml`
 - MODIFY: `apps/audit-service/src/main/resources/application.yml`
+- MODIFY: `apps/user-service/src/main/resources/application.yml`
 
 **Implementation:**
 Add consistent springdoc configuration to each service:
@@ -183,6 +200,9 @@ Remove the hardcoded dependency (now comes from BOM):
 - MODIFY: `apps/fulfillment-service/src/main/java/org/example/fulfillment/controller/*.java`
 - MODIFY: `apps/checkout-service/src/main/java/org/example/checkout/controller/*.java`
 - MODIFY: `apps/audit-service/src/main/java/org/example/audit/controller/*.java`
+- MODIFY: `apps/user-service/src/main/java/org/example/user/controller/UserController.java`
+- MODIFY: `apps/user-service/src/main/java/org/example/user/controller/DevTokenController.java`
+- MODIFY: `apps/user-service/src/main/java/org/example/user/controller/WellKnownController.java`
 
 **Implementation:**
 Add `@Tag` annotation to each controller class:
@@ -234,59 +254,98 @@ public record Product(
 **Files:**
 - CREATE: `tools/openapi-codegen/specs/.gitkeep`
 
-### 2.2 Update Generation Script
+### 2.2 Create OpenAPI Generation Script (Node ESM)
 
 **Files:**
-- MODIFY: `tools/openapi-codegen/generate.sh`
+- DELETE: `tools/openapi-codegen/generate.sh`
+- CREATE: `tools/openapi-codegen/generate.mjs`
 
 **Implementation:**
-Replace current script with multi-service version:
-```bash
-#!/usr/bin/env bash
-set -e
+Node.js ESM script targeting Node v24:
+```javascript
+#!/usr/bin/env node
+/**
+ * OpenAPI spec fetcher and TypeScript client generator
+ * Requires: Node.js v24+
+ */
+import { execSync } from 'node:child_process';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SPECS_DIR="$SCRIPT_DIR/specs"
-OUTPUT_DIR="$SCRIPT_DIR/../../libs/frontend/shared-data/api-client/src/generated/rest"
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const SPECS_DIR = join(__dirname, 'specs');
+const OUTPUT_DIR = join(__dirname, '../../libs/frontend/shared-data/api-client/src/generated/rest');
 
-mkdir -p "$SPECS_DIR" "$OUTPUT_DIR"
+/** All backend services with their ports */
+const SERVICES = [
+  { name: 'product-service', port: 8080 },
+  { name: 'cart-service', port: 8081 },
+  { name: 'customer-service', port: 8083 },
+  { name: 'discount-service', port: 8084 },
+  { name: 'fulfillment-service', port: 8085 },
+  { name: 'audit-service', port: 8086 },
+  { name: 'checkout-service', port: 8087 },
+  { name: 'order-service', port: 8088 },
+  { name: 'user-service', port: 8089 },
+];
 
-declare -A SERVICES=(
-  ["product-service"]=8080
-  ["cart-service"]=8081
-  ["customer-service"]=8083
-  ["discount-service"]=8084
-  ["fulfillment-service"]=8085
-  ["audit-service"]=8086
-  ["checkout-service"]=8087
-  ["order-service"]=8088
-)
+// Ensure directories exist
+mkdirSync(SPECS_DIR, { recursive: true });
+mkdirSync(OUTPUT_DIR, { recursive: true });
 
-echo "=== Fetching OpenAPI specs ==="
-for service in "${!SERVICES[@]}"; do
-  port="${SERVICES[$service]}"
-  echo "Fetching $service from port $port..."
-  curl -sf "http://localhost:$port/v3/api-docs" | jq '.' > "$SPECS_DIR/$service.json" \
-    || echo "WARNING: $service not running on port $port"
-done
+console.log('=== Fetching OpenAPI specs ===');
 
-echo "=== Generating TypeScript clients ==="
-for service in "${!SERVICES[@]}"; do
-  if [[ -f "$SPECS_DIR/$service.json" ]]; then
-    echo "Generating types for $service..."
-    pnpm openapi-generator-cli generate \
-      -i "$SPECS_DIR/$service.json" \
-      -g typescript-fetch \
-      -o "$OUTPUT_DIR/$service" \
-      --additional-properties=supportsES6=true,typescriptThreePlus=true,withInterfaces=true \
-      --skip-validate-spec
-  fi
-done
+const fetched = [];
+for (const { name, port } of SERVICES) {
+  const specPath = join(SPECS_DIR, `${name}.json`);
+  try {
+    const response = await fetch(`http://localhost:${port}/v3/api-docs`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const spec = await response.json();
+    writeFileSync(specPath, JSON.stringify(spec, null, 2));
+    console.log(`✓ ${name} (port ${port})`);
+    fetched.push({ name, specPath });
+  } catch (error) {
+    console.warn(`✗ ${name} (port ${port}) - ${error.message}`);
+  }
+}
 
-echo "=== Formatting generated code ==="
-pnpm prettier --write "$OUTPUT_DIR/**/*.ts" 2>/dev/null || true
+if (fetched.length === 0) {
+  console.error('\nNo specs fetched. Ensure services are running.');
+  process.exit(1);
+}
 
-echo "Done! Specs: $SPECS_DIR, Types: $OUTPUT_DIR"
+console.log(`\n=== Generating TypeScript clients (${fetched.length}/${SERVICES.length}) ===`);
+
+for (const { name, specPath } of fetched) {
+  const outputPath = join(OUTPUT_DIR, name);
+  console.log(`Generating ${name}...`);
+  try {
+    execSync(
+      `pnpm openapi-generator-cli generate ` +
+        `-i "${specPath}" ` +
+        `-g typescript-fetch ` +
+        `-o "${outputPath}" ` +
+        `--additional-properties=supportsES6=true,typescriptThreePlus=true,withInterfaces=true ` +
+        `--skip-validate-spec`,
+      { stdio: 'pipe' }
+    );
+    console.log(`✓ ${name}`);
+  } catch (error) {
+    console.error(`✗ ${name} - generation failed`);
+  }
+}
+
+console.log('\n=== Formatting generated code ===');
+try {
+  execSync(`pnpm prettier --write "${OUTPUT_DIR}/**/*.ts"`, { stdio: 'pipe' });
+  console.log('✓ Formatted');
+} catch {
+  console.warn('⚠ Prettier formatting skipped');
+}
+
+console.log(`\nDone! Specs: ${SPECS_DIR}\nTypes: ${OUTPUT_DIR}`);
 ```
 
 ### 2.3 Create REST Index Exports
@@ -305,6 +364,7 @@ export * as FulfillmentService from './fulfillment-service';
 export * as CheckoutService from './checkout-service';
 export * as OrderService from './order-service';
 export * as AuditService from './audit-service';
+export * as UserService from './user-service';
 ```
 
 ---
@@ -360,36 +420,90 @@ generates:
 - CREATE: `tools/graphql-codegen/schemas/order-service.graphqls`
 
 **Implementation:**
-Copy from source locations for committed reference:
-```bash
-cp apps/cart-service/src/main/resources/graphql/schema.graphqls \
-   tools/graphql-codegen/schemas/cart-service.graphqls
-cp apps/order-service/src/main/resources/graphql/schema.graphqls \
-   tools/graphql-codegen/schemas/order-service.graphqls
+Create a Node script to copy schemas:
+```javascript
+// tools/graphql-codegen/copy-schemas.mjs
+import { copyFileSync, mkdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const schemasDir = join(__dirname, 'schemas');
+mkdirSync(schemasDir, { recursive: true });
+
+const schemas = [
+  { src: 'apps/cart-service/src/main/resources/graphql/schema.graphqls', dest: 'cart-service.graphqls' },
+  { src: 'apps/order-service/src/main/resources/graphql/schema.graphqls', dest: 'order-service.graphqls' },
+];
+
+for (const { src, dest } of schemas) {
+  copyFileSync(join(__dirname, '../..', src), join(schemasDir, dest));
+  console.log(`✓ Copied ${dest}`);
+}
 ```
 
-### 3.4 Create GraphQL Generation Script
+### 3.4 Create GraphQL Generation Script (Node ESM)
 
 **Files:**
-- CREATE: `tools/graphql-codegen/generate.sh`
+- CREATE: `tools/graphql-codegen/generate.mjs`
 
 **Implementation:**
-```bash
-#!/usr/bin/env bash
-set -e
+```javascript
+#!/usr/bin/env node
+/**
+ * GraphQL schema copier and TypeScript type generator
+ * Requires: Node.js v24+
+ */
+import { execSync } from 'node:child_process';
+import { copyFileSync, mkdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, '../..');
+const SCHEMAS_DIR = join(__dirname, 'schemas');
+const OUTPUT_DIR = join(ROOT, 'libs/frontend/shared-data/api-client/src/generated/graphql');
 
-echo "=== Generating GraphQL types for cart-service ==="
-pnpm graphql-codegen --config "$SCRIPT_DIR/cart-service.yml"
+// Ensure directories exist
+mkdirSync(SCHEMAS_DIR, { recursive: true });
+mkdirSync(OUTPUT_DIR, { recursive: true });
 
-echo "=== Generating GraphQL types for order-service ==="
-pnpm graphql-codegen --config "$SCRIPT_DIR/order-service.yml"
+const SERVICES = [
+  { name: 'cart-service', schemaPath: 'apps/cart-service/src/main/resources/graphql/schema.graphqls' },
+  { name: 'order-service', schemaPath: 'apps/order-service/src/main/resources/graphql/schema.graphqls' },
+];
 
-echo "=== Formatting generated code ==="
-pnpm prettier --write "$SCRIPT_DIR/../../libs/frontend/shared-data/api-client/src/generated/graphql/**/*.ts"
+console.log('=== Copying GraphQL schemas ===');
+for (const { name, schemaPath } of SERVICES) {
+  try {
+    copyFileSync(join(ROOT, schemaPath), join(SCHEMAS_DIR, `${name}.graphqls`));
+    console.log(`✓ ${name}`);
+  } catch (error) {
+    console.warn(`✗ ${name} - ${error.message}`);
+  }
+}
 
-echo "Done!"
+console.log('\n=== Generating GraphQL types ===');
+for (const { name } of SERVICES) {
+  const configPath = join(__dirname, `${name}.yml`);
+  console.log(`Generating ${name}...`);
+  try {
+    execSync(`pnpm graphql-codegen --config "${configPath}"`, { stdio: 'pipe' });
+    console.log(`✓ ${name}`);
+  } catch (error) {
+    console.error(`✗ ${name} - generation failed`);
+  }
+}
+
+console.log('\n=== Formatting generated code ===');
+try {
+  execSync(`pnpm prettier --write "${OUTPUT_DIR}/**/*.ts"`, { stdio: 'pipe' });
+  console.log('✓ Formatted');
+} catch {
+  console.warn('⚠ Prettier formatting skipped');
+}
+
+console.log('\nDone!');
 ```
 
 ### 3.5 Create GraphQL Index Exports
@@ -414,8 +528,8 @@ export * as OrderServiceHooks from './order-service/hooks';
 ```json
 {
   "scripts": {
-    "generate:api": "./tools/openapi-codegen/generate.sh",
-    "generate:graphql": "./tools/graphql-codegen/generate.sh",
+    "generate:api": "node tools/openapi-codegen/generate.mjs",
+    "generate:graphql": "node tools/graphql-codegen/generate.mjs",
     "generate:all": "pnpm generate:api && pnpm generate:graphql"
   }
 }
@@ -480,13 +594,14 @@ import { Cart, useCartQuery } from '@reactive-platform/api-client/graphql/cart-s
 |--------|------|---------|
 | MODIFY | `gradle/libs.versions.toml` | Add springdoc version |
 | MODIFY | `libs/backend/platform/platform-bom/build.gradle.kts` | Add springdoc to BOM |
-| MODIFY | `apps/*/src/main/resources/application.yml` (8 files) | Configure springdoc |
-| MODIFY | `apps/*/controller/*.java` (~15 files) | Add @Tag annotations |
+| MODIFY | `apps/*/src/main/resources/application.yml` (9 files) | Configure springdoc |
+| MODIFY | `apps/*/controller/*.java` (~18 files) | Add @Tag annotations |
 | MODIFY | `libs/backend/shared-model/**/**.java` (~10 files) | Add @Schema annotations |
-| MODIFY | `tools/openapi-codegen/generate.sh` | Multi-service generation |
-| CREATE | `tools/openapi-codegen/specs/*.json` (8 files) | Committed OpenAPI specs |
+| DELETE | `tools/openapi-codegen/generate.sh` | Remove bash script |
+| CREATE | `tools/openapi-codegen/generate.mjs` | Node ESM generation script |
+| CREATE | `tools/openapi-codegen/specs/*.json` (9 files) | Committed OpenAPI specs |
 | CREATE | `tools/graphql-codegen/*.yml` (2 files) | GraphQL codegen configs |
-| CREATE | `tools/graphql-codegen/generate.sh` | GraphQL generation script |
+| CREATE | `tools/graphql-codegen/generate.mjs` | Node ESM generation script |
 | CREATE | `tools/graphql-codegen/schemas/*.graphqls` (2 files) | Committed GraphQL schemas |
 | CREATE | `libs/frontend/shared-data/api-client/src/generated/**` | Generated TypeScript |
 | MODIFY | `libs/frontend/shared-data/api-client/src/index.ts` | Export generated types |
@@ -521,7 +636,7 @@ import { Cart, useCartQuery } from '@reactive-platform/api-client/graphql/cart-s
 - [ ] Phase 2: REST TypeScript generation working
 - [ ] Phase 3: GraphQL TypeScript generation working
 - [ ] Phase 4: Frontend using generated types
-- [ ] All services expose /v3/api-docs
+- [ ] All 9 services expose /v3/api-docs
 - [ ] Specs committed to tools/openapi-codegen/specs/
 - [ ] GraphQL schemas committed to tools/graphql-codegen/schemas/
 - [ ] ecommerce-web builds with generated types

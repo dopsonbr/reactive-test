@@ -1,4 +1,4 @@
-# 039B_POS_UI_COMPONENTS
+# 045B_POS_UI_COMPONENTS
 
 **Status: DRAFT**
 
@@ -9,9 +9,9 @@
 New shared UI components and POS-specific components required for the full-featured POS application. These components will be added to the shared-ui library and a new pos-ui library.
 
 **Related Plans:**
-- `039_POS_SYSTEM.md` - Parent initiative
-- `038A_SHARED_COMMERCE_COMPONENTS.md` - Extends shared UI work
-- `039C_POS_APP_SCAFFOLD.md` - Uses these components
+- `045_POS_SYSTEM.md` - Parent initiative
+- `044A_SHARED_COMMERCE_COMPONENTS.md` - Extends shared UI work
+- `045C_POS_APP_SCAFFOLD.md` - Uses these components
 
 ## Goals
 

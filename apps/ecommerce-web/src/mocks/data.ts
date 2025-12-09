@@ -1,144 +1,166 @@
 import type { Product } from '../features/products/types/product';
 import type { Cart } from '../features/cart/types/cart';
 
-// Generate a placeholder SVG image as a data URI
-function placeholderImage(text: string, bgColor: string = '#e2e8f0'): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-    <rect width="400" height="400" fill="${bgColor}"/>
-    <text x="200" y="200" font-family="system-ui, sans-serif" font-size="24" font-weight="500" fill="#64748b" text-anchor="middle" dominant-baseline="middle">${text}</text>
-  </svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-}
-
 export const mockProducts: Product[] = [
   {
-    sku: 'SKU-001',
+    sku: 1001,
     name: 'Wireless Headphones',
     description: 'Premium noise-canceling wireless headphones with 30-hour battery life and crystal-clear sound quality.',
-    price: 299.99,
-    originalPrice: 349.99,
-    imageUrl: placeholderImage('Headphones', '#dbeafe'),
-    inStock: true,
-    quantity: 50,
+    price: '299.99',
+    originalPrice: '349.99',
+    availableQuantity: 50,
+    imageUrl: 'https://picsum.photos/seed/headphones/400/400',
     category: 'Electronics',
+    inStock: true,
+    onSale: true,
   },
   {
-    sku: 'SKU-002',
+    sku: 1002,
     name: 'Smart Watch',
     description: 'Fitness tracking smartwatch with heart rate monitor, GPS, and 7-day battery life.',
-    price: 199.99,
-    imageUrl: placeholderImage('Smart Watch', '#dbeafe'),
-    inStock: true,
-    quantity: 30,
+    price: '199.99',
+    availableQuantity: 30,
+    imageUrl: 'https://picsum.photos/seed/smartwatch/400/400',
     category: 'Electronics',
+    inStock: true,
+    onSale: false,
   },
   {
-    sku: 'SKU-003',
+    sku: 1003,
     name: 'Laptop Stand',
     description: 'Ergonomic aluminum laptop stand with adjustable height and improved airflow cooling.',
-    price: 79.99,
-    imageUrl: placeholderImage('Laptop Stand', '#dbeafe'),
-    inStock: true,
-    quantity: 100,
+    price: '79.99',
+    availableQuantity: 100,
+    imageUrl: 'https://picsum.photos/seed/laptopstand/400/400',
     category: 'Electronics',
+    inStock: true,
+    onSale: false,
   },
   {
-    sku: 'SKU-004',
+    sku: 1004,
     name: 'Mechanical Keyboard',
     description: 'RGB mechanical keyboard with Cherry MX switches and programmable macros.',
-    price: 149.99,
-    originalPrice: 179.99,
-    imageUrl: placeholderImage('Keyboard', '#dbeafe'),
-    inStock: true,
-    quantity: 25,
+    price: '149.99',
+    originalPrice: '179.99',
+    availableQuantity: 25,
+    imageUrl: 'https://picsum.photos/seed/keyboard/400/400',
     category: 'Electronics',
+    inStock: true,
+    onSale: true,
   },
   {
-    sku: 'SKU-005',
+    sku: 1005,
     name: 'Running Shoes',
     description: 'Lightweight running shoes with responsive cushioning and breathable mesh upper.',
-    price: 129.99,
-    imageUrl: placeholderImage('Running Shoes', '#dcfce7'),
-    inStock: true,
-    quantity: 75,
+    price: '129.99',
+    availableQuantity: 75,
+    imageUrl: 'https://picsum.photos/seed/shoes/400/400',
     category: 'Sports',
+    inStock: true,
+    onSale: false,
   },
   {
-    sku: 'SKU-006',
+    sku: 1006,
     name: 'Yoga Mat',
     description: 'Premium non-slip yoga mat with extra cushioning and alignment guides.',
-    price: 49.99,
-    imageUrl: placeholderImage('Yoga Mat', '#dcfce7'),
-    inStock: true,
-    quantity: 200,
+    price: '49.99',
+    availableQuantity: 200,
+    imageUrl: 'https://picsum.photos/seed/yogamat/400/400',
     category: 'Sports',
+    inStock: true,
+    onSale: false,
   },
   {
-    sku: 'SKU-007',
+    sku: 1007,
     name: 'Cotton T-Shirt',
     description: 'Soft 100% organic cotton t-shirt in classic fit.',
-    price: 29.99,
-    imageUrl: placeholderImage('T-Shirt', '#fef3c7'),
-    inStock: true,
-    quantity: 500,
+    price: '29.99',
+    availableQuantity: 500,
+    imageUrl: 'https://picsum.photos/seed/tshirt/400/400',
     category: 'Clothing',
+    inStock: true,
+    onSale: false,
   },
   {
-    sku: 'SKU-008',
+    sku: 1008,
     name: 'Denim Jacket',
     description: 'Classic denim jacket with vintage wash and button closure.',
-    price: 89.99,
-    originalPrice: 119.99,
-    imageUrl: placeholderImage('Denim Jacket', '#fef3c7'),
-    inStock: false,
-    quantity: 0,
+    price: '89.99',
+    originalPrice: '119.99',
+    availableQuantity: 0,
+    imageUrl: 'https://picsum.photos/seed/jacket/400/400',
     category: 'Clothing',
+    inStock: false,
+    onSale: true,
   },
   {
-    sku: 'SKU-009',
+    sku: 1009,
     name: 'Ceramic Planter',
     description: 'Hand-crafted ceramic planter perfect for indoor plants.',
-    price: 34.99,
-    imageUrl: placeholderImage('Planter', '#fce7f3'),
-    inStock: true,
-    quantity: 60,
+    price: '34.99',
+    availableQuantity: 60,
+    imageUrl: 'https://picsum.photos/seed/planter/400/400',
     category: 'Home',
+    inStock: true,
+    onSale: false,
   },
   {
-    sku: 'SKU-010',
+    sku: 1010,
     name: 'Throw Blanket',
     description: 'Cozy knitted throw blanket in neutral tones.',
-    price: 59.99,
-    imageUrl: placeholderImage('Blanket', '#fce7f3'),
-    inStock: true,
-    quantity: 40,
+    price: '59.99',
+    availableQuantity: 40,
+    imageUrl: 'https://picsum.photos/seed/blanket/400/400',
     category: 'Home',
+    inStock: true,
+    onSale: false,
   },
 ];
 
 // Create a mutable cart state for MSW
 export const mockCart: Cart = {
   id: 'cart-001',
-  items: [],
-  subtotal: 0,
-  tax: 0,
-  total: 0,
+  storeNumber: 1,
+  products: [],
+  totals: {
+    subtotal: '0.00',
+    discountTotal: '0.00',
+    fulfillmentTotal: '0.00',
+    taxTotal: '0.00',
+    grandTotal: '0.00',
+  },
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 };
 
 export function calculateCartTotals(cart: Cart): Cart {
-  const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.products.reduce((sum, item) => {
+    return sum + parseFloat(item.lineTotal);
+  }, 0);
   const tax = subtotal * 0.08; // 8% tax
+  const grandTotal = subtotal + tax;
+
   return {
     ...cart,
-    subtotal,
-    tax,
-    total: subtotal + tax,
+    totals: {
+      subtotal: subtotal.toFixed(2),
+      discountTotal: '0.00',
+      fulfillmentTotal: '0.00',
+      taxTotal: tax.toFixed(2),
+      grandTotal: grandTotal.toFixed(2),
+    },
+    updatedAt: new Date().toISOString(),
   };
 }
 
 export function resetMockCart(): void {
-  mockCart.items = [];
-  mockCart.subtotal = 0;
-  mockCart.tax = 0;
-  mockCart.total = 0;
+  mockCart.products = [];
+  mockCart.totals = {
+    subtotal: '0.00',
+    discountTotal: '0.00',
+    fulfillmentTotal: '0.00',
+    taxTotal: '0.00',
+    grandTotal: '0.00',
+  };
+  mockCart.updatedAt = new Date().toISOString();
 }

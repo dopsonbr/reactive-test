@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import java.math.BigDecimal;
 import java.time.Duration;
 import org.example.platform.cache.ReactiveCacheService;
 import org.example.platform.test.RedisTestSupport;
@@ -120,13 +121,15 @@ class CacheIntegrationTest {
     @DisplayName("should return HTTP response and cache it on cache miss")
     void shouldCacheOnMiss() {
       // Given: HTTP returns a response
-      stubMerchandiseSuccess(SKU, "Test Product Description");
+      stubMerchandiseSuccess(
+          SKU, "Test Name", "Test Product Description", "http://test.url", "Test Category");
 
       // When: First call (cache miss)
-      StepVerifier.create(merchandiseRepository.getDescription(SKU))
+      StepVerifier.create(merchandiseRepository.getMerchandise(SKU))
           .assertNext(
               response -> {
                 assertThat(response.description()).isEqualTo("Test Product Description");
+                assertThat(response.name()).isEqualTo("Test Name");
               })
           .verifyComplete();
 
@@ -146,11 +149,13 @@ class CacheIntegrationTest {
     @DisplayName("should return cached value without calling HTTP on cache hit")
     void shouldReturnCachedValue() {
       // Given: Value is pre-cached
-      MerchandiseResponse cachedResponse = new MerchandiseResponse("Cached Description");
+      MerchandiseResponse cachedResponse =
+          new MerchandiseResponse(
+              "Cached Name", "Cached Description", "http://cached.url", "Cached Category");
       cacheService.put(CACHE_KEY, cachedResponse, Duration.ofMinutes(5)).block();
 
       // When: Call repository
-      StepVerifier.create(merchandiseRepository.getDescription(SKU))
+      StepVerifier.create(merchandiseRepository.getMerchandise(SKU))
           .assertNext(
               response -> {
                 assertThat(response.description()).isEqualTo("Cached Description");
@@ -168,7 +173,7 @@ class CacheIntegrationTest {
       stubMerchandiseError(SKU, 500);
 
       // When: Call repository (no cache)
-      StepVerifier.create(merchandiseRepository.getDescription(SKU))
+      StepVerifier.create(merchandiseRepository.getMerchandise(SKU))
           .assertNext(
               response -> {
                 assertThat(response.description()).isEqualTo("Description unavailable");
@@ -176,14 +181,24 @@ class CacheIntegrationTest {
           .verifyComplete();
     }
 
-    private void stubMerchandiseSuccess(long sku, String description) {
+    private void stubMerchandiseSuccess(
+        long sku, String name, String description, String imageUrl, String category) {
       wireMockServer.stubFor(
           get(urlEqualTo("/merchandise/" + sku))
               .willReturn(
                   aResponse()
                       .withStatus(200)
                       .withHeader("Content-Type", "application/json")
-                      .withBody("{\"description\":\"" + description + "\"}")));
+                      .withBody(
+                          "{\"name\":\""
+                              + name
+                              + "\",\"description\":\""
+                              + description
+                              + "\",\"imageUrl\":\""
+                              + imageUrl
+                              + "\",\"category\":\""
+                              + category
+                              + "\"}")));
     }
 
     private void stubMerchandiseError(long sku, int status) {
@@ -229,7 +244,7 @@ class CacheIntegrationTest {
     @DisplayName("should return cached value without calling HTTP on cache hit")
     void shouldReturnCachedValue() {
       // Given: Value is pre-cached
-      PriceResponse cachedResponse = new PriceResponse("149.99");
+      PriceResponse cachedResponse = new PriceResponse(new BigDecimal("149.99"), null, "USD");
       cacheService.put(CACHE_KEY, cachedResponse, Duration.ofMinutes(5)).block();
 
       // When: Call repository
@@ -428,7 +443,9 @@ class CacheIntegrationTest {
     void shouldStoreAndRetrieveValues() {
       // Given
       String key = "test:integration:key";
-      MerchandiseResponse value = new MerchandiseResponse("Integration Test Value");
+      MerchandiseResponse value =
+          new MerchandiseResponse(
+              "Test Name", "Integration Test Value", "http://test.url", "Test Category");
 
       // When: Put value
       StepVerifier.create(cacheService.put(key, value, Duration.ofMinutes(1)))
@@ -457,7 +474,12 @@ class CacheIntegrationTest {
     void shouldDeleteKeys() {
       // Given: Key exists
       String key = "test:delete:key";
-      cacheService.put(key, new MerchandiseResponse("To Delete"), Duration.ofMinutes(1)).block();
+      cacheService
+          .put(
+              key,
+              new MerchandiseResponse("To Delete", "Description", "http://url", "Category"),
+              Duration.ofMinutes(1))
+          .block();
 
       // When: Delete key
       StepVerifier.create(cacheService.delete(key)).expectNext(true).verifyComplete();

@@ -4,13 +4,16 @@ import { ProductCard } from './ProductCard';
 import type { Product } from '../types';
 
 const mockProduct: Product = {
-  sku: 'SKU-001',
+  sku: 1001,
   name: 'Wireless Headphones',
   description: 'High-quality wireless headphones with noise cancellation and 30-hour battery life.',
-  price: 299.99,
+  price: '299.99',
+  originalPrice: undefined,
+  availableQuantity: 50,
   imageUrl: 'https://via.placeholder.com/300x200?text=Headphones',
   category: 'Electronics',
   inStock: true,
+  onSale: false,
 };
 
 function Wrapper({ children }: { children: React.ReactNode }) {
@@ -32,7 +35,7 @@ export const WithDiscount: Story = () => (
   <Wrapper>
     <div className="max-w-sm">
       <ProductCard
-        product={{ ...mockProduct, originalPrice: 399.99 }}
+        product={{ ...mockProduct, originalPrice: '399.99', onSale: true }}
         onAddToCart={() => {}}
       />
     </div>

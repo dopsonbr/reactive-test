@@ -3,11 +3,17 @@ import { CartItemRow } from './CartItemRow';
 import type { CartItem } from '../types';
 
 const mockItem: CartItem = {
-  sku: 'SKU-001',
+  sku: 1001,
   name: 'Wireless Headphones',
-  price: 299.99,
+  description: 'High-quality wireless headphones',
+  unitPrice: '299.99',
+  originalUnitPrice: '349.99',
   quantity: 1,
+  availableQuantity: 50,
   imageUrl: 'https://via.placeholder.com/100?text=Product',
+  category: 'Electronics',
+  lineTotal: '299.99',
+  inStock: true,
 };
 
 export const Default: Story = () => (
@@ -23,7 +29,7 @@ export const Default: Story = () => (
 export const MultipleQuantity: Story = () => (
   <div className="max-w-2xl">
     <CartItemRow
-      item={{ ...mockItem, quantity: 3 }}
+      item={{ ...mockItem, quantity: 3, lineTotal: '899.97' }}
       onUpdateQuantity={() => {}}
       onRemove={() => {}}
     />

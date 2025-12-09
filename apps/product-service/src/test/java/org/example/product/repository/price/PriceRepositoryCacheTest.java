@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import java.math.BigDecimal;
 import java.time.Duration;
 import org.example.platform.cache.ReactiveCacheService;
 import org.example.platform.logging.StructuredLogger;
@@ -62,7 +63,7 @@ class PriceRepositoryCacheTest {
     // Given
     long sku = 12345L;
     String cacheKey = "price:sku:" + sku;
-    PriceResponse cachedResponse = new PriceResponse("99.99");
+    PriceResponse cachedResponse = new PriceResponse(new BigDecimal("99.99"), null, "USD");
 
     when(cacheService.get(eq(cacheKey), eq(PriceResponse.class)))
         .thenReturn(Mono.just(cachedResponse));
@@ -80,7 +81,7 @@ class PriceRepositoryCacheTest {
     // Given
     long sku = 12345L;
     String cacheKey = "price:sku:" + sku;
-    PriceResponse httpResponse = new PriceResponse("149.99");
+    PriceResponse httpResponse = new PriceResponse(new BigDecimal("149.99"), null, "USD");
 
     // Cache miss
     when(cacheService.get(eq(cacheKey), eq(PriceResponse.class))).thenReturn(Mono.empty());
@@ -123,7 +124,7 @@ class PriceRepositoryCacheTest {
     when(requestBodySpec.bodyValue(any(PriceRequest.class))).thenReturn(requestHeadersSpec);
     when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     when(responseSpec.bodyToMono(PriceResponse.class))
-        .thenReturn(Mono.just(new PriceResponse("test")));
+        .thenReturn(Mono.just(new PriceResponse(new BigDecimal("10.00"), null, "USD")));
 
     // Resilience decoration throws error
     when(resilience.decorate(eq("price"), any(Mono.class)))
@@ -134,7 +135,7 @@ class PriceRepositoryCacheTest {
 
     // When & Then - should return fallback "0.00"
     StepVerifier.create(repository.getPrice(sku))
-        .expectNextMatches(response -> response.price().equals("0.00"))
+        .expectNextMatches(response -> response.price().compareTo(new BigDecimal("0.00")) == 0)
         .verifyComplete();
   }
 
@@ -144,7 +145,7 @@ class PriceRepositoryCacheTest {
     // Given
     long sku = 12345L;
     String cacheKey = "price:sku:" + sku;
-    PriceResponse httpResponse = new PriceResponse("199.99");
+    PriceResponse httpResponse = new PriceResponse(new BigDecimal("199.99"), null, "USD");
 
     // Redis is down - cache get returns empty (graceful degradation)
     when(cacheService.get(eq(cacheKey), eq(PriceResponse.class))).thenReturn(Mono.empty());

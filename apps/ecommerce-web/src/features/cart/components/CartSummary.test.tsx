@@ -5,13 +5,43 @@ import type { Cart } from '../types';
 
 const mockCart: Cart = {
   id: 'cart-001',
-  items: [
-    { sku: 'SKU-001', name: 'Product 1', price: 100, quantity: 2, imageUrl: '' },
-    { sku: 'SKU-002', name: 'Product 2', price: 50, quantity: 1, imageUrl: '' },
+  storeNumber: 1,
+  products: [
+    {
+      sku: 1001,
+      name: 'Product 1',
+      description: 'Product 1 description',
+      unitPrice: '100.00',
+      originalUnitPrice: '120.00',
+      quantity: 2,
+      availableQuantity: 50,
+      imageUrl: '',
+      category: 'Electronics',
+      lineTotal: '200.00',
+      inStock: true
+    },
+    {
+      sku: 1002,
+      name: 'Product 2',
+      description: 'Product 2 description',
+      unitPrice: '50.00',
+      quantity: 1,
+      availableQuantity: 30,
+      imageUrl: '',
+      category: 'Electronics',
+      lineTotal: '50.00',
+      inStock: true
+    },
   ],
-  subtotal: 250,
-  tax: 20,
-  total: 270,
+  totals: {
+    subtotal: '250.00',
+    discountTotal: '0.00',
+    fulfillmentTotal: '0.00',
+    taxTotal: '20.00',
+    grandTotal: '270.00'
+  },
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
 };
 
 async function renderCartSummary(cart: Cart = mockCart) {
@@ -35,7 +65,18 @@ describe('CartSummary', () => {
   it('renders singular "item" when count is 1', async () => {
     const singleItemCart: Cart = {
       ...mockCart,
-      items: [{ sku: 'SKU-001', name: 'Product', price: 100, quantity: 1, imageUrl: '' }],
+      products: [{
+        sku: 1001,
+        name: 'Product',
+        description: 'Product description',
+        unitPrice: '100.00',
+        quantity: 1,
+        availableQuantity: 50,
+        imageUrl: '',
+        category: 'Electronics',
+        lineTotal: '100.00',
+        inStock: true
+      }],
     };
 
     await renderCartSummary(singleItemCart);
@@ -77,7 +118,7 @@ describe('CartSummary', () => {
   it('disables checkout button when cart is empty', async () => {
     const emptyCart: Cart = {
       ...mockCart,
-      items: [],
+      products: [],
     };
 
     await renderCartSummary(emptyCart);

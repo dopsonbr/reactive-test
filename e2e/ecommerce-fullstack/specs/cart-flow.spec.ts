@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/test-base';
 
 test.describe('Cart Flow (Full-Stack)', () => {
   test.beforeEach(async ({ page }) => {

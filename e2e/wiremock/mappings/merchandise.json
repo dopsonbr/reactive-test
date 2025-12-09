@@ -15,7 +15,10 @@
           "Content-Type": "application/json"
         },
         "jsonBody": {
-          "description": "Test Product Description"
+          "name": "Test Product",
+          "description": "Test Product Description with detailed information about the product.",
+          "imageUrl": "https://picsum.photos/seed/product/400/400",
+          "category": "General"
         },
         "delayDistribution": {
           "type": "lognormal",
@@ -79,7 +82,10 @@
           "Content-Type": "application/json"
         },
         "jsonBody": {
-          "description": "Delayed Response"
+          "name": "Test Product",
+          "description": "Test Product Description with detailed information about the product.",
+          "imageUrl": "https://picsum.photos/seed/product/400/400",
+          "category": "General"
         },
         "fixedDelayMilliseconds": 10000
       }
@@ -99,7 +105,10 @@
           "Content-Type": "application/json"
         },
         "jsonBody": {
-          "description": "Test Product Description"
+          "name": "Test Product",
+          "description": "Test Product Description with detailed information about the product.",
+          "imageUrl": "https://picsum.photos/seed/product/400/400",
+          "category": "General"
         },
         "delayDistribution": {
           "type": "uniform",

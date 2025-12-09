@@ -15,6 +15,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 
 /**
@@ -158,6 +159,29 @@ public class GlobalErrorHandler {
             traceId);
 
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+  }
+
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<ErrorResponse> handleResponseStatusException(
+      ResponseStatusException ex, ServerWebExchange exchange) {
+    String traceId = getTraceId();
+    String path = exchange.getRequest().getPath().value();
+    HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+    if (status == null) {
+      status = HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+
+    log.warn("ResponseStatusException for path {}: {} - {}", path, status, ex.getReason());
+
+    ErrorResponse response =
+        ErrorResponse.of(
+            status.getReasonPhrase(),
+            ex.getReason() != null ? ex.getReason() : status.getReasonPhrase(),
+            path,
+            status.value(),
+            traceId);
+
+    return ResponseEntity.status(status).body(response);
   }
 
   @ExceptionHandler(Exception.class)

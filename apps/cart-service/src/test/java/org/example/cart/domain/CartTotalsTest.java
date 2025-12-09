@@ -39,8 +39,26 @@ class CartTotalsTest {
   void calculate_productsOnly_calculatesSubtotalAndGrandTotal() {
     List<CartProduct> products =
         List.of(
-            new CartProduct(123456L, "Product A", "10.00", 2, 100), // 20.00
-            new CartProduct(234567L, "Product B", "15.50", 1, 50) // 15.50
+            new CartProduct(
+                123456L,
+                "Product A",
+                "Description A",
+                new BigDecimal("10.00"),
+                null,
+                2,
+                100,
+                "https://cdn.example.com/a.jpg",
+                "General"), // 20.00
+            new CartProduct(
+                234567L,
+                "Product B",
+                "Description B",
+                new BigDecimal("15.50"),
+                null,
+                1,
+                50,
+                "https://cdn.example.com/b.jpg",
+                "General") // 15.50
             );
 
     CartTotals totals = CartTotals.calculate(products, List.of(), List.of());
@@ -53,7 +71,18 @@ class CartTotalsTest {
 
   @Test
   void calculate_withDiscount_subtractsFromGrandTotal() {
-    List<CartProduct> products = List.of(new CartProduct(123456L, "Product A", "100.00", 1, 100));
+    List<CartProduct> products =
+        List.of(
+            new CartProduct(
+                123456L,
+                "Product A",
+                "Description A",
+                new BigDecimal("100.00"),
+                null,
+                1,
+                100,
+                "https://cdn.example.com/a.jpg",
+                "General"));
     List<AppliedDiscount> discounts =
         List.of(
             new AppliedDiscount(
@@ -73,7 +102,18 @@ class CartTotalsTest {
 
   @Test
   void calculate_withFulfillment_addsToGrandTotal() {
-    List<CartProduct> products = List.of(new CartProduct(123456L, "Product A", "50.00", 1, 100));
+    List<CartProduct> products =
+        List.of(
+            new CartProduct(
+                123456L,
+                "Product A",
+                "Description A",
+                new BigDecimal("50.00"),
+                null,
+                1,
+                100,
+                "https://cdn.example.com/a.jpg",
+                "General"));
     List<Fulfillment> fulfillments =
         List.of(
             new Fulfillment(
@@ -91,8 +131,26 @@ class CartTotalsTest {
     // Products: 20.00 + 30.00 = 50.00
     List<CartProduct> products =
         List.of(
-            new CartProduct(123456L, "Product A", "10.00", 2, 100),
-            new CartProduct(234567L, "Product B", "30.00", 1, 50));
+            new CartProduct(
+                123456L,
+                "Product A",
+                "Description A",
+                new BigDecimal("10.00"),
+                null,
+                2,
+                100,
+                "https://cdn.example.com/a.jpg",
+                "General"),
+            new CartProduct(
+                234567L,
+                "Product B",
+                "Description B",
+                new BigDecimal("30.00"),
+                null,
+                1,
+                50,
+                "https://cdn.example.com/b.jpg",
+                "General"));
 
     // Discounts: 5.00 + 2.50 = 7.50
     List<AppliedDiscount> discounts =
@@ -131,7 +189,18 @@ class CartTotalsTest {
 
   @Test
   void calculate_discountExceedsSubtotal_grandTotalIsZero() {
-    List<CartProduct> products = List.of(new CartProduct(123456L, "Product A", "10.00", 1, 100));
+    List<CartProduct> products =
+        List.of(
+            new CartProduct(
+                123456L,
+                "Product A",
+                "Description A",
+                new BigDecimal("10.00"),
+                null,
+                1,
+                100,
+                "https://cdn.example.com/a.jpg",
+                "General"));
     List<AppliedDiscount> discounts =
         List.of(
             new AppliedDiscount(
@@ -154,9 +223,36 @@ class CartTotalsTest {
   void calculate_multipleProducts_sumsLineTotalsCorrectly() {
     List<CartProduct> products =
         List.of(
-            new CartProduct(111111L, "A", "1.99", 3, 10), // 5.97
-            new CartProduct(222222L, "B", "24.99", 2, 20), // 49.98
-            new CartProduct(333333L, "C", "199.99", 1, 5) // 199.99
+            new CartProduct(
+                111111L,
+                "A",
+                "Description A",
+                new BigDecimal("1.99"),
+                null,
+                3,
+                10,
+                "https://cdn.example.com/a.jpg",
+                "General"), // 5.97
+            new CartProduct(
+                222222L,
+                "B",
+                "Description B",
+                new BigDecimal("24.99"),
+                null,
+                2,
+                20,
+                "https://cdn.example.com/b.jpg",
+                "General"), // 49.98
+            new CartProduct(
+                333333L,
+                "C",
+                "Description C",
+                new BigDecimal("199.99"),
+                null,
+                1,
+                5,
+                "https://cdn.example.com/c.jpg",
+                "General") // 199.99
             );
 
     CartTotals totals = CartTotals.calculate(products, List.of(), List.of());

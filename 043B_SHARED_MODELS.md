@@ -1,6 +1,6 @@
 # 043B_SHARED_MODELS
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 

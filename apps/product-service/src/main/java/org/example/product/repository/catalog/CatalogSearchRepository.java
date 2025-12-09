@@ -88,9 +88,12 @@ public class CatalogSearchRepository {
                 p ->
                     new SearchProduct(
                         p.sku(),
+                        p.name(),
                         p.description(),
                         p.price(),
+                        p.originalPrice(),
                         p.availableQuantity(),
+                        p.imageUrl(),
                         p.category(),
                         p.relevanceScore()))
             .toList(),
@@ -146,9 +149,12 @@ public class CatalogSearchRepository {
 
   private record CatalogProduct(
       long sku,
+      String name,
       String description,
       BigDecimal price,
+      BigDecimal originalPrice,
       int availableQuantity,
+      String imageUrl,
       String category,
       double relevanceScore) {}
 

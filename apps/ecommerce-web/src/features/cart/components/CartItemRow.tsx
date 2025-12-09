@@ -39,7 +39,7 @@ export function CartItemRow({
               <h3 className="font-medium">{item.name}</h3>
               <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
             </div>
-            <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+            <p className="font-medium">${parseFloat(item.lineTotal).toFixed(2)}</p>
           </div>
 
           <div className="mt-auto flex items-center justify-between">

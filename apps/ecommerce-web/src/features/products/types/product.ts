@@ -1,13 +1,14 @@
 export interface Product {
-  sku: string;
+  sku: number;
   name: string;
   description: string;
-  price: number;
-  originalPrice?: number;
+  price: string;           // String for BigDecimal precision
+  originalPrice?: string;  // Nullable
+  availableQuantity: number;
   imageUrl: string;
-  inStock: boolean;
-  quantity: number;
   category: string;
+  inStock: boolean;        // Derived by backend
+  onSale: boolean;         // Derived by backend
 }
 
 export interface ProductSearchParams {

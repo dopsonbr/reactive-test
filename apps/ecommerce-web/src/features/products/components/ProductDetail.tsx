@@ -97,7 +97,7 @@ export function ProductDetail({ sku }: ProductDetailProps) {
                   </p>
                   {product.inStock && (
                     <p className="text-sm text-muted-foreground">
-                      {product.quantity} available
+                      {product.availableQuantity} available
                     </p>
                   )}
                 </div>

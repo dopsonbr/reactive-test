@@ -47,7 +47,8 @@ export const handlers = [
   http.get(`${PRODUCT_API}/products/:sku`, async ({ params }) => {
     await delay(100);
 
-    const product = mockProducts.find((p) => p.sku === params.sku);
+    const sku = Number(params.sku);
+    const product = mockProducts.find((p) => p.sku === sku);
     if (!product) {
       return new HttpResponse(
         JSON.stringify({ message: 'Product not found', code: 'PRODUCT_NOT_FOUND' }),
@@ -72,10 +73,17 @@ export const handlers = [
 
     const newCart = {
       id: crypto.randomUUID(),
-      items: [],
-      subtotal: 0,
-      tax: 0,
-      total: 0,
+      storeNumber: 1,
+      products: [],
+      totals: {
+        subtotal: '0.00',
+        discountTotal: '0.00',
+        fulfillmentTotal: '0.00',
+        taxTotal: '0.00',
+        grandTotal: '0.00',
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     return HttpResponse.json(newCart, { status: 201 });
   }),
@@ -84,7 +92,7 @@ export const handlers = [
   http.post(`${CART_API}/carts/:id/products`, async ({ params, request }) => {
     await delay(100);
 
-    const body = (await request.json()) as { sku: string; quantity: number };
+    const body = (await request.json()) as { sku: number; quantity: number };
     const product = mockProducts.find((p) => p.sku === body.sku);
 
     if (!product) {
@@ -95,16 +103,27 @@ export const handlers = [
     }
 
     // Check if item already exists in cart
-    const existingItem = mockCart.items.find((i) => i.sku === body.sku);
+    const existingItem = mockCart.products.find((i) => i.sku === body.sku);
     if (existingItem) {
       existingItem.quantity += body.quantity;
+      const unitPrice = parseFloat(existingItem.unitPrice);
+      existingItem.lineTotal = (unitPrice * existingItem.quantity).toFixed(2);
     } else {
-      mockCart.items.push({
+      const unitPrice = parseFloat(product.price);
+      const lineTotal = (unitPrice * body.quantity).toFixed(2);
+
+      mockCart.products.push({
         sku: product.sku,
         name: product.name,
-        price: product.price,
+        description: product.description,
+        unitPrice: product.price,
+        originalUnitPrice: product.originalPrice,
         quantity: body.quantity,
+        availableQuantity: product.availableQuantity,
         imageUrl: product.imageUrl,
+        category: product.category,
+        lineTotal: lineTotal,
+        inStock: product.inStock,
       });
     }
 
@@ -119,7 +138,8 @@ export const handlers = [
     await delay(100);
 
     const body = (await request.json()) as { quantity: number };
-    const item = mockCart.items.find((i) => i.sku === params.sku);
+    const sku = Number(params.sku);
+    const item = mockCart.products.find((i) => i.sku === sku);
 
     if (!item) {
       return new HttpResponse(
@@ -130,9 +150,11 @@ export const handlers = [
 
     if (body.quantity < 1) {
       // Remove item if quantity is 0 or less
-      mockCart.items = mockCart.items.filter((i) => i.sku !== params.sku);
+      mockCart.products = mockCart.products.filter((i) => i.sku !== sku);
     } else {
       item.quantity = body.quantity;
+      const unitPrice = parseFloat(item.unitPrice);
+      item.lineTotal = (unitPrice * item.quantity).toFixed(2);
     }
 
     const updatedCart = calculateCartTotals({ ...mockCart, id: params.id as string });
@@ -145,7 +167,8 @@ export const handlers = [
   http.delete(`${CART_API}/carts/:id/products/:sku`, async ({ params }) => {
     await delay(100);
 
-    mockCart.items = mockCart.items.filter((i) => i.sku !== params.sku);
+    const sku = Number(params.sku);
+    mockCart.products = mockCart.products.filter((i) => i.sku !== sku);
 
     const updatedCart = calculateCartTotals({ ...mockCart, id: params.id as string });
     Object.assign(mockCart, updatedCart);

@@ -3,11 +3,17 @@ import { CartItemRow } from './CartItemRow';
 import type { CartItem } from '../types';
 
 const mockItem: CartItem = {
-  sku: 'SKU-001',
+  sku: 1001,
   name: 'Test Product',
-  price: 99.99,
+  description: 'A test product description',
+  unitPrice: '99.99',
+  originalUnitPrice: '129.99',
   quantity: 2,
+  availableQuantity: 50,
   imageUrl: 'https://example.com/image.jpg',
+  category: 'Electronics',
+  lineTotal: '199.98',
+  inStock: true,
 };
 
 function renderCartItemRow(props: Partial<Parameters<typeof CartItemRow>[0]> = {}) {
@@ -25,13 +31,13 @@ describe('CartItemRow', () => {
     renderCartItemRow();
 
     expect(screen.getByText('Test Product')).toBeInTheDocument();
-    expect(screen.getByText('SKU: SKU-001')).toBeInTheDocument();
+    expect(screen.getByText('SKU: 1001')).toBeInTheDocument();
   });
 
-  it('renders calculated total price (price * quantity)', () => {
+  it('renders line total price', () => {
     renderCartItemRow();
 
-    // 99.99 * 2 = 199.98
+    // lineTotal is 199.98
     expect(screen.getByText('$199.98')).toBeInTheDocument();
   });
 
@@ -89,7 +95,7 @@ describe('CartItemRow', () => {
   it('has correct test id based on sku', () => {
     renderCartItemRow();
 
-    expect(screen.getByTestId('cart-item-SKU-001')).toBeInTheDocument();
+    expect(screen.getByTestId('cart-item-1001')).toBeInTheDocument();
   });
 
   it('updates quantity when input value changes', () => {

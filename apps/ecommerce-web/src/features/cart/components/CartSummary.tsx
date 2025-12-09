@@ -7,7 +7,7 @@ interface CartSummaryProps {
 }
 
 export function CartSummary({ cart }: CartSummaryProps) {
-  const itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = cart.products.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <Card>
@@ -19,11 +19,11 @@ export function CartSummary({ cart }: CartSummaryProps) {
           <span className="text-muted-foreground">
             Subtotal ({itemCount} {itemCount === 1 ? 'item' : 'items'})
           </span>
-          <span>${cart.subtotal.toFixed(2)}</span>
+          <span>${parseFloat(cart.totals.subtotal).toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Estimated Tax</span>
-          <span>${cart.tax.toFixed(2)}</span>
+          <span>${parseFloat(cart.totals.taxTotal).toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Shipping</span>
@@ -32,11 +32,11 @@ export function CartSummary({ cart }: CartSummaryProps) {
         <hr />
         <div className="flex justify-between font-semibold">
           <span>Total</span>
-          <span data-testid="cart-total">${cart.total.toFixed(2)}</span>
+          <span data-testid="cart-total">${parseFloat(cart.totals.grandTotal).toFixed(2)}</span>
         </div>
       </CardContent>
       <CardFooter className="flex-col gap-2">
-        <Button className="w-full" size="lg" disabled={cart.items.length === 0}>
+        <Button className="w-full" size="lg" disabled={cart.products.length === 0}>
           Proceed to Checkout
         </Button>
         <Link to="/" className="w-full">

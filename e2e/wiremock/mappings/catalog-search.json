@@ -18,81 +18,111 @@
           "products": [
             {
               "sku": 100001,
-              "description": "Wireless Headphones - Premium Noise Canceling",
-              "price": 299.99,
+              "name": "Wireless Headphones",
+              "description": "Premium Noise Canceling wireless headphones with 30-hour battery life.",
+              "price": "299.99",
+              "originalPrice": "349.99",
               "availableQuantity": 50,
+              "imageUrl": "https://picsum.photos/seed/headphones/400/400",
               "category": "Electronics",
               "relevanceScore": 1.0
             },
             {
               "sku": 100002,
-              "description": "Smart Watch - Fitness Tracker",
-              "price": 199.99,
+              "name": "Smart Watch",
+              "description": "Fitness Tracker smartwatch with heart rate monitor and GPS.",
+              "price": "199.99",
+              "originalPrice": null,
               "availableQuantity": 30,
+              "imageUrl": "https://picsum.photos/seed/smartwatch/400/400",
               "category": "Electronics",
               "relevanceScore": 0.95
             },
             {
               "sku": 100003,
-              "description": "Laptop Stand - Ergonomic Aluminum",
-              "price": 79.99,
+              "name": "Laptop Stand",
+              "description": "Ergonomic Aluminum laptop stand with adjustable height.",
+              "price": "79.99",
+              "originalPrice": null,
               "availableQuantity": 100,
+              "imageUrl": "https://picsum.photos/seed/laptopstand/400/400",
               "category": "Electronics",
               "relevanceScore": 0.90
             },
             {
               "sku": 100004,
-              "description": "Mechanical Keyboard - RGB Cherry MX",
-              "price": 149.99,
+              "name": "Mechanical Keyboard",
+              "description": "RGB Cherry MX mechanical keyboard with programmable macros.",
+              "price": "149.99",
+              "originalPrice": "179.99",
               "availableQuantity": 25,
+              "imageUrl": "https://picsum.photos/seed/keyboard/400/400",
               "category": "Electronics",
               "relevanceScore": 0.85
             },
             {
               "sku": 100005,
-              "description": "Running Shoes - Lightweight Mesh",
-              "price": 129.99,
+              "name": "Running Shoes",
+              "description": "Lightweight Mesh running shoes with responsive cushioning.",
+              "price": "129.99",
+              "originalPrice": null,
               "availableQuantity": 75,
+              "imageUrl": "https://picsum.photos/seed/shoes/400/400",
               "category": "Sports",
               "relevanceScore": 0.80
             },
             {
               "sku": 100006,
-              "description": "Yoga Mat - Premium Non-Slip",
-              "price": 49.99,
+              "name": "Yoga Mat",
+              "description": "Premium Non-Slip yoga mat with extra cushioning.",
+              "price": "49.99",
+              "originalPrice": null,
               "availableQuantity": 200,
+              "imageUrl": "https://picsum.photos/seed/yogamat/400/400",
               "category": "Sports",
               "relevanceScore": 0.75
             },
             {
               "sku": 100007,
-              "description": "Cotton T-Shirt - Organic Classic Fit",
-              "price": 29.99,
+              "name": "Cotton T-Shirt",
+              "description": "Organic Classic Fit 100% cotton t-shirt.",
+              "price": "29.99",
+              "originalPrice": null,
               "availableQuantity": 500,
+              "imageUrl": "https://picsum.photos/seed/tshirt/400/400",
               "category": "Clothing",
               "relevanceScore": 0.70
             },
             {
               "sku": 100008,
-              "description": "Denim Jacket - Vintage Wash",
-              "price": 89.99,
+              "name": "Denim Jacket",
+              "description": "Vintage Wash classic denim jacket with button closure.",
+              "price": "89.99",
+              "originalPrice": "119.99",
               "availableQuantity": 0,
+              "imageUrl": "https://picsum.photos/seed/jacket/400/400",
               "category": "Clothing",
               "relevanceScore": 0.65
             },
             {
               "sku": 100009,
-              "description": "Ceramic Planter - Hand Crafted",
-              "price": 34.99,
+              "name": "Ceramic Planter",
+              "description": "Hand Crafted ceramic planter perfect for indoor plants.",
+              "price": "34.99",
+              "originalPrice": null,
               "availableQuantity": 60,
+              "imageUrl": "https://picsum.photos/seed/planter/400/400",
               "category": "Home",
               "relevanceScore": 0.60
             },
             {
               "sku": 100010,
-              "description": "Throw Blanket - Cozy Knitted",
-              "price": 59.99,
+              "name": "Throw Blanket",
+              "description": "Cozy Knitted throw blanket in neutral tones.",
+              "price": "59.99",
+              "originalPrice": null,
               "availableQuantity": 40,
+              "imageUrl": "https://picsum.photos/seed/blanket/400/400",
               "category": "Home",
               "relevanceScore": 0.55
             }
@@ -137,33 +167,45 @@
           "products": [
             {
               "sku": 100001,
-              "description": "Wireless Headphones - Premium Noise Canceling",
-              "price": 299.99,
+              "name": "Wireless Headphones",
+              "description": "Premium Noise Canceling wireless headphones with 30-hour battery life.",
+              "price": "299.99",
+              "originalPrice": "349.99",
               "availableQuantity": 50,
+              "imageUrl": "https://picsum.photos/seed/headphones/400/400",
               "category": "Electronics",
               "relevanceScore": 1.0
             },
             {
               "sku": 100002,
-              "description": "Smart Watch - Fitness Tracker",
-              "price": 199.99,
+              "name": "Smart Watch",
+              "description": "Fitness Tracker smartwatch with heart rate monitor and GPS.",
+              "price": "199.99",
+              "originalPrice": null,
               "availableQuantity": 30,
+              "imageUrl": "https://picsum.photos/seed/smartwatch/400/400",
               "category": "Electronics",
               "relevanceScore": 0.95
             },
             {
               "sku": 100003,
-              "description": "Laptop Stand - Ergonomic Aluminum",
-              "price": 79.99,
+              "name": "Laptop Stand",
+              "description": "Ergonomic Aluminum laptop stand with adjustable height.",
+              "price": "79.99",
+              "originalPrice": null,
               "availableQuantity": 100,
+              "imageUrl": "https://picsum.photos/seed/laptopstand/400/400",
               "category": "Electronics",
               "relevanceScore": 0.90
             },
             {
               "sku": 100004,
-              "description": "Mechanical Keyboard - RGB Cherry MX",
-              "price": 149.99,
+              "name": "Mechanical Keyboard",
+              "description": "RGB Cherry MX mechanical keyboard with programmable macros.",
+              "price": "149.99",
+              "originalPrice": "179.99",
               "availableQuantity": 25,
+              "imageUrl": "https://picsum.photos/seed/keyboard/400/400",
               "category": "Electronics",
               "relevanceScore": 0.85
             }
@@ -208,17 +250,23 @@
           "products": [
             {
               "sku": 100005,
-              "description": "Running Shoes - Lightweight Mesh",
-              "price": 129.99,
+              "name": "Running Shoes",
+              "description": "Lightweight Mesh running shoes with responsive cushioning.",
+              "price": "129.99",
+              "originalPrice": null,
               "availableQuantity": 75,
+              "imageUrl": "https://picsum.photos/seed/shoes/400/400",
               "category": "Sports",
               "relevanceScore": 1.0
             },
             {
               "sku": 100006,
-              "description": "Yoga Mat - Premium Non-Slip",
-              "price": 49.99,
+              "name": "Yoga Mat",
+              "description": "Premium Non-Slip yoga mat with extra cushioning.",
+              "price": "49.99",
+              "originalPrice": null,
               "availableQuantity": 200,
+              "imageUrl": "https://picsum.photos/seed/yogamat/400/400",
               "category": "Sports",
               "relevanceScore": 0.95
             }
@@ -263,17 +311,23 @@
           "products": [
             {
               "sku": 100007,
-              "description": "Cotton T-Shirt - Organic Classic Fit",
-              "price": 29.99,
+              "name": "Cotton T-Shirt",
+              "description": "Organic Classic Fit 100% cotton t-shirt.",
+              "price": "29.99",
+              "originalPrice": null,
               "availableQuantity": 500,
+              "imageUrl": "https://picsum.photos/seed/tshirt/400/400",
               "category": "Clothing",
               "relevanceScore": 1.0
             },
             {
               "sku": 100008,
-              "description": "Denim Jacket - Vintage Wash",
-              "price": 89.99,
+              "name": "Denim Jacket",
+              "description": "Vintage Wash classic denim jacket with button closure.",
+              "price": "89.99",
+              "originalPrice": "119.99",
               "availableQuantity": 0,
+              "imageUrl": "https://picsum.photos/seed/jacket/400/400",
               "category": "Clothing",
               "relevanceScore": 0.95
             }
@@ -318,17 +372,23 @@
           "products": [
             {
               "sku": 100009,
-              "description": "Ceramic Planter - Hand Crafted",
-              "price": 34.99,
+              "name": "Ceramic Planter",
+              "description": "Hand Crafted ceramic planter perfect for indoor plants.",
+              "price": "34.99",
+              "originalPrice": null,
               "availableQuantity": 60,
+              "imageUrl": "https://picsum.photos/seed/planter/400/400",
               "category": "Home",
               "relevanceScore": 1.0
             },
             {
               "sku": 100010,
-              "description": "Throw Blanket - Cozy Knitted",
-              "price": 59.99,
+              "name": "Throw Blanket",
+              "description": "Cozy Knitted throw blanket in neutral tones.",
+              "price": "59.99",
+              "originalPrice": null,
               "availableQuantity": 40,
+              "imageUrl": "https://picsum.photos/seed/blanket/400/400",
               "category": "Home",
               "relevanceScore": 0.95
             }
@@ -373,9 +433,12 @@
           "products": [
             {
               "sku": 100001,
-              "description": "Wireless Headphones - Premium Noise Canceling",
-              "price": 299.99,
+              "name": "Wireless Headphones",
+              "description": "Premium Noise Canceling wireless headphones with 30-hour battery life.",
+              "price": "299.99",
+              "originalPrice": "349.99",
               "availableQuantity": 50,
+              "imageUrl": "https://picsum.photos/seed/headphones/400/400",
               "category": "Electronics",
               "relevanceScore": 1.0
             }
@@ -420,9 +483,12 @@
           "products": [
             {
               "sku": 100003,
-              "description": "Laptop Stand - Ergonomic Aluminum",
-              "price": 79.99,
+              "name": "Laptop Stand",
+              "description": "Ergonomic Aluminum laptop stand with adjustable height.",
+              "price": "79.99",
+              "originalPrice": null,
               "availableQuantity": 100,
+              "imageUrl": "https://picsum.photos/seed/laptopstand/400/400",
               "category": "Electronics",
               "relevanceScore": 1.0
             }
@@ -559,9 +625,12 @@
           "products": [
             {
               "sku": 100001,
-              "description": "Wireless Headphones - Premium Noise Canceling",
-              "price": 299.99,
+              "name": "Wireless Headphones",
+              "description": "Premium Noise Canceling wireless headphones with 30-hour battery life.",
+              "price": "299.99",
+              "originalPrice": "349.99",
               "availableQuantity": 50,
+              "imageUrl": "https://picsum.photos/seed/headphones/400/400",
               "category": "Electronics",
               "relevanceScore": 0.95
             }

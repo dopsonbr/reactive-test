@@ -57,17 +57,19 @@ class MerchandiseRepositoryCacheTest {
   }
 
   @Test
-  void getDescription_shouldReturnCachedValue_onCacheHit() {
+  void getMerchandise_shouldReturnCachedValue_onCacheHit() {
     // Given
     long sku = 12345L;
     String cacheKey = "merchandise:sku:" + sku;
-    MerchandiseResponse cachedResponse = new MerchandiseResponse("Cached Description");
+    MerchandiseResponse cachedResponse =
+        new MerchandiseResponse(
+            "Product Name", "Cached Description", "http://image.url", "Category");
 
     when(cacheService.get(eq(cacheKey), eq(MerchandiseResponse.class)))
         .thenReturn(Mono.just(cachedResponse));
 
     // When & Then
-    StepVerifier.create(repository.getDescription(sku)).expectNext(cachedResponse).verifyComplete();
+    StepVerifier.create(repository.getMerchandise(sku)).expectNext(cachedResponse).verifyComplete();
 
     // Verify no HTTP call was made
     verify(webClient, never()).get();
@@ -75,11 +77,12 @@ class MerchandiseRepositoryCacheTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void getDescription_shouldCallHttpAndCache_onCacheMiss() {
+  void getMerchandise_shouldCallHttpAndCache_onCacheMiss() {
     // Given
     long sku = 12345L;
     String cacheKey = "merchandise:sku:" + sku;
-    MerchandiseResponse httpResponse = new MerchandiseResponse("HTTP Description");
+    MerchandiseResponse httpResponse =
+        new MerchandiseResponse("Product Name", "HTTP Description", "http://image.url", "Category");
 
     // Cache miss
     when(cacheService.get(eq(cacheKey), eq(MerchandiseResponse.class))).thenReturn(Mono.empty());
@@ -100,7 +103,7 @@ class MerchandiseRepositoryCacheTest {
         .thenReturn(Mono.just(true));
 
     // When & Then
-    StepVerifier.create(repository.getDescription(sku)).expectNext(httpResponse).verifyComplete();
+    StepVerifier.create(repository.getMerchandise(sku)).expectNext(httpResponse).verifyComplete();
 
     // Verify cache was populated
     verify(cacheService).put(eq(cacheKey), eq(httpResponse), any(Duration.class));
@@ -108,7 +111,7 @@ class MerchandiseRepositoryCacheTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void getDescription_shouldReturnFallback_onHttpError() {
+  void getMerchandise_shouldReturnFallback_onHttpError() {
     // Given
     long sku = 12345L;
     String cacheKey = "merchandise:sku:" + sku;
@@ -122,7 +125,7 @@ class MerchandiseRepositoryCacheTest {
         .thenReturn(requestHeadersSpec);
     when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     when(responseSpec.bodyToMono(MerchandiseResponse.class))
-        .thenReturn(Mono.just(new MerchandiseResponse("test")));
+        .thenReturn(Mono.just(new MerchandiseResponse("test", "desc", "url", "cat")));
 
     // Resilience decoration throws error
     when(resilience.decorate(eq("merchandise"), any(Mono.class)))
@@ -132,18 +135,19 @@ class MerchandiseRepositoryCacheTest {
     when(resilience.getCircuitBreakerState("merchandise")).thenReturn(CircuitBreaker.State.OPEN);
 
     // When & Then
-    StepVerifier.create(repository.getDescription(sku))
+    StepVerifier.create(repository.getMerchandise(sku))
         .expectNextMatches(response -> response.description().equals("Description unavailable"))
         .verifyComplete();
   }
 
   @Test
   @SuppressWarnings("unchecked")
-  void getDescription_shouldStillWork_whenRedisUnavailable() {
+  void getMerchandise_shouldStillWork_whenRedisUnavailable() {
     // Given
     long sku = 12345L;
     String cacheKey = "merchandise:sku:" + sku;
-    MerchandiseResponse httpResponse = new MerchandiseResponse("HTTP Response");
+    MerchandiseResponse httpResponse =
+        new MerchandiseResponse("Product Name", "HTTP Response", "http://image.url", "Category");
 
     // Redis is down - cache get returns empty (graceful degradation)
     when(cacheService.get(eq(cacheKey), eq(MerchandiseResponse.class))).thenReturn(Mono.empty());
@@ -164,6 +168,6 @@ class MerchandiseRepositoryCacheTest {
         .thenReturn(Mono.just(false));
 
     // When & Then - should still return HTTP response
-    StepVerifier.create(repository.getDescription(sku)).expectNext(httpResponse).verifyComplete();
+    StepVerifier.create(repository.getMerchandise(sku)).expectNext(httpResponse).verifyComplete();
   }
 }

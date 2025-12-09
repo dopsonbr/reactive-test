@@ -4,14 +4,14 @@ import type { Product } from '../types';
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart: (sku: string) => void;
+  onAddToCart: (sku: number) => void;
   isAddingToCart?: boolean;
 }
 
 export function ProductCard({ product, onAddToCart, isAddingToCart }: ProductCardProps) {
   return (
     <Card data-testid={`product-card-${product.sku}`} className="overflow-hidden">
-      <Link to="/products/$sku" params={{ sku: product.sku }}>
+      <Link to="/products/$sku" params={{ sku: String(product.sku) }}>
         <img
           src={product.imageUrl}
           alt={product.name}
@@ -21,7 +21,7 @@ export function ProductCard({ product, onAddToCart, isAddingToCart }: ProductCar
       <CardContent className="p-4">
         <Link
           to="/products/$sku"
-          params={{ sku: product.sku }}
+          params={{ sku: String(product.sku) }}
           className="hover:underline"
         >
           <h3 className="font-semibold line-clamp-2">{product.name}</h3>
@@ -30,10 +30,10 @@ export function ProductCard({ product, onAddToCart, isAddingToCart }: ProductCar
           {product.description}
         </p>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-lg font-bold">${Number(product.price).toFixed(2)}</span>
-          {product.originalPrice && Number(product.originalPrice) > Number(product.price) && (
+          <span className="text-lg font-bold">${parseFloat(product.price).toFixed(2)}</span>
+          {product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price) && (
             <span className="text-sm text-muted-foreground line-through">
-              ${Number(product.originalPrice).toFixed(2)}
+              ${parseFloat(product.originalPrice).toFixed(2)}
             </span>
           )}
         </div>

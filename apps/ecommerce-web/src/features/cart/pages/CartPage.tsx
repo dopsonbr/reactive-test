@@ -22,7 +22,7 @@ export function CartPage() {
     );
   }
 
-  if (!cart || cart.items.length === 0) {
+  if (!cart || cart.products.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
@@ -36,7 +36,7 @@ export function CartPage() {
       <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
       <div className="flex flex-col gap-8 lg:flex-row">
         <div className="flex-1 space-y-4">
-          {cart.items.map((item) => (
+          {cart.products.map((item) => (
             <CartItemRow
               key={item.sku}
               item={item}

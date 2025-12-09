@@ -100,7 +100,7 @@ public abstract class AbstractGraphQLIntegrationTest {
             invocation -> {
               long sku = invocation.getArgument(0);
               return Mono.just(
-                  new Product(
+                  Product.create(
                       sku,
                       "Test Product",
                       "Test Description",

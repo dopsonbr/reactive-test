@@ -76,7 +76,7 @@ class ProductControllerSecurityTest {
   @Test
   void shouldReturn200WithValidToken() {
     Product product =
-        new Product(
+        Product.create(
             123456L,
             "Test Product",
             "Description",
@@ -108,7 +108,7 @@ class ProductControllerSecurityTest {
   @Test
   void shouldReturn200WithMultipleValidScopes() {
     Product product =
-        new Product(
+        Product.create(
             123456L,
             "Test Product",
             "Description",

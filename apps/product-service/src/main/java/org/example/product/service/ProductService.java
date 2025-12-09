@@ -43,7 +43,7 @@ public class ProductService {
                     var pricing = tuple.getT2();
                     var inv = tuple.getT3();
 
-                    return new Product(
+                    return Product.create(
                         sku,
                         merch.name(),
                         merch.description(),

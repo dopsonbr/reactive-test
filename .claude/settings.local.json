@@ -118,7 +118,8 @@
       "Bash(/Users/briandopson/github/dopsonbr/reactive-test-worktrees/043-model-alignment/gradlew :apps:product-service:spotlessApply:*)",
       "Bash(/Users/briandopson/github/dopsonbr/reactive-test-worktrees/043-model-alignment/gradlew :apps:product-service:compileJava:*)",
       "Bash(/Users/briandopson/github/dopsonbr/reactive-test-worktrees/043-model-alignment/gradlew :apps:cart-service:compileJava:*)",
-      "Bash(pnpm lint:eslint:*)"
+      "Bash(pnpm lint:eslint:*)",
+      "Skill(superpowers:using-git-worktrees)"
     ],
     "deny": [],
     "ask": [

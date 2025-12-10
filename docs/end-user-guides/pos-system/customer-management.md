@@ -62,8 +62,6 @@ Click **"View Full Profile"** on any linked customer.
 
 ### Profile Overview
 
-![Customer Profile](images/customer-profile-wireframe.png)
-*Full customer profile view*
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐

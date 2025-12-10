@@ -61,3 +61,8 @@ vitest.config.*.timestamp*
 **/playwright-report/
 test-results/
 
+# VitePress
+docs/repo-explorer/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+

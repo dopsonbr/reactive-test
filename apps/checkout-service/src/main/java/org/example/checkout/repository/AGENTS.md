@@ -12,7 +12,7 @@ Files that require careful review before changes:
 - PostgresOrderRepository handles entity mapping and JSON serialization
 - OrderEntityRepository extends ReactiveCrudRepository for Spring Data R2DBC
 - Nested objects stored as JSONB using JsonValue wrapper
-- OrderEntity implements Persistable<UUID> for insert vs update detection
+- OrderEntity implements `Persistable<UUID>` for insert vs update detection
 
 ## Warnings
 

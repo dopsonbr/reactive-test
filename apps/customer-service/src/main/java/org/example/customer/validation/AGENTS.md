@@ -7,7 +7,7 @@ Files that require careful review before changes:
 
 ## Conventions
 
-- Validators return Mono<Void> (empty on success, error on failure)
+- Validators return `Mono<Void>` (empty on success, error on failure)
 - Errors aggregated and returned as ValidationException
 - Common headers validated in all requests
 - Business type customers require companyInfo

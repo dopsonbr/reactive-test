@@ -4,7 +4,7 @@
 Files requiring careful review: CartService.java (orchestration logic affects product enrichment, validation, and total calculation)
 
 ## Conventions
-- All operations return Mono<Cart> or Mono<Void>
+- All operations return `Mono<Cart>` or `Mono<Void>`
 - Product enrichment fetches live data from product service on add/update
 - Customer operations validate against customer service before mutation
 - Discount operations validate eligibility against discount service

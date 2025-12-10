@@ -25,6 +25,10 @@
     "lint:tokens": "pnpm lint:styles && node tools/validate-tailwind-config.mjs",
     "lint:all": "pnpm lint:eslint && pnpm lint:styles && pnpm lint:ui && pnpm lint:tests && pnpm lint:md",
     "lint:fix": "nx run-many -t lint --all -- --fix && stylelint '**/*.css' --fix && markdownlint-cli2 --fix '**/*.md'",
+    "docs:dev": "node tools/docs-explorer/build-docs-explorer.js && node tools/docs-explorer/fix-plan-markdown.js && vitepress dev docs",
+    "docs:build": "node tools/docs-explorer/build-docs-explorer.js && node tools/docs-explorer/fix-plan-markdown.js && vitepress build docs",
+    "docs:preview": "node tools/docs-explorer/build-docs-explorer.js && node tools/docs-explorer/fix-plan-markdown.js && vitepress preview docs",
+    "docs:clean": "rm -rf docs/repo-explorer docs/.vitepress/cache docs/.vitepress/dist",
     "check:docs-index": "bash tools/verify-docs-index.sh",
     "check:frontend": "./tools/check-frontend.sh",
     "graph": "nx graph",
@@ -96,6 +100,7 @@
     "typescript-eslint": "^8.48.1",
     "vite": "^7.0.0",
     "vite-plugin-dts": "^4.5.4",
+    "vitepress": "^1.6.4",
     "vitest": "^4.0.0",
     "vitest-axe": "^0.1.0",
     "yaml": "^2.8.2"

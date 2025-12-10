@@ -6,7 +6,7 @@ Files requiring careful review: AuditEvent.java (changing structure affects futu
 ## Conventions
 - All audit events use AuditEvent.cartEvent() factory method
 - Event types follow ENTITY_ACTION pattern (e.g., CART_CREATED, PRODUCT_ADDED)
-- Publishers must be non-blocking and return Mono<Void>
+- Publishers must be non-blocking and return `Mono<Void>`
 - Request context propagates via Reactor Context, not method parameters
 
 ## Warnings

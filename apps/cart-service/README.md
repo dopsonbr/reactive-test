@@ -294,9 +294,9 @@ PostgresCartRepository        ProductServiceClient    DiscountServiceClient
 | storeNumber | int | Store context (1-2000) |
 | customerId | String | Customer identifier (optional) |
 | customer | CartCustomer | Customer details (optional) |
-| products | List<CartProduct> | Products in cart |
-| discounts | List<AppliedDiscount> | Applied discounts |
-| fulfillments | List<Fulfillment> | Fulfillment options |
+| products | `List<CartProduct>` | Products in cart |
+| discounts | `List<AppliedDiscount>` | Applied discounts |
+| fulfillments | `List<Fulfillment>` | Fulfillment options |
 | totals | CartTotals | Calculated totals |
 | createdAt | Instant | Creation timestamp |
 | updatedAt | Instant | Last update timestamp |

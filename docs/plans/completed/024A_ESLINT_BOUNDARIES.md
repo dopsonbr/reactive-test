@@ -559,7 +559,7 @@ rm test-violation.tsx
 
 | Rule | Triggers On |
 |------|-------------|
-| `no-hardcoded-colors` | `className="bg-[#fff]"`, `style={{ color: 'red' }}` |
+| `no-hardcoded-colors` | `className="bg-[#fff]"`, `style=&#123;&#123; color: 'red' &#125;&#125;` |
 | `no-barrel-exports` | `export * from './component'` in features/ |
 | `require-accessible-controls` | `<div onClick={...}>` without role |
 | `tanstack-query-guardrails` | `useQuery({ queryFn })` missing queryKey |

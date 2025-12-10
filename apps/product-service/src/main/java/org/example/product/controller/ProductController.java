@@ -38,12 +38,13 @@ public class ProductController {
   public Mono<Product> getProduct(
       @PathVariable long sku,
       @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader(value = "x-order-number", required = false) String orderNumber,
       @RequestHeader("x-userid") String userId,
       @RequestHeader("x-sessionid") String sessionId,
       @AuthenticationPrincipal Jwt jwt,
       ServerHttpRequest request) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata =
+        new RequestMetadata(storeNumber, orderNumber != null ? orderNumber : "", userId, sessionId);
 
     return requestValidator
         .validateProductRequest(sku, storeNumber, orderNumber, userId, sessionId)

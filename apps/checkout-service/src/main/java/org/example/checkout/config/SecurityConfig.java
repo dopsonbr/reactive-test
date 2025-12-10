@@ -1,5 +1,6 @@
 package org.example.checkout.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,11 +12,13 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 
 /**
  * Security configuration for checkout-service. Configures OAuth2 resource server with JWT
- * validation.
+ * validation. Disabled when app.security.enabled=false (e.g., for load testing or local
+ * development).
  */
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
+@ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
 public class SecurityConfig {
 
   @Bean

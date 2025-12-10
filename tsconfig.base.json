@@ -30,7 +30,16 @@
         "libs/frontend/shared-design/tokens/src/index.css"
       ],
       "ui-components": ["libs/frontend/shared-ui/ui-components/src/index.ts"],
-      "@reactive-platform/workspace-plugin": ["tools/src/index.ts"]
+      "@reactive-platform/workspace-plugin": ["tools/src/index.ts"],
+      "@reactive-platform/commerce-hooks": [
+        "libs/frontend/shared-data/commerce-hooks/src/index.ts"
+      ],
+      "@reactive-platform/commerce-ui": [
+        "libs/frontend/shared-ui/commerce-ui/src/index.ts"
+      ],
+      "@reactive-platform/mock-handlers": [
+        "libs/frontend/shared-testing/mock-handlers/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

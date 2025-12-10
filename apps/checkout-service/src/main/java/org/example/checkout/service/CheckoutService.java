@@ -25,6 +25,7 @@ import org.example.checkout.dto.OrderResponse;
 import org.example.checkout.model.AppliedDiscount;
 import org.example.checkout.model.CustomerSnapshot;
 import org.example.checkout.model.FulfillmentDetails;
+import org.example.checkout.model.FulfillmentType;
 import org.example.checkout.model.Order;
 import org.example.checkout.model.OrderLineItem;
 import org.example.checkout.model.OrderStatus;
@@ -216,7 +217,7 @@ public class CheckoutService {
             .collect(Collectors.toList());
 
     List<DiscountRequestItem> items =
-        cart.items().stream()
+        cart.products().stream()
             .map(item -> new DiscountRequestItem(item.sku(), item.quantity(), item.unitPrice()))
             .collect(Collectors.toList());
 
@@ -246,8 +247,14 @@ public class CheckoutService {
 
   private Mono<UUID> createReservation(
       CartDetails cart, InitiateCheckoutRequest request, int storeNumber) {
+    // For IMMEDIATE fulfillment (in-store self-checkout), skip reservation
+    // since customer takes items immediately - no inventory hold needed
+    if (request.fulfillmentType() == FulfillmentType.IMMEDIATE) {
+      return Mono.just(UUID.randomUUID()); // Generate placeholder reservation ID
+    }
+
     List<FulfillmentItem> items =
-        cart.items().stream()
+        cart.products().stream()
             .map(item -> new FulfillmentItem(item.sku(), item.quantity()))
             .collect(Collectors.toList());
 
@@ -282,9 +289,9 @@ public class CheckoutService {
     String sessionId = UUID.randomUUID().toString();
     Instant expiresAt = Instant.now().plus(SESSION_EXPIRY_MINUTES, ChronoUnit.MINUTES);
 
-    // Convert cart items to order line items
+    // Convert cart products to order line items
     List<OrderLineItem> lineItems =
-        cart.items().stream()
+        cart.products().stream()
             .map(
                 item ->
                     OrderLineItem.create(
@@ -343,7 +350,7 @@ public class CheckoutService {
             cart.totals().subtotal(),
             cart.totals().discountTotal(),
             cart.totals().taxTotal(),
-            cart.totals().fulfillmentCost(),
+            cart.totals().fulfillmentTotal(),
             cart.totals().grandTotal(),
             expiresAt);
 
@@ -363,7 +370,7 @@ public class CheckoutService {
             cart.totals().subtotal(),
             cart.totals().discountTotal(),
             cart.totals().taxTotal(),
-            cart.totals().fulfillmentCost(),
+            cart.totals().fulfillmentTotal(),
             cart.totals().grandTotal(),
             expiresAt));
   }

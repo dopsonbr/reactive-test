@@ -1,0 +1,23 @@
+/* Import design tokens from shared library */
+@import '@reactive-platform/shared-design-tokens';
+
+/* Import Tailwind base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global kiosk-specific styles */
+@layer base {
+  html,
+  body,
+  #root {
+    @apply h-full w-full overflow-hidden;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+/* Kiosk touch-optimized styles in separate file */
+@import './styles/kiosk.css';

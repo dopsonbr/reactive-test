@@ -3,15 +3,40 @@
 /**
  * powerstart - Start all reactive-platform services
  * A simple way to bring up the entire platform for local development
+ *
+ * Usage:
+ *   ./powerstart           - Start everything (default)
+ *   ./powerstart -r        - Interactive mode: select an app to rebuild and restart
+ *   ./powerstart -r <app>  - Rebuild and restart a specific app
+ *   ./powerstart --help    - Show help
  */
 
 import { execSync, spawn } from 'child_process';
 import { existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import * as readline from 'readline';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DOCKER_DIR = join(__dirname, 'docker');
+
+// All available apps that can be rebuilt/restarted
+const ALL_APPS = {
+  // Backend services (Docker)
+  'product-service': { port: 8090, type: 'backend', docker: 'product-service' },
+  'cart-service': { port: 8081, type: 'backend', docker: 'cart-service' },
+  'customer-service': { port: 8083, type: 'backend', docker: 'customer-service' },
+  'discount-service': { port: 8084, type: 'backend', docker: 'discount-service' },
+  'fulfillment-service': { port: 8085, type: 'backend', docker: 'fulfillment-service' },
+  'audit-service': { port: 8086, type: 'backend', docker: 'audit-service' },
+  'checkout-service': { port: 8087, type: 'backend', docker: 'checkout-service' },
+  'order-service': { port: 8088, type: 'backend', docker: 'order-service' },
+  'user-service': { port: 8089, type: 'backend', docker: 'user-service' },
+  // Frontend apps (some Docker, some local)
+  'ecommerce-web': { port: 3001, type: 'frontend', docker: 'ecommerce-web' },
+  'kiosk-web': { port: 3002, type: 'frontend', docker: null }, // runs locally via nx serve
+  'home-portal': { port: 3003, type: 'frontend', docker: null }, // runs locally via nx serve
+};
 
 // ANSI colors
 const colors = {
@@ -169,8 +194,19 @@ function checkPrerequisites() {
   logSuccess('docker-compose.yml found');
 }
 
+// Prompt user for yes/no confirmation
+async function promptConfirm(message) {
+  const rl = createReadlineInterface();
+  return new Promise((resolve) => {
+    rl.question(`${colors.yellow}${message} [y/N]: ${colors.nc}`, (answer) => {
+      rl.close();
+      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+    });
+  });
+}
+
 // Check for port conflicts
-function checkPortConflicts() {
+async function checkPortConflicts() {
   logHeader('Checking for Port Conflicts');
 
   const ports = [
@@ -188,6 +224,8 @@ function checkPortConflicts() {
     { port: 8089, service: 'user-service' },
     { port: 3000, service: 'Grafana' },
     { port: 3001, service: 'ecommerce-web' },
+    { port: 3002, service: 'kiosk-web' },
+    { port: 3003, service: 'home-portal' },
   ];
 
   const conflicts = [];
@@ -199,7 +237,9 @@ function checkPortConflicts() {
         alreadyRunning.add(service);
         logInfo(`${service} already running on port ${port} (container: ${container})`);
       } else {
-        conflicts.push({ port, service });
+        const pid = getPortUser(port);
+        const processName = getProcessName(pid);
+        conflicts.push({ port, service, pid, processName });
       }
     }
   }
@@ -208,18 +248,38 @@ function checkPortConflicts() {
     logError('Port conflicts detected!');
     console.log('');
     console.log(`${colors.red}The following ports are in use by other processes:${colors.nc}`);
-    for (const { port, service } of conflicts) {
-      const pid = getPortUser(port);
-      const process = getProcessName(pid);
-      console.log(`  ${colors.red}✗${colors.nc} Port ${port} (${service}) - used by PID ${pid} (${process})`);
+    for (const { port, service, pid, processName } of conflicts) {
+      console.log(`  ${colors.red}✗${colors.nc} Port ${port} (${service}) - used by PID ${pid} (${processName})`);
     }
     console.log('');
-    console.log(`${colors.yellow}Solutions:${colors.nc}`);
-    console.log('  1. Stop the conflicting processes');
-    console.log('  2. Stop any running E2E stack: docker compose -f docker/docker-compose.e2e.yml down');
-    console.log('  3. Stop any running dev stack: docker compose -f docker/docker-compose.yml down');
-    console.log('');
-    process.exit(1);
+
+    // Ask user if they want to kill the conflicting processes
+    const shouldKill = await promptConfirm('Kill these processes and continue?');
+
+    if (shouldKill) {
+      console.log('');
+      for (const { port, service, pid, processName } of conflicts) {
+        logStep(`Killing ${processName} (PID ${pid}) on port ${port} for ${service}...`);
+        try {
+          execSync(`kill -9 ${pid}`, { stdio: 'pipe' });
+          logSuccess(`Killed ${processName} (PID ${pid}) - port ${port} now free for ${service}`);
+        } catch {
+          logWarning(`Could not kill process ${pid} for ${service}`);
+        }
+      }
+      // Give processes time to release ports
+      await sleep(1000);
+      console.log('');
+      logSuccess('Conflicting processes killed - continuing startup');
+    } else {
+      console.log('');
+      console.log(`${colors.yellow}Startup cancelled. To resolve manually:${colors.nc}`);
+      console.log('  1. Stop the conflicting processes');
+      console.log('  2. Stop any running E2E stack: docker compose -f docker/docker-compose.e2e.yml down');
+      console.log('  3. Stop any running dev stack: docker compose -f docker/docker-compose.yml down');
+      console.log('');
+      process.exit(1);
+    }
   }
 
   if (alreadyRunning.size > 0) {
@@ -406,36 +466,102 @@ async function startBackendServices() {
   }
 }
 
-// Start frontend
+// Start frontend applications
 async function startFrontend() {
-  logHeader('Starting Frontend Application');
+  logHeader('Starting Frontend Applications');
 
+  // Start ecommerce-web
   if (alreadyRunning.has('ecommerce-web')) {
-    logSuccess('Frontend already running');
+    logSuccess('ecommerce-web already running');
     startedServices.push('ecommerce-web:3001');
-    return;
-  }
-
-  logStep('Starting ecommerce-web...');
-  exec('docker compose up -d ecommerce-web', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
-  logSuccess('Frontend container started');
-
-  logStep('Waiting for frontend to be healthy...');
-  let ready = false;
-  for (let i = 0; i < 60; i++) {
-    if (await isHealthy(3001, '/health') || await isHealthy(3001, '/')) {
-      ready = true;
-      break;
-    }
-    await sleep(2000);
-  }
-
-  if (ready) {
-    logSuccess('Frontend is ready');
   } else {
-    logWarning('Frontend may not be fully ready yet');
+    logStep('Starting ecommerce-web...');
+    exec('docker compose up -d ecommerce-web', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+    logSuccess('ecommerce-web container started');
+
+    logStep('Waiting for ecommerce-web to be healthy...');
+    let ready = false;
+    for (let i = 0; i < 60; i++) {
+      if (await isHealthy(3001, '/health') || await isHealthy(3001, '/')) {
+        ready = true;
+        break;
+      }
+      await sleep(2000);
+    }
+
+    if (ready) {
+      logSuccess('ecommerce-web is ready');
+    } else {
+      logWarning('ecommerce-web may not be fully ready yet');
+    }
+    startedServices.push('ecommerce-web:3001');
   }
-  startedServices.push('ecommerce-web:3001');
+
+  // Start kiosk-web (self-checkout kiosk application)
+  if (alreadyRunning.has('kiosk-web')) {
+    logSuccess('kiosk-web already running');
+    startedServices.push('kiosk-web:3002');
+  } else {
+    logStep('Starting kiosk-web (self-checkout kiosk)...');
+    // kiosk-web runs via nx serve, not Docker - spawn it in the background
+    const kioskProcess = spawn('pnpm', ['nx', 'serve', 'kiosk-web'], {
+      cwd: __dirname,
+      stdio: 'ignore',
+      detached: true,
+    });
+    kioskProcess.unref();
+    logSuccess('kiosk-web process started');
+
+    logStep('Waiting for kiosk-web to be healthy...');
+    let ready = false;
+    for (let i = 0; i < 60; i++) {
+      if (await isHealthy(3002, '/')) {
+        ready = true;
+        break;
+      }
+      await sleep(2000);
+    }
+
+    if (ready) {
+      logSuccess('kiosk-web is ready');
+    } else {
+      logWarning('kiosk-web may not be fully ready yet');
+    }
+    startedServices.push('kiosk-web:3002');
+  }
+
+  // Start home-portal (platform landing page)
+  if (alreadyRunning.has('home-portal')) {
+    logSuccess('home-portal already running');
+    startedServices.push('home-portal:3003');
+  } else {
+    logStep('Starting home-portal (platform landing page)...');
+    // home-portal runs via nx serve, not Docker - spawn it in the background
+    const portalProcess = spawn('pnpm', ['nx', 'serve', 'home-portal'], {
+      cwd: __dirname,
+      stdio: 'ignore',
+      detached: true,
+    });
+    portalProcess.unref();
+    logSuccess('home-portal process started');
+
+    logStep('Waiting for home-portal to be healthy...');
+    let ready = false;
+    for (let i = 0; i < 60; i++) {
+      if (await isHealthy(3003, '/')) {
+        ready = true;
+        break;
+      }
+      await sleep(2000);
+    }
+
+    if (ready) {
+      logSuccess('home-portal is ready');
+    } else {
+      logWarning('home-portal may not be fully ready yet');
+    }
+    startedServices.push('home-portal:3003');
+  }
 }
 
 // Print summary
@@ -491,8 +617,15 @@ function printSummary() {
   console.log('');
 
   // Frontend
-  console.log(`${colors.bold}Frontend:${colors.nc}`);
+  console.log(`${colors.bold}Frontend Applications:${colors.nc}`);
+  console.log(`  ${colors.cyan}home-portal${colors.nc}       http://localhost:3003`);
+  console.log('                     Platform landing page (start here!)');
+  console.log('');
   console.log(`  ${colors.cyan}ecommerce-web${colors.nc}     http://localhost:3001`);
+  console.log('                     Main e-commerce storefront');
+  console.log('');
+  console.log(`  ${colors.cyan}kiosk-web${colors.nc}         http://localhost:3002`);
+  console.log('                     Self-checkout kiosk application');
   console.log('');
 
   // Quick commands
@@ -505,7 +638,10 @@ function printSummary() {
   console.log('  docker compose -f docker/docker-compose.yml down');
   console.log('');
 
-  console.log(`${colors.green}${colors.bold}Platform is ready!${colors.nc} Open ${colors.cyan}http://localhost:3001${colors.nc} to start.`);
+  console.log(`${colors.green}${colors.bold}Platform is ready!${colors.nc}`);
+  console.log(`  ${colors.bold}Home Portal:${colors.nc}     ${colors.cyan}http://localhost:3003${colors.nc}  ${colors.yellow}← Start here!${colors.nc}`);
+  console.log(`  E-commerce:      ${colors.cyan}http://localhost:3001${colors.nc}`);
+  console.log(`  Kiosk:           ${colors.cyan}http://localhost:3002${colors.nc}`);
 }
 
 // Print banner
@@ -520,11 +656,296 @@ function printBanner() {
   console.log(`${colors.blue}Starting the Reactive Platform...${colors.nc}`);
 }
 
+// Show help
+function showHelp() {
+  console.log(`
+${colors.bold}powerstart${colors.nc} - Start all reactive-platform services
+
+${colors.bold}Usage:${colors.nc}
+  ./powerstart              Start everything (default)
+  ./powerstart -r           Interactive mode: select an app to rebuild and restart
+  ./powerstart -r <app>     Rebuild and restart a specific app
+  ./powerstart --help       Show this help
+
+${colors.bold}Available apps:${colors.nc}
+  ${colors.cyan}Backend:${colors.nc}
+    product-service, cart-service, customer-service, discount-service,
+    fulfillment-service, audit-service, checkout-service, order-service, user-service
+
+  ${colors.cyan}Frontend:${colors.nc}
+    ecommerce-web, kiosk-web, home-portal
+
+${colors.bold}Examples:${colors.nc}
+  ./powerstart -r product-service    Rebuild and restart product-service
+  ./powerstart -r kiosk-web          Rebuild and restart kiosk-web
+  ./powerstart -r                    Show interactive menu to select app
+`);
+}
+
+// Create readline interface for interactive mode
+function createReadlineInterface() {
+  return readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+}
+
+// Show interactive menu and get user selection
+async function selectAppInteractively() {
+  const rl = createReadlineInterface();
+
+  const apps = Object.keys(ALL_APPS);
+  const backendApps = apps.filter(a => ALL_APPS[a].type === 'backend');
+  const frontendApps = apps.filter(a => ALL_APPS[a].type === 'frontend');
+
+  console.log('');
+  console.log(`${colors.bold}Select an app to rebuild and restart:${colors.nc}`);
+  console.log('');
+  console.log(`${colors.cyan}Backend Services:${colors.nc}`);
+  backendApps.forEach((app, i) => {
+    console.log(`  ${colors.bold}${i + 1}.${colors.nc} ${app} (port ${ALL_APPS[app].port})`);
+  });
+  console.log('');
+  console.log(`${colors.cyan}Frontend Applications:${colors.nc}`);
+  frontendApps.forEach((app, i) => {
+    const num = backendApps.length + i + 1;
+    console.log(`  ${colors.bold}${num}.${colors.nc} ${app} (port ${ALL_APPS[app].port})`);
+  });
+  console.log('');
+  console.log(`  ${colors.bold}0.${colors.nc} Cancel`);
+  console.log('');
+
+  return new Promise((resolve) => {
+    rl.question(`${colors.yellow}Enter number or app name: ${colors.nc}`, (answer) => {
+      rl.close();
+
+      const trimmed = answer.trim();
+
+      // Check if it's a number
+      const num = parseInt(trimmed, 10);
+      if (!isNaN(num)) {
+        if (num === 0) {
+          resolve(null);
+          return;
+        }
+        const allApps = [...backendApps, ...frontendApps];
+        if (num >= 1 && num <= allApps.length) {
+          resolve(allApps[num - 1]);
+          return;
+        }
+      }
+
+      // Check if it's an app name
+      if (ALL_APPS[trimmed]) {
+        resolve(trimmed);
+        return;
+      }
+
+      // Partial match
+      const match = apps.find(a => a.toLowerCase().includes(trimmed.toLowerCase()));
+      if (match) {
+        resolve(match);
+        return;
+      }
+
+      logError(`Unknown app: ${trimmed}`);
+      resolve(null);
+    });
+  });
+}
+
+// Kill process on a port
+function killProcessOnPort(port) {
+  const pid = getPortUser(port);
+  if (pid) {
+    logStep(`Killing process on port ${port} (PID: ${pid})...`);
+    try {
+      execSync(`kill -9 ${pid}`, { stdio: 'pipe' });
+      logSuccess(`Killed process ${pid}`);
+    } catch {
+      logWarning(`Could not kill process ${pid}`);
+    }
+  }
+}
+
+// Rebuild and restart a specific backend app
+async function rebuildBackendApp(appName) {
+  const app = ALL_APPS[appName];
+  if (!app || app.type !== 'backend') {
+    logError(`${appName} is not a valid backend app`);
+    return false;
+  }
+
+  logHeader(`Rebuilding ${appName}`);
+
+  // Build the JAR
+  logStep(`Building ${appName} bootJar...`);
+  try {
+    exec(`./gradlew :apps:${appName}:bootJar -q`, { cwd: __dirname });
+    logSuccess(`${appName} JAR built successfully`);
+  } catch {
+    logError(`Failed to build ${appName}`);
+    return false;
+  }
+
+  // Stop the container
+  logStep(`Stopping ${appName} container...`);
+  exec(`docker compose stop ${app.docker}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  exec(`docker compose rm -f ${app.docker}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  logSuccess(`${appName} container stopped`);
+
+  // Rebuild and start the container (--build ensures new JAR is picked up)
+  logStep(`Rebuilding and starting ${appName} container...`);
+  exec(`docker compose build ${app.docker}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  exec(`docker compose up -d ${app.docker}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+
+  // Wait for health
+  logStep(`Waiting for ${appName} to be healthy...`);
+  if (await waitForHealth(appName, app.port)) {
+    logSuccess(`${appName} is ready at http://localhost:${app.port}`);
+    return true;
+  } else {
+    logError(`${appName} failed to become healthy`);
+    return false;
+  }
+}
+
+// Rebuild and restart a specific frontend app
+async function rebuildFrontendApp(appName) {
+  const app = ALL_APPS[appName];
+  if (!app || app.type !== 'frontend') {
+    logError(`${appName} is not a valid frontend app`);
+    return false;
+  }
+
+  logHeader(`Rebuilding ${appName}`);
+
+  if (app.docker) {
+    // Docker-based frontend (ecommerce-web)
+    logStep(`Building ${appName}...`);
+    try {
+      exec(`pnpm nx build ${appName}`, { cwd: __dirname });
+      logSuccess(`${appName} built successfully`);
+    } catch {
+      logError(`Failed to build ${appName}`);
+      return false;
+    }
+
+    // Stop and restart container
+    logStep(`Restarting ${appName} container...`);
+    exec(`docker compose stop ${app.docker}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+    exec(`docker compose rm -f ${app.docker}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+    exec(`docker compose up -d --build ${app.docker}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+
+    // Wait for health
+    logStep(`Waiting for ${appName} to be healthy...`);
+    let ready = false;
+    for (let i = 0; i < 60; i++) {
+      if (await isHealthy(app.port, '/health') || await isHealthy(app.port, '/')) {
+        ready = true;
+        break;
+      }
+      await sleep(2000);
+    }
+
+    if (ready) {
+      logSuccess(`${appName} is ready at http://localhost:${app.port}`);
+      return true;
+    } else {
+      logWarning(`${appName} may not be fully ready yet`);
+      return true;
+    }
+  } else {
+    // Local dev server (kiosk-web, home-portal)
+
+    // Kill existing process on the port
+    killProcessOnPort(app.port);
+    await sleep(1000);
+
+    // Start the dev server
+    logStep(`Starting ${appName} dev server...`);
+    const devProcess = spawn('pnpm', ['nx', 'serve', appName], {
+      cwd: __dirname,
+      stdio: 'ignore',
+      detached: true,
+    });
+    devProcess.unref();
+
+    // Wait for health
+    logStep(`Waiting for ${appName} to be healthy...`);
+    let ready = false;
+    for (let i = 0; i < 60; i++) {
+      if (await isHealthy(app.port, '/')) {
+        ready = true;
+        break;
+      }
+      await sleep(2000);
+    }
+
+    if (ready) {
+      logSuccess(`${appName} is ready at http://localhost:${app.port}`);
+      return true;
+    } else {
+      logWarning(`${appName} may not be fully ready yet`);
+      return true;
+    }
+  }
+}
+
+// Rebuild and restart a specific app
+async function rebuildApp(appName) {
+  const app = ALL_APPS[appName];
+  if (!app) {
+    logError(`Unknown app: ${appName}`);
+    logInfo(`Available apps: ${Object.keys(ALL_APPS).join(', ')}`);
+    return false;
+  }
+
+  if (app.type === 'backend') {
+    return await rebuildBackendApp(appName);
+  } else {
+    return await rebuildFrontendApp(appName);
+  }
+}
+
 // Main
 async function main() {
+  const args = process.argv.slice(2);
+
+  // Handle --help
+  if (args.includes('--help') || args.includes('-h')) {
+    showHelp();
+    return;
+  }
+
+  // Handle -r (rebuild/restart mode)
+  if (args.includes('-r') || args.includes('--restart')) {
+    const rIndex = args.findIndex(a => a === '-r' || a === '--restart');
+    const appArg = args[rIndex + 1];
+
+    let appName;
+    if (appArg && !appArg.startsWith('-')) {
+      // App name provided directly
+      appName = appArg;
+    } else {
+      // Interactive mode
+      printBanner();
+      appName = await selectAppInteractively();
+    }
+
+    if (!appName) {
+      console.log('Cancelled.');
+      return;
+    }
+
+    const success = await rebuildApp(appName);
+    process.exit(success ? 0 : 1);
+  }
+
+  // Default: start everything
   printBanner();
   checkPrerequisites();
-  checkPortConflicts();
+  await checkPortConflicts();
   buildJars();
   await startInfrastructure();
   await startObservability();

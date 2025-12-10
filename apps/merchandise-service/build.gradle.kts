@@ -20,12 +20,12 @@ dependencies {
 
     // PostgreSQL (R2DBC for runtime, JDBC for Flyway)
     implementation("org.postgresql:r2dbc-postgresql")
-    implementation("org.springframework.boot:spring-boot-starter-jdbc")
     runtimeOnly("org.postgresql:postgresql")
 
-    // Flyway
-    implementation("org.flywaydb:flyway-core")
+    // Flyway for database migrations (Spring Boot 4.0 starter includes flyway-core + autoconfiguration)
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.flywaydb:flyway-database-postgresql")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
 
     // Prometheus metrics
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")

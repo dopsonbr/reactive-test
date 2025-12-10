@@ -53,7 +53,9 @@ public class MerchandiseService {
                   new ProductEntity(
                       existing.sku(),
                       request.name() != null ? request.name() : existing.name(),
-                      request.description() != null ? request.description() : existing.description(),
+                      request.description() != null
+                          ? request.description()
+                          : existing.description(),
                       request.imageUrl() != null ? request.imageUrl() : existing.imageUrl(),
                       request.category() != null ? request.category() : existing.category(),
                       request.suggestedRetailPrice() != null

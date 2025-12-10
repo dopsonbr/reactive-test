@@ -7,21 +7,12 @@ import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 public record CreateProductRequest(
-    @NotNull(message = "SKU is required")
-    @Positive(message = "SKU must be positive")
-    Long sku,
-
-    @NotBlank(message = "Name is required")
-    String name,
-
+    @NotNull(message = "SKU is required") @Positive(message = "SKU must be positive") Long sku,
+    @NotBlank(message = "Name is required") String name,
     String description,
-
     String imageUrl,
-
     String category,
-
     @NotNull(message = "Suggested retail price is required")
-    @DecimalMin(value = "0.01", message = "Price must be at least 0.01")
-    BigDecimal suggestedRetailPrice,
-
+        @DecimalMin(value = "0.01", message = "Price must be at least 0.01")
+        BigDecimal suggestedRetailPrice,
     String currency) {}

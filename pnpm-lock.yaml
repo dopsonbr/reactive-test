@@ -250,6 +250,8 @@ importers:
 
   libs/frontend/shared-ui/ui-components: {}
 
+  tools/docs-explorer: {}
+
   tools/eslint-plugin-reactive:
     dependencies:
       eslint:

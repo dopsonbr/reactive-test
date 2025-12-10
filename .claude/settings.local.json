@@ -121,7 +121,8 @@
       "Bash(pnpm lint:eslint:*)",
       "Skill(superpowers:using-git-worktrees)",
       "Skill(superpowers:writing-plans)",
-      "mcp__nx-mcp__nx_project_details"
+      "mcp__nx-mcp__nx_project_details",
+      "Skill(superpowers:subagent-driven-development)"
     ],
     "deny": [],
     "ask": [

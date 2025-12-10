@@ -23,8 +23,8 @@ public class MerchandiseController {
   }
 
   /**
-   * Get product by SKU - used by product-service (service-to-service).
-   * Returns the contract expected by product-service's MerchandiseRepository.
+   * Get product by SKU - used by product-service (service-to-service). Returns the contract
+   * expected by product-service's MerchandiseRepository.
    */
   @GetMapping("/{sku}")
   public Mono<ResponseEntity<MerchandiseResponse>> getProduct(@PathVariable Long sku) {
@@ -34,41 +34,31 @@ public class MerchandiseController {
         .defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
-  /**
-   * List all products - used by merchant portal.
-   */
+  /** List all products - used by merchant portal. */
   @GetMapping
   public Flux<ProductEntity> listProducts(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size) {
+      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
     return service.listProducts(page, size);
   }
 
-  /**
-   * Create product - used by merchant portal (requires MERCHANT role).
-   */
+  /** Create product - used by merchant portal (requires MERCHANT role). */
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public Mono<ProductEntity> createProduct(@Valid @RequestBody CreateProductRequest request) {
     return service.createProduct(request);
   }
 
-  /**
-   * Update product - used by merchant portal (requires MERCHANT role).
-   */
+  /** Update product - used by merchant portal (requires MERCHANT role). */
   @PutMapping("/{sku}")
   public Mono<ResponseEntity<ProductEntity>> updateProduct(
-      @PathVariable Long sku,
-      @Valid @RequestBody UpdateProductRequest request) {
+      @PathVariable Long sku, @Valid @RequestBody UpdateProductRequest request) {
     return service
         .updateProduct(sku, request)
         .map(ResponseEntity::ok)
         .defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
-  /**
-   * Delete product - used by merchant portal (requires MERCHANT role).
-   */
+  /** Delete product - used by merchant portal (requires MERCHANT role). */
   @DeleteMapping("/{sku}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public Mono<Void> deleteProduct(@PathVariable Long sku) {

@@ -9,6 +9,8 @@ import {
   PaymentRequest,
 } from '../types';
 
+const flushMicrotasks = () => new Promise((resolve) => setTimeout(resolve, 0));
+
 describe('PaymentService', () => {
   let service: PaymentService;
   let mockStomp: {
@@ -43,7 +45,7 @@ describe('PaymentService', () => {
       const resultPromise = service.collect(request);
 
       // Trigger the subscription first
-      await new Promise((r) => setTimeout(r, 0));
+      await flushMicrotasks();
 
       // Simulate approval
       const resultEvent: PaymentResultEvent = {
@@ -83,7 +85,7 @@ describe('PaymentService', () => {
         currency: 'USD',
       });
 
-      await new Promise((r) => setTimeout(r, 0));
+      await flushMicrotasks();
 
       const resultEvent: PaymentResultEvent = {
         type: 'result',
@@ -97,6 +99,79 @@ describe('PaymentService', () => {
       const result = await resultPromise;
       expect(result.approved).toBe(false);
       expect(result.declineReason).toBe('insufficient_funds');
+    });
+
+    it('should settle promise on cancellation and allow new collection', async () => {
+      let stompHandler: (msg: PaymentEvent) => void;
+      mockStomp.subscribe.mockImplementation((dest, handler) => {
+        if (dest === '/topic/payment/events') {
+          stompHandler = handler;
+        }
+        return vi.fn();
+      });
+
+      const firstPromise = service.collect({
+        amount: 5000,
+        currency: 'USD',
+      });
+
+      await flushMicrotasks();
+
+      const cancelEvent: PaymentStateEvent = {
+        type: 'state_change',
+        state: 'cancelled',
+      };
+      stompHandler!(cancelEvent);
+
+      const cancelledResult = await firstPromise;
+      expect(cancelledResult.approved).toBe(false);
+      expect(cancelledResult.error).toBe('cancelled');
+
+      const secondPromise = service.collect({
+        amount: 2500,
+        currency: 'USD',
+      });
+      await flushMicrotasks();
+
+      const approvalEvent: PaymentResultEvent = {
+        type: 'result',
+        result: {
+          approved: true,
+          transactionId: 'txn-002',
+        },
+      };
+      stompHandler!(approvalEvent);
+
+      const approvedResult = await secondPromise;
+      expect(approvedResult.approved).toBe(true);
+      expect(approvedResult.transactionId).toBe('txn-002');
+    });
+
+    it('should settle promise on error state', async () => {
+      let stompHandler: (msg: PaymentEvent) => void;
+      mockStomp.subscribe.mockImplementation((dest, handler) => {
+        if (dest === '/topic/payment/events') {
+          stompHandler = handler;
+        }
+        return vi.fn();
+      });
+
+      const resultPromise = service.collect({
+        amount: 3000,
+        currency: 'USD',
+      });
+      await flushMicrotasks();
+
+      const errorEvent: PaymentStateEvent = {
+        type: 'state_change',
+        state: 'error',
+        data: { error: 'terminal_disconnected' },
+      };
+      stompHandler!(errorEvent);
+
+      const result = await resultPromise;
+      expect(result.approved).toBe(false);
+      expect(result.error).toBe('terminal_disconnected');
     });
   });
 

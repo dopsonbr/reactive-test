@@ -96,6 +96,14 @@ export class PaymentService {
     this.pendingResolve = null;
   }
 
+  private settlePending(result: PaymentResult): void {
+    if (!this.pendingResolve) return;
+
+    this.pendingResolve(result);
+    this.pendingResolve = null;
+    this._state = 'idle';
+  }
+
   private ensureSubscribed(): void {
     if (this.subscription) return;
 
@@ -111,11 +119,22 @@ export class PaymentService {
     if (event.type === 'state_change') {
       this._state = event.state;
       this.stateHandlers.forEach((h) => h(event.state));
-    } else if (event.type === 'result') {
-      if (this.pendingResolve) {
-        this.pendingResolve(event.result);
-        this.pendingResolve = null;
+
+      if (event.state === 'cancelled') {
+        this.settlePending({ approved: false, error: 'cancelled' });
       }
+
+      if (event.state === 'error') {
+        const errorMessage =
+          typeof event.data?.error === 'string'
+            ? event.data.error
+            : typeof event.data?.message === 'string'
+              ? event.data.message
+              : 'error';
+        this.settlePending({ approved: false, error: errorMessage });
+      }
+    } else if (event.type === 'result') {
+      this.settlePending(event.result);
       // Reset state after result
       this._state = 'idle';
     }

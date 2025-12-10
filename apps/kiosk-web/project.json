@@ -1,0 +1,13 @@
+{
+  "name": "kiosk-web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/kiosk-web/src",
+  "projectType": "application",
+  "tags": [
+    "type:app",
+    "scope:kiosk",
+    "platform:web"
+  ],
+  "// targets": "to see all targets run: nx show project kiosk-web --web",
+  "targets": {}
+}

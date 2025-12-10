@@ -1,0 +1,76 @@
+/* Kiosk-specific touch-optimized styles */
+
+/* Disable text selection for better touch experience */
+* {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow selection for input fields */
+input,
+textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Hide scrollbars but keep functionality */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Ensure full-screen kiosk mode */
+html,
+body,
+#root {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* Touch-optimized button styles */
+button,
+[role='button'] {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* Disable double-tap zoom */
+* {
+  touch-action: pan-x pan-y;
+}
+
+/* High contrast focus states for accessibility */
+:focus-visible {
+  outline: 3px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Disable tap highlight on iOS */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth transitions for touch interactions */
+button,
+[role='button'],
+a {
+  transition: transform 100ms ease-out, background-color 150ms ease-out;
+}
+
+button:active,
+[role='button']:active,
+a:active {
+  transform: scale(0.98);
+}

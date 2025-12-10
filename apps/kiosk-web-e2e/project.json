@@ -1,0 +1,12 @@
+{
+  "name": "kiosk-web-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/kiosk-web-e2e/src",
+  "implicitDependencies": [
+    "kiosk-web"
+  ],
+  "tags": [],
+  "// targets": "to see all targets run: nx show project kiosk-web-e2e --web",
+  "targets": {}
+}

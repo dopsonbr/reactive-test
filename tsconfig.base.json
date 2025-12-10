@@ -36,6 +36,9 @@
       ],
       "@reactive-platform/peripheral-react": [
         "libs/frontend/peripheral-sdk/react/src/index.ts"
+      ],
+      "@reactive-platform/peripheral-mocks": [
+        "libs/frontend/peripheral-mocks/src/index.ts"
       ]
     }
   },

@@ -126,7 +126,10 @@
       "Skill(superpowers:executing-plans)",
       "Bash(pnpm vitest:*)",
       "Bash(npx vitest:*)",
-      "Bash(go mod tidy:*)"
+      "Bash(go mod tidy:*)",
+      "Bash(go test:*)",
+      "Bash(brew list:*)",
+      "Bash(go build:*)"
     ],
     "deny": [],
     "ask": [

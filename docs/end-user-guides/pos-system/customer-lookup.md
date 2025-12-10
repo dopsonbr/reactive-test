@@ -28,8 +28,6 @@ Linking a customer to a transaction enables:
 3. Select matching customer
 4. Customer is linked to transaction
 
-![Customer Search](images/customer-search-wireframe.png)
-*Customer lookup dialog*
 
 ### Search Methods
 
@@ -168,8 +166,6 @@ Once linked, the customer appears in the transaction header:
 
 Click **"View"** to see customer details without leaving the transaction:
 
-![Customer Quick View](images/customer-quickview-wireframe.png)
-*Customer quick view slide-out panel*
 
 ```
 ┌────────────────────────────────────────┐
@@ -270,8 +266,6 @@ Customers with physical loyalty cards can be quickly looked up:
 2. Scan the loyalty card barcode
 3. Customer is automatically found and linked
 
-![Loyalty Card](images/loyalty-card-wireframe.png)
-*Scan the loyalty card barcode*
 
 ---
 

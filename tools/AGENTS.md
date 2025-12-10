@@ -15,11 +15,11 @@ Guidance for AI agents working with the tools directory.
 
 ### Node.js Version
 - **Required:** Node.js 24.x (enforced by `scripts/setup-node.mjs`)
-- All `.mjs` files use ESM syntax
+- All `.js`/`.mjs` scripts run as ESM because the repo root `package.json` sets `"type": "module"`
 - The workspace plugin (`tools/package.json`) uses CommonJS for Nx compatibility
 
 ### ESM vs CommonJS
-- Standalone scripts: ESM (`.mjs` extension)
+- Standalone scripts: ESM (`.js` extension preferred)
 - `eslint-plugin-reactive/`: ESM (`"type": "module"` in its package.json)
 - `stylelint-plugin-tokens/`: ESM (`"type": "module"` in its package.json)
 - `tools/src/` (Nx plugin): CommonJS (compiled from TypeScript)
@@ -54,7 +54,7 @@ Guidance for AI agents working with the tools directory.
 
 ### Adding a New Standalone Script
 
-1. Use `.mjs` extension for ESM
+1. Use `.js` extension for ESM (thanks to repo-level `type: module`)
 2. Add shebang: `#!/usr/bin/env node`
 3. Use `node:` prefix for built-ins: `import fs from 'node:fs'`
 4. For `__dirname` equivalent:

@@ -6,7 +6,7 @@ Files that require careful review before changes: all (cache failures must never
 ## Conventions
 - All Redis errors are caught with onErrorResume and return empty/false
 - GET returns Mono.empty() on miss, error, or deserialization failure
-- PUT returns Mono<Boolean> and fails silently
+- PUT returns `Mono<Boolean>` and fails silently
 - Use CacheKeyGenerator for all cache keys to ensure consistency
 
 ## Warnings

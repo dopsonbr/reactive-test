@@ -32,7 +32,7 @@
 ### Repository Layer
 - `repository/CartRepository.java` - Repository interface
 - `repository/PostgresCartRepository.java` - PostgreSQL implementation with JSONB handling
-- `repository/CartEntity.java` - Database entity implementing Persistable<UUID>
+- `repository/CartEntity.java` - Database entity implementing `Persistable<UUID>`
 - `repository/CartEntityRepository.java` - Spring Data R2DBC repository
 - `repository/JsonValue.java` - Wrapper type for JSONB column conversion
 

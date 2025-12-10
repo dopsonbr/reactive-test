@@ -41,6 +41,7 @@
       "Bash(pnpm exec playwright:*)",
       "mcp__nx-mcp__nx_docs",
       "mcp__nx-mcp__nx_workspace",
+      "mcp__nx-mcp__nx_project_details",
       "SlashCommand(/document-packages)",
       "Bash(chmod:*)",
       "Bash(pnpm lint:styles)",
@@ -120,6 +121,7 @@
       "Bash(/Users/briandopson/github/dopsonbr/reactive-test-worktrees/043-model-alignment/gradlew :apps:cart-service:compileJava:*)",
       "Bash(pnpm lint:eslint:*)",
       "Skill(superpowers:using-git-worktrees)",
+      "Skill(superpowers:writing-plans)",
       "Skill(plan-orchestrator)"
     ],
     "deny": [],

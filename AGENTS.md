@@ -92,7 +92,7 @@ Files requiring careful review before changes:
 1. **Always use Nx for builds** - Run `pnpm nx run-many -t build` not `./gradlew build` directly
 2. **Reactor Context over MDC** - Never use thread-local MDC in reactive code
 3. **Implementation plans required** - Create `NNN_FEATURE_NAME.md` before major changes
-4. **Never delete plans** - Archive to `docs/archive/` when complete
+4. **Never delete plans** - Archive to `docs/plans/completed/` when complete
 5. **Platform libraries are shared** - Changes affect all applications
 6. **Follow nested AGENTS.md** - Package-specific guidance takes precedence
 
@@ -587,7 +587,7 @@ These checks run automatically on every PR:
 
 ## When Implementing New Features
 
-1. **Create an implementation plan** in the root (e.g., `010_FEATURE_NAME.md`)
+1. **Create an implementation plan** under `docs/plans/active/` (e.g., `docs/plans/active/010_FEATURE_NAME.md`)
 2. **Determine scope**: platform library vs. application-specific
 3. **Update platform libraries** if the feature is cross-cutting
 4. **Update application(s)** to use platform features
@@ -599,20 +599,20 @@ These checks run automatically on every PR:
 
 ### Plan Lifecycle
 
-1. **Active plans** live in the repository root (e.g., `010_FEATURE_NAME.md`)
-2. **Completed plans** are moved to `docs/archive/`
+1. **Active plans** live in `docs/plans/active/` (e.g., `docs/plans/active/010_FEATURE_NAME.md`)
+2. **Completed plans** are moved to `docs/plans/completed/`
 3. **Never delete plans** - always archive them for future reference
 
 ### Archiving a Completed Plan
 
 ```bash
 # Move completed plan to archive
-mv 010_FEATURE_NAME.md docs/archive/
+mv docs/plans/active/010_FEATURE_NAME.md docs/plans/completed/
 ```
 
 ### Archive Location
 
-All completed implementation plans are stored in `docs/archive/`:
+All completed implementation plans are stored in `docs/plans/completed/`:
 
 - `000_INIT_IMPLEMENTATION_PLAN.md`
 - `001_GRAFANA_STACK_IMPLEMENTATION_PLAN.md`

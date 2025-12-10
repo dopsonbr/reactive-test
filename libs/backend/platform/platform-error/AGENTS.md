@@ -11,7 +11,7 @@ Files that require careful review before changes:
 - All exceptions handled by GlobalErrorHandler map to ErrorResponse format
 - Trace ID extracted from OpenTelemetry span for correlation
 - Stack traces never exposed to clients
-- ValidationException uses List<ValidationError> for field-level errors
+- ValidationException uses `List<ValidationError>` for field-level errors
 - Resilience4j exceptions map to 503/504 status codes
 - WebClientResponseException mirrors upstream status code
 

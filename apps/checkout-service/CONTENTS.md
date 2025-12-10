@@ -50,7 +50,7 @@
 | File | Description |
 |------|-------------|
 | `repository/JsonValue.java` | Wrapper type for JSONB column conversion |
-| `repository/OrderEntity.java` | Database entity implementing Persistable<UUID> |
+| `repository/OrderEntity.java` | Database entity implementing `Persistable<UUID>` |
 | `repository/OrderEntityRepository.java` | Spring Data R2DBC repository |
 | `repository/OrderRepository.java` | Repository interface for order operations |
 | `repository/PostgresOrderRepository.java` | PostgreSQL implementation with JSONB handling |

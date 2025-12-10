@@ -1,13 +1,26 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import App from './app/app';
+import './styles.css';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+async function enableMocking() {
+  if (import.meta.env.DEV && import.meta.env.VITE_MSW_ENABLED === 'true') {
+    const { worker } = await import('./mocks/browser');
+    return worker.start({
+      onUnhandledRequest: 'bypass',
+    });
+  }
+  return Promise.resolve();
+}
 
-root.render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+enableMocking().then(() => {
+  const root = ReactDOM.createRoot(
+    document.getElementById('root') as HTMLElement
+  );
+
+  root.render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  );
+});

@@ -138,7 +138,8 @@
   "msw": {
     "workerDirectory": [
       "public",
-      "apps/ecommerce-web/public"
+      "apps/ecommerce-web/public",
+      "apps/pos-web/public"
     ]
   }
 }

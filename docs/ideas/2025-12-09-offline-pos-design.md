@@ -24,6 +24,7 @@ When primary POS systems go down (network outage, central system failure), store
 - Advanced inventory management
 - Multi-tender complexity (one payment type per transaction)
 - Rich interactive UI (this is intentionally simple)
+- Single-page application complexity (localhost makes MPA instant)
 
 ### Deployment Target
 
@@ -31,7 +32,9 @@ Runs on existing commodity x86 mini-PCs alongside self-checkout kiosk and associ
 
 ## Architecture
 
-### Two-Process Model
+### Single Binary Model
+
+The entire application runs as a single Go binary. Localhost serving eliminates network latency, making traditional multi-page navigation instantaneous. No need for SPA complexity.
 
 ```
                                         ┌─────────────┐
@@ -46,60 +49,57 @@ Runs on existing commodity x86 mini-PCs alongside self-checkout kiosk and associ
 │                    Offline POS Device        │                  │
 │                                              │                  │
 │  ┌───────────────────────────────────────────┴───────────┐     │
-│  │                  Data Sync Daemon                      │     │
+│  │                 Offline POS Binary (Go)                │     │
 │  │                                                        │     │
-│  │  - Owns SQLite DB         - REST API on :9200          │     │
-│  │  - Syncs products/prices  - Exposes connectivity status│     │
-│  │  - Uploads transactions   - Health checks central      │     │
-│  └───────────────────────────────────────────────────────┘     │
-│                              ▲                                  │
-│                              │ REST (product lookup,            │
-│                              │       transaction write,         │
-│                              │       connectivity status)       │
-│                              │                                  │
-│                 ┌────────────┴───────────┐                     │
-│                 │     POS Application    │                     │
-│                 │                        │                     │
-│                 │  - Node.js + Express   │                     │
-│                 │  - Server-rendered HTML│                     │
-│                 │  - htmx                │                     │
-│                 │  - UI on :3000         │                     │
-│                 └────────────┬───────────┘                     │
-│                              │ WebSocket                        │
-│                              ▼                                  │
-│                 ┌────────────────────────┐                     │
-│                 │ Unified Peripheral     │                     │
-│                 │ Bridge :9100           │                     │
-│                 └────────────────────────┘                     │
-└─────────────────────────────────────────────────────────────────┘
+│  │  HTTP Server (:3000)                                   │     │
+│  │  ├── HTML pages (Go templates)                         │     │
+│  │  ├── REST API (/api/*)                                 │     │
+│  │  └── Static assets (embed.FS)                          │     │
+│  │      ├── /static/js/*.js (ESM modules)                 │     │
+│  │      └── /static/css/styles.css                        │     │
+│  │                                                        │     │
+│  │  SQLite Database                                       │     │
+│  │  ├── products, operators                               │     │
+│  │  └── pending transactions                              │     │
+│  │                                                        │     │
+│  │  Background Sync                                       │     │
+│  │  ├── Product catalog refresh                           │     │
+│  │  └── Transaction upload                                │     │
+│  └────────────────────────────────────────────────────────┘     │
+│                                                                  │
+│                 Browser (localhost:3000)                         │
+│                 ┌────────────────────────┐                      │
+│                 │  HTML + Vanilla JS     │                      │
+│                 │  └── WebSocket to ─────┼──────────┐           │
+│                 │      peripheral bridge │          │           │
+│                 └────────────────────────┘          │           │
+│                                                     ▼           │
+│                              ┌────────────────────────┐         │
+│                              │ Unified Peripheral     │         │
+│                              │ Bridge :9100           │         │
+│                              └────────────────────────┘         │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ### Communication Paths
 
 | From | To | Protocol | Purpose |
 |------|----|----------|---------|
-| Data Sync Daemon | Central Systems | HTTPS | Product/price sync down, transaction sync up, health check |
-| POS App | Data Sync Daemon | REST (:9200) | Product lookups, transaction writes, connectivity status |
-| POS App | Peripheral Bridge | WebSocket (:9100) | Scan events, payment collection, receipt printing |
+| Go Binary | Central Systems | HTTPS | Product/price sync down, transaction sync up |
+| Browser | Go Binary | HTTP (:3000) | Page loads, form submissions, API calls |
+| Browser JS | Peripheral Bridge | WebSocket (:9100) | Scan events, payment, printing |
 
-### Data Sync Daemon
+### Why Single Binary?
 
-Always running, owns all persistent data:
+| Aspect | Single Go Binary | Two-Process (Go + Node) |
+|--------|------------------|-------------------------|
+| Runtimes | 1 | 2 |
+| Deployment | Copy one file | Manage two processes |
+| Memory | ~30MB | ~100MB+ |
+| Failure modes | Fewer | Process coordination |
+| Localhost latency | ~0ms | ~0ms |
 
-- SQLite database (products, prices, operators, pending transactions)
-- Exposes REST API on `localhost:9200`
-- Detects connectivity via health checks to central systems
-- Syncs product catalog down when online
-- Pushes pending transactions up when online
-
-### POS Application
-
-Stateless UI layer:
-
-- Node.js 24 serving HTML pages via Express
-- Queries daemon for products, writes transactions to daemon
-- Connects to peripheral bridge for scanning/payment/printing
-- No direct communication with central systems
+For a disaster recovery app, fewer moving parts means higher reliability.
 
 ### Peripheral Bridge
 
@@ -108,6 +108,7 @@ As defined in `2025-12-07-peripheral-integration-design.md`:
 - STOMP over WebSocket on port 9100
 - Handles scanner, payment terminal, thermal printer
 - Capability-based abstraction (device-agnostic)
+- Browser JavaScript connects directly to the bridge
 
 ## Data Model
 
@@ -167,7 +168,7 @@ CREATE TABLE sync_status (
 
 ## User Flow
 
-### Screen Flow
+### Screen Flow (Multi-Page)
 
 ```
 [Login] → [Scan/Search] → [Cart] → [Payment] → [Complete]
@@ -175,77 +176,78 @@ CREATE TABLE sync_status (
               └──────────────┘  (continue scanning)
 ```
 
-### 1. Login Screen
+Each transition is a full page load. On localhost, this is instantaneous (~1-2ms).
 
-- PIN entry (4-6 digits)
-- Validated against local `operators` table
+### 1. Login Screen (`GET /`)
+
+- PIN entry form (4-6 digits)
+- Form POST to `/login`, validated against `operators` table
+- On success: redirect to `/scan`
 - Shows store number and "OFFLINE MODE" indicator
-- If online: banner "Primary systems available - use main POS" (non-blocking)
+- If online: banner "Primary systems available - use main POS"
 
-### 2. Scan/Search Screen
+### 2. Scan/Search Screen (`GET /scan`)
 
-- Large scan area - receives barcode events from peripheral bridge
-- Search box for manual product lookup (name or UPC)
-- Scanned item auto-adds to cart, shows brief confirmation
-- "View Cart" button with item count badge
+- Large scan target area
+- JavaScript listens for barcode events via WebSocket to peripheral bridge
+- On scan: `POST /api/cart/add` with UPC, then refresh page or update DOM
+- Search form for manual product lookup
+- "View Cart" button with item count
 
-### 3. Cart Screen
+### 3. Cart Screen (`GET /cart`)
 
-- List of line items (name, qty, price)
-- Quantity adjustment (+/-)
-- Remove item
+- List of line items rendered server-side
+- Quantity +/- buttons POST to `/api/cart/update`
+- Remove button POSTs to `/api/cart/remove`
 - Running subtotal, tax, total
-- "Add More Items" returns to scan screen
-- "Pay" proceeds to payment
+- "Add More Items" links to `/scan`
+- "Pay" links to `/payment`
 
-### 4. Payment Screen
+### 4. Payment Screen (`GET /payment`)
 
 - Shows total amount
 - Two buttons: "Card" / "Cash"
 - **Card flow:**
-  - Sends collect request to payment bridge
-  - Shows "Insert/Tap Card" prompt
-  - On success: proceed to complete
-  - On offline: attempts store-and-forward (if under $2,000)
-  - On decline/over-limit: shows error, return to cart
+  - JavaScript sends collect request to payment bridge via WebSocket
+  - Shows "Insert/Tap Card" status updates
+  - On success: POST to `/api/transaction/complete`, redirect to `/complete`
+  - On decline/over-limit: show error message
 - **Cash flow:**
-  - Assumes exact cash tendered (no change calculation in disaster mode)
-- Optional: email/phone capture for deferred receipt delivery
+  - POST to `/api/transaction/complete` with `method=cash`
+  - Redirect to `/complete`
+- Optional: email/phone input for deferred receipt
 
-### 5. Complete Screen
+### 5. Complete Screen (`GET /complete`)
 
 - "Transaction Complete" confirmation
 - Transaction ID displayed
-- Attempts thermal receipt print (best effort)
-- "New Transaction" returns to scan screen (same operator)
-- "Sign Out" returns to login
+- JavaScript triggers receipt print via peripheral bridge
+- "New Transaction" links to `/scan` (same operator session)
+- "Sign Out" clears session, redirects to `/`
 
 ## Payment & Offline Auth
 
 ### Payment Flow
 
 ```
-POS App                    Payment Bridge              Terminal
+Browser JS                 Payment Bridge              Terminal
    │                            │                         │
-   │  POST /app/payment/collect │                         │
+   │  SEND /app/payment/collect │                         │
    │  {amount: 4750,            │                         │
    │   offlineFloorLimit: 200000} ──────────────────────► │
    │                            │                         │
    │                            │    Attempt online auth  │
    │                            │ ◄─────────────────────► │
    │                            │                         │
-   │  If online succeeds:       │                         │
-   │ ◄── {status: "approved",   │                         │
-   │      authCode: "ABC123"}   │                         │
+   │  MESSAGE: approved         │                         │
+   │ ◄── {authCode: "ABC123"}   │                         │
    │                            │                         │
-   │  If offline + under limit: │                         │
-   │ ◄── {status: "approved",   │                         │
-   │      authCode: "OFFLINE",  │                         │
+   │  MESSAGE: approved         │                         │
+   │ ◄── {authCode: "OFFLINE",  │  (store-and-forward)    │
    │      storeAndForward: true}│                         │
    │                            │                         │
-   │  If offline + over limit:  │                         │
-   │ ◄── {status: "declined",   │                         │
-   │      reason: "floor_limit"}│                         │
+   │  MESSAGE: declined         │                         │
+   │ ◄── {reason: "floor_limit"}│  (over $2,000 offline)  │
 ```
 
 ### Offline Auth Behavior
@@ -253,7 +255,7 @@ POS App                    Payment Bridge              Terminal
 - Payment bridge always attempts online authorization first
 - If network unavailable/timeout: checks if amount ≤ floor limit ($2,000 default)
 - **Under limit:** approves with `storeAndForward: true`, terminal stores encrypted auth request
-- **Over limit:** hard decline, POS shows "Amount exceeds offline limit ($2,000)"
+- **Over limit:** hard decline, UI shows "Amount exceeds offline limit ($2,000)"
 - Store-and-forward transactions uploaded by payment bridge when connectivity returns
 
 ### Cash Handling
@@ -268,11 +270,12 @@ POS App                    Payment Bridge              Terminal
 
 | Data | Frequency | Trigger |
 |------|-----------|---------|
-| Products/prices | Every 4 hours when online | Daemon startup, scheduled |
+| Products/prices | Every 4 hours when online | App startup, scheduled |
 | Operators (PINs) | With product sync | Same as products |
 
 - Full catalog refresh (~20MB)
 - Stores `last_product_sync` timestamp in `sync_status`
+- Runs in background goroutine, doesn't block UI
 
 ### Outbound Sync (Device → Central)
 
@@ -283,9 +286,9 @@ POS App                    Payment Bridge              Terminal
 
 ### Connectivity Detection
 
-Daemon pings central health endpoint every 30 seconds.
+Background goroutine pings central health endpoint every 30 seconds.
 
-**Status endpoint (`GET /status`):**
+**Status endpoint (`GET /api/status`):**
 
 ```json
 {
@@ -296,20 +299,22 @@ Daemon pings central health endpoint every 30 seconds.
 }
 ```
 
-### POS App Behavior
+### UI Behavior Based on Status
 
 | Condition | UI Behavior |
 |-----------|-------------|
 | `online: true` | Banner: "Primary systems available. Consider using main POS." |
 | `online: false` | No banner, normal operation |
-| `pendingTransactions > 0 && online` | "Syncing X transactions..." → "X transactions synced ✓" |
+| `pendingTransactions > 0 && online` | "Syncing X transactions..." → "X transactions synced" |
+
+JavaScript polls `/api/status` periodically to update banners.
 
 ## Receipts
 
 ### Output Strategy
 
-1. **Attempt thermal print** - via peripheral bridge, best effort
-2. **Always show screen confirmation** - transaction summary displayed
+1. **Attempt thermal print** - JavaScript sends print command to peripheral bridge
+2. **Always show screen confirmation** - transaction summary displayed on complete page
 3. **Capture contact for deferred delivery** - optional email/phone stored with transaction
 
 When transactions sync to central systems, order management can send digital receipts to customers who provided contact info.
@@ -327,14 +332,13 @@ When transactions sync to central systems, order management can send digital rec
 | PIN invalid | "Invalid PIN" - retry allowed, no lockout |
 | Card declined | Show decline reason, return to cart, allow retry or cash |
 | Over floor limit | "Amount exceeds offline limit ($2,000)" - reduce cart or use cash |
-| Daemon unreachable | Fatal error: "System unavailable, contact support" |
-| SQLite corruption | Daemon fails health check, requires restart/resync |
+| SQLite error | Fatal error: "System unavailable, contact support" |
 
 ### Manual Price Entry
 
 For items not in the local catalog:
 
-- Requires manager PIN to unlock
+- Requires manager PIN to unlock (separate elevated PIN check)
 - Enter UPC, description, price manually
 - Flagged as `manual_entry: true` in transaction
 - Flagged for review when synced to central
@@ -348,108 +352,154 @@ For items not in the local catalog:
 
 ## Technology Stack
 
-### Data Sync Daemon (Go)
+### Single Go Binary
 
-- **Language:** Go (single binary, no runtime dependencies)
+- **Language:** Go 1.22+ (single binary, no runtime dependencies)
 - **Database:** SQLite with WAL mode via `modernc.org/sqlite` (pure Go, no CGO)
-- **HTTP:** Standard library `net/http`
-- **Binary size:** ~10-15MB
+- **HTTP:** Standard library `net/http` with `http.ServeMux`
+- **Templates:** Go `html/template` (or Templ for type-safety)
+- **Static files:** `embed.FS` to bundle JS/CSS into binary
+- **Binary size:** ~15-20MB (including embedded assets)
 
-### POS Application (Node.js)
+### Frontend (Vanilla JS + ESM)
 
-- **Runtime:** Node.js 24
-- **Framework:** Express.js
-- **Templating:** EJS (server-rendered HTML)
-- **Interactivity:** htmx (14KB, no build step)
-- **Styling:** Pico CSS (~10KB classless framework)
-- **WebSocket:** `ws` package for peripheral bridge
+- **No framework** - plain JavaScript with ES modules
+- **No bundler** - browsers natively support `<script type="module">`
+- **No transpilation** - write modern JS, ship modern JS
+- **Styling:** Plain CSS (or Pico CSS ~10KB for classless defaults)
 
-### No Build Tooling
+### JavaScript Modules
 
-- No Webpack, Vite, or bundlers
-- No TypeScript compilation (plain JS)
-- HTML templates served directly
-- htmx loaded from local file (not CDN - offline requirement)
+```
+/static/js/
+├── main.js           # Entry point, imported by HTML pages
+├── peripheral.js     # WebSocket client for bridge (scanner, payment, printer)
+├── cart.js           # Cart operations (add, remove, update via fetch)
+└── status.js         # Poll /api/status, update connectivity banners
+```
+
+Example usage in HTML:
+```html
+<script type="module">
+  import { connectPeripherals } from '/static/js/peripheral.js';
+  import { pollStatus } from '/static/js/status.js';
+
+  connectPeripherals('ws://localhost:9100/peripherals');
+  pollStatus();
+</script>
+```
+
+### Why No Build Step?
+
+| Concern | Solution |
+|---------|----------|
+| Module loading | Native ESM with `<script type="module">` |
+| Bare imports | Not needed - use relative paths for own code |
+| npm packages | None required - vanilla JS covers everything |
+| Minification | Unnecessary - ~200 lines of JS total, served from localhost |
+| TypeScript | Skip it - small codebase, runtime errors are acceptable |
+
+For ~200 lines of JavaScript, build tooling adds complexity without benefit.
 
 ### Deployment Footprint
 
 | Component | Size |
 |-----------|------|
-| Go binary (`offline-pos-sync`) | ~10-15MB |
-| Node app folder | ~5MB |
+| Go binary (with embedded assets) | ~15-20MB |
 | SQLite DB (full catalog) | ~20MB |
-| **Total** | **~50MB** |
+| **Total** | **~35-40MB** |
+
+Compare to Node.js approach: ~50MB+ with node_modules.
 
 ## Project Structure
 
 ```
 apps/offline-pos/
-├── sync-daemon/                  # Go application
-│   ├── main.go
+├── main.go                    # Entry point
+├── go.mod
+├── go.sum
+│
+├── internal/
+│   ├── server/
+│   │   ├── server.go          # HTTP server setup
+│   │   ├── routes.go          # Route registration
+│   │   └── middleware.go      # Session, logging
+│   │
+│   ├── handlers/
+│   │   ├── pages.go           # HTML page handlers (login, scan, cart, etc.)
+│   │   └── api.go             # JSON API handlers (/api/*)
+│   │
 │   ├── db/
-│   │   ├── sqlite.go             # Connection, migrations
-│   │   └── queries.go            # Product, operator, transaction queries
+│   │   ├── sqlite.go          # Connection, migrations
+│   │   ├── products.go        # Product queries
+│   │   ├── operators.go       # Operator/PIN queries
+│   │   └── transactions.go    # Transaction queries
+│   │
 │   ├── sync/
-│   │   ├── products.go           # Product catalog sync
-│   │   ├── operators.go          # Operator PIN sync
-│   │   └── transactions.go       # Transaction upload
-│   ├── api/
-│   │   └── handlers.go           # REST handlers for POS app
-│   └── go.mod
+│   │   ├── sync.go            # Background sync coordinator
+│   │   ├── products.go        # Product catalog sync
+│   │   └── transactions.go    # Transaction upload
+│   │
+│   └── session/
+│       └── session.go         # Cookie-based session (operator PIN)
 │
-├── pos-app/                      # Node.js application
-│   ├── server.js                 # Express entry point
-│   ├── routes/
-│   │   ├── login.js
-│   │   ├── scan.js
-│   │   ├── cart.js
-│   │   ├── payment.js
-│   │   └── complete.js
-│   ├── views/                    # HTML templates
-│   │   ├── layout.ejs
-│   │   ├── login.ejs
-│   │   ├── scan.ejs
-│   │   ├── cart.ejs
-│   │   ├── payment.ejs
-│   │   └── complete.ejs
-│   ├── public/
-│   │   ├── htmx.min.js           # Local copy (offline)
-│   │   ├── pico.min.css
-│   │   └── app.css
-│   ├── lib/
-│   │   ├── daemon-client.js      # REST client for sync daemon
-│   │   └── peripheral.js         # WebSocket client for bridge
-│   └── package.json
+├── templates/                  # Go html/template files
+│   ├── layout.html            # Base layout with header/footer
+│   ├── login.html
+│   ├── scan.html
+│   ├── cart.html
+│   ├── payment.html
+│   └── complete.html
 │
+├── static/                     # Embedded via embed.FS
+│   ├── js/
+│   │   ├── peripheral.js      # WebSocket client for bridge
+│   │   ├── cart.js            # Cart interactions
+│   │   └── status.js          # Connectivity status polling
+│   │
+│   └── css/
+│       └── styles.css         # Application styles
+│
+├── Dockerfile
 └── README.md
 ```
+
+### Key Design Decisions
+
+- **`internal/`** - Go convention for non-exported packages
+- **Handlers split** - `pages.go` returns HTML, `api.go` returns JSON
+- **Templates separate** - Not embedded in Go code, easier to edit
+- **Static embedded** - `//go:embed static` bundles assets into binary
 
 ### Monorepo Integration
 
 - Lives under `apps/` alongside other applications
-- Not part of Nx build graph (separate deployment target)
+- Not part of Nx build graph (separate deployment, different toolchain)
 - Own Dockerfile for containerized deployment to device
+- `go build` produces single deployable artifact
 
 ## Testing Strategy
 
-### Sync Daemon (Go)
+### Unit Tests (Go)
 
-- Unit tests for sync logic, query functions
-- Integration tests with real SQLite (in-memory mode)
-- Mock HTTP server for central system responses
-- Run with `go test ./...`
+```bash
+go test ./...
+```
 
-### POS App (Node.js)
+- `internal/db/*_test.go` - Query logic with in-memory SQLite
+- `internal/sync/*_test.go` - Sync logic with mock HTTP server
+- `internal/handlers/*_test.go` - Handler logic with mock dependencies
 
-- Unit tests for route handlers with mocked daemon client
-- Supertest for HTTP endpoint testing
-- Mock peripheral bridge responses
-- Run with `node --test` (built-in Node 24 test runner)
+### Integration Tests (Go)
+
+- Full HTTP server tests using `httptest`
+- Real SQLite database (temp file)
+- Test complete request/response cycles
 
 ### End-to-End (Playwright)
 
-- Mock daemon API (Express server with canned responses)
-- Mock peripheral bridge (WebSocket server with scripted events)
+- Run against actual Go binary
+- Mock peripheral bridge (WebSocket server with scripted responses)
 - Device emulators from peripheral integration design
 
 **Test scenarios:**
@@ -459,13 +509,71 @@ apps/offline-pos/
 - Scanner unavailable fallback to manual entry
 - Cash payment flow
 - Receipt capture (email/phone)
+- Connectivity status transitions
 
 ### Manual Testing
 
-- Local dev setup with mock daemon and device emulators
-- Simulated offline mode (daemon returns `online: false`)
+- Local dev with `go run .`
 - Device emulators for scanner, payment terminal, printer
+- Simulated offline mode (block central system endpoint)
+
+### Development Workflow
+
+```bash
+# Run with live reload (using air or similar)
+air
+
+# Or simple rebuild
+go build -o offline-pos . && ./offline-pos
+
+# Run tests
+go test ./...
+
+# Build for deployment
+go build -ldflags="-s -w" -o offline-pos .
+```
+
+## API Reference
+
+### Pages (HTML)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/` | Login page |
+| POST | `/login` | Validate PIN, create session |
+| GET | `/scan` | Scan/search page |
+| GET | `/cart` | Cart review page |
+| GET | `/payment` | Payment method selection |
+| GET | `/complete` | Transaction complete confirmation |
+| POST | `/logout` | Clear session |
+
+### API (JSON)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/status` | Connectivity status, pending transaction count |
+| GET | `/api/products/search?q=` | Search products by name or UPC |
+| GET | `/api/products/:upc` | Get single product by UPC |
+| POST | `/api/cart/add` | Add item to cart |
+| POST | `/api/cart/update` | Update item quantity |
+| POST | `/api/cart/remove` | Remove item from cart |
+| GET | `/api/cart` | Get current cart contents |
+| POST | `/api/transaction/complete` | Finalize transaction |
+
+### Session Management
+
+- Cookie-based session with operator PIN
+- Session stored server-side (in-memory map, cleared on restart)
+- Cart stored in session until transaction complete
+- 30-minute inactivity timeout
 
 ## Related Documents
 
-- [Peripheral Integration Design](2025-12-07-peripheral-integration-design.md) - Device abstraction layer used by this application
+- [Peripheral Integration Design](2025-12-07-peripheral-integration-design.md) - Device abstraction layer, WebSocket protocol for scanner/payment/printer
+
+## References
+
+- [JavaScript Modules in 2025: ESM, Import Maps & Best Practices](https://siddsr0015.medium.com/javascript-modules-in-2025-esm-import-maps-best-practices-7b6996fa8ea3)
+- [Why Vanilla JavaScript is Making a Comeback in 2025](https://dev.to/arkhan/why-vanilla-javascript-is-making-a-comeback-in-2025-4939)
+- [Building Modern Web Apps with HTMX and Go](https://medium.com/@ashish.rising/building-modern-web-apps-with-htmx-and-go-4935a4624a39)
+- [Go-Blueprint: HTMX and Templ](https://docs.go-blueprint.dev/advanced-flag/htmx-templ/)

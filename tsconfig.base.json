@@ -30,7 +30,10 @@
         "libs/frontend/shared-design/tokens/src/index.css"
       ],
       "ui-components": ["libs/frontend/shared-ui/ui-components/src/index.ts"],
-      "@reactive-platform/workspace-plugin": ["tools/src/index.ts"]
+      "@reactive-platform/workspace-plugin": ["tools/src/index.ts"],
+      "@reactive-platform/peripheral-core": [
+        "libs/frontend/peripheral-sdk/core/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

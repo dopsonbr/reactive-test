@@ -5,6 +5,10 @@ import {
 } from '@tanstack/react-router';
 import { KioskLayout } from '../shared/layouts/KioskLayout';
 import { StartPage } from '../features/start/pages/StartPage';
+import { ScanPage } from '../features/scan/pages/ScanPage';
+import { CartPage } from '../features/cart/pages/CartPage';
+import { LoyaltyPage } from '../features/loyalty/pages/LoyaltyPage';
+import { CheckoutPage, ConfirmationPage } from '../features/checkout';
 
 // Root route with kiosk layout
 const rootRoute = createRootRoute({
@@ -18,35 +22,35 @@ const indexRoute = createRoute({
   component: StartPage,
 });
 
-// Placeholder routes for future phases
+// Scan page
 const scanRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/scan',
-  component: () => <div>Scan Page - Coming in 044C</div>,
+  component: ScanPage,
 });
 
 const cartRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/cart',
-  component: () => <div>Cart Page - Coming in 044C</div>,
+  component: CartPage,
 });
 
 const loyaltyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/loyalty',
-  component: () => <div>Loyalty Page - Coming in 044C</div>,
+  component: LoyaltyPage,
 });
 
 const checkoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/checkout',
-  component: () => <div>Checkout Page - Coming in 044C</div>,
+  component: CheckoutPage,
 });
 
 const confirmRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/confirm',
-  component: () => <div>Confirmation Page - Coming in 044C</div>,
+  component: ConfirmationPage,
 });
 
 // Build route tree

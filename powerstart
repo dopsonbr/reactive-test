@@ -186,8 +186,12 @@ function checkPortConflicts() {
     { port: 8087, service: 'checkout-service' },
     { port: 8088, service: 'order-service' },
     { port: 8089, service: 'user-service' },
+    { port: 8091, service: 'merchandise-service' },
+    { port: 8092, service: 'price-service' },
+    { port: 8093, service: 'inventory-service' },
     { port: 3000, service: 'Grafana' },
     { port: 3001, service: 'ecommerce-web' },
+    { port: 3010, service: 'merchant-portal' },
   ];
 
   const conflicts = [];
@@ -367,15 +371,20 @@ async function startBackendServices() {
   logHeader('Starting Backend Services');
 
   const services = [
-    { name: 'product-service', port: 8090 },
+    // Core services (no service dependencies, just infra)
+    { name: 'merchandise-service', port: 8091 },
+    { name: 'price-service', port: 8092 },
+    { name: 'inventory-service', port: 8093 },
     { name: 'customer-service', port: 8083 },
     { name: 'discount-service', port: 8084 },
     { name: 'fulfillment-service', port: 8085 },
     { name: 'audit-service', port: 8086 },
+    { name: 'user-service', port: 8089 },
+    // Aggregation services (depend on core services)
+    { name: 'product-service', port: 8090 },
     { name: 'cart-service', port: 8081 },
     { name: 'checkout-service', port: 8087 },
     { name: 'order-service', port: 8088 },
-    { name: 'user-service', port: 8089 },
   ];
 
   const toStart = services.filter(s => !alreadyRunning.has(s.name)).map(s => s.name);
@@ -406,36 +415,55 @@ async function startBackendServices() {
   }
 }
 
-// Start frontend
+// Start frontend applications
 async function startFrontend() {
-  logHeader('Starting Frontend Application');
+  logHeader('Starting Frontend Applications');
 
-  if (alreadyRunning.has('ecommerce-web')) {
-    logSuccess('Frontend already running');
-    startedServices.push('ecommerce-web:3001');
+  const frontends = [
+    { name: 'ecommerce-web', port: 3001, endpoint: '/health' },
+    { name: 'merchant-portal', port: 3010, endpoint: '/health' },
+  ];
+
+  const toStart = frontends.filter(f => !alreadyRunning.has(f.name)).map(f => f.name);
+
+  if (toStart.length === 0) {
+    logSuccess('All frontend applications already running');
+    frontends.forEach(f => startedServices.push(`${f.name}:${f.port}`));
     return;
   }
 
-  logStep('Starting ecommerce-web...');
-  exec('docker compose up -d ecommerce-web', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
-  logSuccess('Frontend container started');
+  logStep(`Starting ${toStart.join(', ')}...`);
+  exec(`docker compose up -d ${toStart.join(' ')}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  logSuccess('Frontend containers started');
 
-  logStep('Waiting for frontend to be healthy...');
-  let ready = false;
-  for (let i = 0; i < 60; i++) {
-    if (await isHealthy(3001, '/health') || await isHealthy(3001, '/')) {
-      ready = true;
-      break;
+  logStep('Waiting for frontend applications to be healthy...');
+
+  for (const { name, port, endpoint } of frontends) {
+    if (alreadyRunning.has(name)) {
+      console.log(`  ${name}... ${colors.green}✓${colors.nc} (already running)`);
+      startedServices.push(`${name}:${port}`);
+      continue;
     }
-    await sleep(2000);
-  }
 
-  if (ready) {
-    logSuccess('Frontend is ready');
-  } else {
-    logWarning('Frontend may not be fully ready yet');
+    let ready = false;
+    process.stdout.write(`  Waiting for ${name}...`);
+    for (let i = 0; i < 60; i++) {
+      if (await isHealthy(port, endpoint) || await isHealthy(port, '/')) {
+        ready = true;
+        break;
+      }
+      await sleep(2000);
+    }
+
+    if (ready) {
+      console.log(` ${colors.green}✓${colors.nc}`);
+      startedServices.push(`${name}:${port}`);
+    } else {
+      console.log(` ${colors.yellow}⚠${colors.nc}`);
+      logWarning(`${name} may not be fully ready yet`);
+      startedServices.push(`${name}:${port}`);
+    }
   }
-  startedServices.push('ecommerce-web:3001');
 }
 
 // Print summary
@@ -479,6 +507,9 @@ function printSummary() {
 
   // Backend Services
   console.log(`${colors.bold}Backend Services:${colors.nc}`);
+  console.log(`  ${colors.cyan}merchandise-service${colors.nc} http://localhost:8091`);
+  console.log(`  ${colors.cyan}price-service${colors.nc}     http://localhost:8092`);
+  console.log(`  ${colors.cyan}inventory-service${colors.nc} http://localhost:8093`);
   console.log(`  ${colors.cyan}product-service${colors.nc}   http://localhost:8090`);
   console.log(`  ${colors.cyan}cart-service${colors.nc}      http://localhost:8081`);
   console.log(`  ${colors.cyan}customer-service${colors.nc}  http://localhost:8083`);
@@ -490,9 +521,13 @@ function printSummary() {
   console.log(`  ${colors.cyan}user-service${colors.nc}      http://localhost:8089`);
   console.log('');
 
-  // Frontend
-  console.log(`${colors.bold}Frontend:${colors.nc}`);
+  // Frontend Applications
+  console.log(`${colors.bold}Frontend Applications:${colors.nc}`);
   console.log(`  ${colors.cyan}ecommerce-web${colors.nc}     http://localhost:3001`);
+  console.log('                     Customer-facing e-commerce storefront');
+  console.log('');
+  console.log(`  ${colors.cyan}merchant-portal${colors.nc}   http://localhost:3010`);
+  console.log('                     Merchant data management portal');
   console.log('');
 
   // Quick commands

@@ -237,7 +237,7 @@ class CacheIntegrationTest {
           .verifyComplete();
 
       // Verify HTTP was called
-      wireMockServer.verify(1, WireMock.postRequestedFor(urlPathEqualTo("/price")));
+      wireMockServer.verify(1, WireMock.getRequestedFor(urlPathEqualTo("/price/" + SKU)));
     }
 
     @Test
@@ -276,7 +276,7 @@ class CacheIntegrationTest {
 
     private void stubPriceSuccess(long sku, String price) {
       wireMockServer.stubFor(
-          post(urlPathEqualTo("/price"))
+          get(urlPathEqualTo("/price/" + sku))
               .willReturn(
                   aResponse()
                       .withStatus(200)
@@ -286,7 +286,7 @@ class CacheIntegrationTest {
 
     private void stubPriceError(int status) {
       wireMockServer.stubFor(
-          post(urlPathEqualTo("/price")).willReturn(aResponse().withStatus(status)));
+          get(urlPathEqualTo("/price/" + SKU)).willReturn(aResponse().withStatus(status)));
     }
   }
 
@@ -315,7 +315,7 @@ class CacheIntegrationTest {
           .verifyComplete();
 
       // Then: HTTP WAS called (fallback-only pattern)
-      wireMockServer.verify(1, WireMock.postRequestedFor(urlPathEqualTo("/inventory")));
+      wireMockServer.verify(1, WireMock.getRequestedFor(urlPathEqualTo("/inventory/" + SKU)));
     }
 
     @Test
@@ -414,7 +414,7 @@ class CacheIntegrationTest {
 
     private void stubInventorySuccess(long sku, int quantity) {
       wireMockServer.stubFor(
-          post(urlPathEqualTo("/inventory"))
+          get(urlPathEqualTo("/inventory/" + sku))
               .willReturn(
                   aResponse()
                       .withStatus(200)
@@ -424,12 +424,12 @@ class CacheIntegrationTest {
 
     private void stubInventoryError(int status) {
       wireMockServer.stubFor(
-          post(urlPathEqualTo("/inventory")).willReturn(aResponse().withStatus(status)));
+          get(urlPathEqualTo("/inventory/" + SKU)).willReturn(aResponse().withStatus(status)));
     }
 
     private void stubInventoryTimeout(int delayMs) {
       wireMockServer.stubFor(
-          post(urlPathEqualTo("/inventory"))
+          get(urlPathEqualTo("/inventory/" + SKU))
               .willReturn(aResponse().withStatus(200).withFixedDelay(delayMs)));
     }
   }

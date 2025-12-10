@@ -195,8 +195,8 @@ class OAuth2IntegrationTest {
 
     // Verify downstream services were called
     wireMockServer.verify(getRequestedFor(urlPathMatching("/merchandise/.*")));
-    wireMockServer.verify(postRequestedFor(urlPathEqualTo("/price")));
-    wireMockServer.verify(postRequestedFor(urlPathEqualTo("/inventory")));
+    wireMockServer.verify(getRequestedFor(urlPathMatching("/price/.*")));
+    wireMockServer.verify(getRequestedFor(urlPathMatching("/inventory/.*")));
   }
 
   @Test
@@ -261,7 +261,7 @@ class OAuth2IntegrationTest {
                     .withBody("{\"description\": \"Test Product" + " Description\"}")));
 
     wireMockServer.stubFor(
-        post(urlPathEqualTo("/price"))
+        get(urlPathMatching("/price/.*"))
             .willReturn(
                 aResponse()
                     .withStatus(200)
@@ -269,7 +269,7 @@ class OAuth2IntegrationTest {
                     .withBody("{\"price\": \"29.99\"}")));
 
     wireMockServer.stubFor(
-        post(urlPathEqualTo("/inventory"))
+        get(urlPathMatching("/inventory/.*"))
             .willReturn(
                 aResponse()
                     .withStatus(200)

@@ -33,6 +33,9 @@
       "@reactive-platform/workspace-plugin": ["tools/src/index.ts"],
       "@reactive-platform/peripheral-core": [
         "libs/frontend/peripheral-sdk/core/src/index.ts"
+      ],
+      "@reactive-platform/peripheral-react": [
+        "libs/frontend/peripheral-sdk/react/src/index.ts"
       ]
     }
   },

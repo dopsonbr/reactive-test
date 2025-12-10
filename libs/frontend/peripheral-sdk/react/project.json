@@ -1,0 +1,33 @@
+{
+  "name": "peripheral-react",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/peripheral-sdk/react/src",
+  "projectType": "library",
+  "tags": ["scope:frontend", "type:util"],
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/frontend/peripheral-sdk/react"
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/libs/frontend/peripheral-sdk/react"],
+      "options": {
+        "reportsDirectory": "../../../../coverage/libs/frontend/peripheral-sdk/react"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "ladle": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["pnpm ladle serve"],
+        "cwd": "libs/frontend/peripheral-sdk/react"
+      }
+    }
+  }
+}

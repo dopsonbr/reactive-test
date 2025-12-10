@@ -8,7 +8,7 @@ export default defineConfig(() => ({
   root: import.meta.dirname,
   cacheDir: '../../node_modules/.vite/apps/pos-web',
   server: {
-    port: 3003,
+    port: 3004,
     host: 'localhost',
     proxy: {
       '/products': 'http://localhost:8090',
@@ -23,7 +23,7 @@ export default defineConfig(() => ({
     },
   },
   preview: {
-    port: 3003,
+    port: 3004,
     host: 'localhost',
   },
   plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],

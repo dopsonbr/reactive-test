@@ -1,49 +1,92 @@
 /**
  * Product MSW handlers for POS E2E testing
+ * Matches the product-service API structure
  */
 
 import { http, HttpResponse, delay } from 'msw';
-import { findProductBySku, searchProducts, mockProducts } from '../data/products';
+import {
+  findProductBySku,
+  searchProducts,
+  mockProducts,
+  type MockProduct,
+} from '../data/products';
+
+// Transform mock product to search response format (matches SearchProduct)
+function toSearchProduct(product: MockProduct, index = 0) {
+  return {
+    sku: parseInt(product.sku.replace(/\D/g, '') || String(index + 1), 10),
+    name: product.name,
+    description: product.description,
+    price:
+      product.originalPrice && product.price < product.originalPrice
+        ? product.price
+        : product.price,
+    originalPrice: product.originalPrice || null,
+    availableQuantity: product.inventory === Infinity ? 9999 : product.inventory,
+    imageUrl: null,
+    category: product.category,
+    relevanceScore: 1.0 - index * 0.1,
+    inStock: product.inventory > 0,
+    onSale:
+      product.originalPrice !== undefined && product.price < product.originalPrice,
+  };
+}
+
+// Transform mock product to detail response format (matches Product)
+function toProductDetail(product: MockProduct) {
+  return {
+    sku: parseInt(product.sku.replace(/\D/g, '') || '1', 10),
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    basePrice: product.originalPrice || product.price,
+    availability: product.inventory === Infinity ? 9999 : product.inventory,
+    imageUrl: null,
+    category: product.category,
+  };
+}
 
 export const productHandlers = [
-  // Product lookup by SKU
-  http.get('*/api/products/:sku', async ({ params }) => {
+  // Product lookup by SKU - matches /products/{sku}
+  http.get('*/products/:sku', async ({ params }) => {
     await delay(100);
 
     const sku = params.sku as string;
+
+    // Skip if this is the search endpoint
+    if (sku === 'search') {
+      return;
+    }
+
     const product = findProductBySku(sku);
 
-    if (!product) {
+    // Also try looking up by numeric SKU portion
+    const numericSku = sku.replace(/\D/g, '');
+    const productByNumeric = !product
+      ? mockProducts.find((p) => p.sku.replace(/\D/g, '') === numericSku)
+      : null;
+
+    const foundProduct = product || productByNumeric;
+
+    if (!foundProduct) {
       return HttpResponse.json(
         { error: 'Product not found', code: 'PRODUCT_NOT_FOUND' },
         { status: 404 }
       );
     }
 
-    return HttpResponse.json({
-      sku: product.sku,
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      inventory: product.inventory,
-      category: product.category,
-      taxable: product.taxable,
-      requiresAge: product.requiresAge,
-      serialRequired: product.serialRequired,
-      inStock: product.inventory > 0,
-    });
+    return HttpResponse.json(toProductDetail(foundProduct));
   }),
 
-  // Product search
-  http.get('*/api/products/search', async ({ request }) => {
+  // Product search - matches /products/search?q=...
+  http.get('*/products/search', async ({ request }) => {
     await delay(150);
 
     const url = new URL(request.url);
     const query = url.searchParams.get('q') || '';
     const category = url.searchParams.get('category');
-    const page = parseInt(url.searchParams.get('page') || '1', 10);
-    const limit = parseInt(url.searchParams.get('limit') || '20', 10);
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '20', 10);
 
     let results = query ? searchProducts(query) : [...mockProducts];
 
@@ -52,29 +95,42 @@ export const productHandlers = [
     }
 
     const total = results.length;
-    const totalPages = Math.ceil(total / limit);
-    const start = (page - 1) * limit;
-    const paginatedResults = results.slice(start, start + limit);
+    const totalPages = Math.ceil(total / size);
+    const start = page * size;
+    const paginatedResults = results.slice(start, start + size);
 
+    // Response matches ProductSearchResponse from product-service
     return HttpResponse.json({
-      products: paginatedResults.map((p) => ({
-        sku: p.sku,
-        name: p.name,
-        description: p.description,
-        price: p.price,
-        originalPrice: p.originalPrice,
-        inventory: p.inventory,
-        category: p.category,
-        inStock: p.inventory > 0,
-      })),
+      products: paginatedResults.map((p, i) => toSearchProduct(p, start + i)),
       total,
-      page,
       totalPages,
+      page,
+      pageSize: size,
+      query,
+      searchTimeMs: Math.floor(Math.random() * 50) + 10,
     });
   }),
 
+  // Search suggestions - matches /products/search/suggestions
+  http.get('*/products/search/suggestions', async ({ request }) => {
+    await delay(50);
+
+    const url = new URL(request.url);
+    const prefix = url.searchParams.get('prefix') || '';
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+
+    if (prefix.length < 2) {
+      return HttpResponse.json([]);
+    }
+
+    const results = searchProducts(prefix);
+    const suggestions = results.slice(0, limit).map((p) => p.name);
+
+    return HttpResponse.json(suggestions);
+  }),
+
   // Barcode scan (simulates scanner input)
-  http.post('*/api/products/scan', async ({ request }) => {
+  http.post('*/products/scan', async ({ request }) => {
     await delay(50); // Scanner should be fast
 
     const body = (await request.json()) as { barcode: string };
@@ -90,19 +146,11 @@ export const productHandlers = [
       );
     }
 
-    return HttpResponse.json({
-      sku: product.sku,
-      name: product.name,
-      price: product.price,
-      inventory: product.inventory,
-      taxable: product.taxable,
-      requiresAge: product.requiresAge,
-      serialRequired: product.serialRequired,
-    });
+    return HttpResponse.json(toProductDetail(product));
   }),
 
   // Check inventory availability
-  http.get('*/api/products/:sku/inventory', async ({ params, request }) => {
+  http.get('*/products/:sku/inventory', async ({ params, request }) => {
     await delay(100);
 
     const sku = params.sku as string;
@@ -131,12 +179,16 @@ export const productHandlers = [
   }),
 
   // Get B2B pricing
-  http.get('*/api/products/:sku/b2b-pricing', async ({ params, request }) => {
+  http.get('*/products/:sku/b2b-pricing', async ({ params, request }) => {
     await delay(100);
 
     const sku = params.sku as string;
     const url = new URL(request.url);
-    const tier = url.searchParams.get('tier') as 'STANDARD' | 'PREMIER' | 'ENTERPRISE' | null;
+    const tier = url.searchParams.get('tier') as
+      | 'STANDARD'
+      | 'PREMIER'
+      | 'ENTERPRISE'
+      | null;
 
     const product = findProductBySku(sku);
 

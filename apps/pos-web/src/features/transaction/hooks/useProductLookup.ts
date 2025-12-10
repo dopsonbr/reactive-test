@@ -1,134 +1,136 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Product } from '../types/transaction';
 
-// Mock product lookup (would be API call in production)
-async function fetchProduct(sku: string): Promise<Product | null> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 200));
-
-  // Mock product data
-  const mockProducts: Record<string, Product> = {
-    'SKU-001': {
-      sku: 'SKU-001',
-      name: 'Premium Widget',
-      description: 'High-quality widget for all your needs',
-      price: 29.99,
-      category: 'Widgets',
-      inStock: true,
-      availableQuantity: 50,
-    },
-    'SKU-002': {
-      sku: 'SKU-002',
-      name: 'Standard Gadget',
-      description: 'Reliable everyday gadget',
-      price: 19.99,
-      salePrice: 14.99,
-      category: 'Gadgets',
-      inStock: true,
-      availableQuantity: 100,
-    },
-    'SKU-003': {
-      sku: 'SKU-003',
-      name: 'Deluxe Accessory',
-      description: 'Premium accessory with advanced features',
-      price: 49.99,
-      category: 'Accessories',
-      inStock: true,
-      availableQuantity: 25,
-    },
-    'SKU-004': {
-      sku: 'SKU-004',
-      name: 'Basic Tool',
-      description: 'Essential tool for DIY projects',
-      price: 12.99,
-      category: 'Tools',
-      inStock: true,
-      availableQuantity: 200,
-    },
-    'SKU-005': {
-      sku: 'SKU-005',
-      name: 'Professional Kit',
-      description: 'Complete professional toolkit',
-      price: 149.99,
-      salePrice: 129.99,
-      category: 'Kits',
-      inStock: true,
-      availableQuantity: 10,
-    },
-  };
-
-  return mockProducts[sku.toUpperCase()] ?? null;
+// API response types matching product-service
+interface SearchProductResponse {
+  sku: number;
+  name: string;
+  description: string;
+  price: number;
+  originalPrice: number | null;
+  availableQuantity: number;
+  imageUrl: string | null;
+  category: string;
+  relevanceScore: number;
+  inStock: boolean;
+  onSale: boolean;
 }
 
-// Search products
+interface ProductSearchResponse {
+  products: SearchProductResponse[];
+  total: number;
+  totalPages: number;
+  page: number;
+  pageSize: number;
+  query: string;
+  searchTimeMs: number;
+}
+
+interface ProductDetailResponse {
+  sku: number;
+  name: string;
+  description: string;
+  price: number;
+  basePrice: number;
+  availability: number;
+  imageUrl: string | null;
+  category: string;
+}
+
+// Transform API response to frontend Product type
+function transformSearchProduct(apiProduct: SearchProductResponse): Product {
+  return {
+    sku: String(apiProduct.sku),
+    name: apiProduct.name,
+    description: apiProduct.description,
+    price: apiProduct.onSale && apiProduct.originalPrice
+      ? apiProduct.originalPrice
+      : apiProduct.price,
+    salePrice: apiProduct.onSale ? apiProduct.price : undefined,
+    category: apiProduct.category,
+    inStock: apiProduct.inStock,
+    availableQuantity: apiProduct.availableQuantity,
+  };
+}
+
+function transformDetailProduct(apiProduct: ProductDetailResponse): Product {
+  return {
+    sku: String(apiProduct.sku),
+    name: apiProduct.name,
+    description: apiProduct.description,
+    price: apiProduct.basePrice,
+    salePrice:
+      apiProduct.price !== apiProduct.basePrice ? apiProduct.price : undefined,
+    category: apiProduct.category,
+    inStock: apiProduct.availability > 0,
+    availableQuantity: apiProduct.availability,
+  };
+}
+
+// Fetch single product by SKU
+async function fetchProduct(sku: string): Promise<Product | null> {
+  try {
+    const response = await fetch(`/products/${sku}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-store-number': '1',
+        'x-order-number': crypto.randomUUID(),
+        'x-userid': 'pos-user',
+        'x-sessionid': crypto.randomUUID(),
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error(`Failed to fetch product: ${response.statusText}`);
+    }
+
+    const data: ProductDetailResponse = await response.json();
+    return transformDetailProduct(data);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return null;
+  }
+}
+
+// Search products by query
 async function searchProducts(query: string): Promise<Product[]> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  try {
+    const params = new URLSearchParams({
+      q: query,
+      page: '0',
+      size: '20',
+    });
 
-  const mockProducts: Product[] = [
-    {
-      sku: 'SKU-001',
-      name: 'Premium Widget',
-      description: 'High-quality widget for all your needs',
-      price: 29.99,
-      category: 'Widgets',
-      inStock: true,
-      availableQuantity: 50,
-    },
-    {
-      sku: 'SKU-002',
-      name: 'Standard Gadget',
-      description: 'Reliable everyday gadget',
-      price: 19.99,
-      salePrice: 14.99,
-      category: 'Gadgets',
-      inStock: true,
-      availableQuantity: 100,
-    },
-    {
-      sku: 'SKU-003',
-      name: 'Deluxe Accessory',
-      description: 'Premium accessory with advanced features',
-      price: 49.99,
-      category: 'Accessories',
-      inStock: true,
-      availableQuantity: 25,
-    },
-    {
-      sku: 'SKU-004',
-      name: 'Basic Tool',
-      description: 'Essential tool for DIY projects',
-      price: 12.99,
-      category: 'Tools',
-      inStock: true,
-      availableQuantity: 200,
-    },
-    {
-      sku: 'SKU-005',
-      name: 'Professional Kit',
-      description: 'Complete professional toolkit',
-      price: 149.99,
-      salePrice: 129.99,
-      category: 'Kits',
-      inStock: true,
-      availableQuantity: 10,
-    },
-  ];
+    const response = await fetch(`/products/search?${params}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-store-number': '1',
+        'x-order-number': crypto.randomUUID(),
+        'x-userid': 'pos-user',
+        'x-sessionid': crypto.randomUUID(),
+      },
+    });
 
-  const lowerQuery = query.toLowerCase();
-  return mockProducts.filter(
-    (p) =>
-      p.sku.toLowerCase().includes(lowerQuery) ||
-      p.name.toLowerCase().includes(lowerQuery) ||
-      p.description.toLowerCase().includes(lowerQuery) ||
-      p.category.toLowerCase().includes(lowerQuery)
-  );
+    if (!response.ok) {
+      throw new Error(`Failed to search products: ${response.statusText}`);
+    }
+
+    const data: ProductSearchResponse = await response.json();
+    return data.products.map(transformSearchProduct);
+  } catch (error) {
+    console.error('Error searching products:', error);
+    return [];
+  }
 }
 
 export function useProductLookup(sku: string | null) {
   return useQuery({
     queryKey: ['product', sku],
     queryFn: () => (sku ? fetchProduct(sku) : null),
-    enabled: !!sku && sku.length >= 3,
+    enabled: !!sku && sku.length >= 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

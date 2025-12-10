@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 
-const baseURL = process.env['E2E_BASE_URL'] || 'http://localhost:3003';
+const baseURL = process.env['E2E_BASE_URL'] || 'http://localhost:3004';
 
 /**
  * POS Web E2E Test Configuration

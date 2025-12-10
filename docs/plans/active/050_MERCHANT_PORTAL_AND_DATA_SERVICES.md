@@ -396,13 +396,18 @@ apps/product-service/src/main/resources/application.yml  # Update URLs
 
 ## Implementation Order
 
-1. **Database schemas** - Create PostgreSQL schemas and init scripts
-2. **Backend services** - merchandise-service, price-service, inventory-service
-3. **User-service roles** - Add roles, endpoints, seed users
-4. **Product-service config** - Point to real services
-5. **Merchant portal** - React app with role-based UI
-6. **Docker integration** - Dockerfiles, compose updates
-7. **E2E tests** - Portal workflows
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement each sub-plan task-by-task.
+
+| Phase | Sub-Plan | Description |
+|-------|----------|-------------|
+| 1 | [050A_DATABASE_SCHEMAS.md](050A_DATABASE_SCHEMAS.md) | PostgreSQL schemas, init scripts, seed data |
+| 2 | [050B_MERCHANDISE_SERVICE.md](050B_MERCHANDISE_SERVICE.md) | Merchandise-service backend |
+| 3 | [050C_PRICE_SERVICE.md](050C_PRICE_SERVICE.md) | Price-service backend |
+| 4 | [050D_INVENTORY_SERVICE.md](050D_INVENTORY_SERVICE.md) | Inventory-service backend |
+| 5 | [050E_DOCKER_INTEGRATION.md](050E_DOCKER_INTEGRATION.md) | Dockerfiles, compose, product-service config |
+| 6 | [050F_MERCHANT_PORTAL.md](050F_MERCHANT_PORTAL.md) | React frontend with role-based UI |
+
+**Execution order matters:** Complete each phase before starting the next. Each sub-plan has bite-sized tasks (~2-5 minutes each) with exact file paths, complete code, and verification steps.
 
 ## Success Criteria
 

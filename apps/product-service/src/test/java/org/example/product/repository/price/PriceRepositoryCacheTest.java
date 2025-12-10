@@ -1,6 +1,7 @@
 package org.example.product.repository.price;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -29,9 +30,7 @@ class PriceRepositoryCacheTest {
 
   @Mock private WebClient webClient;
 
-  @Mock private WebClient.RequestBodyUriSpec requestBodyUriSpec;
-
-  @Mock private WebClient.RequestBodySpec requestBodySpec;
+  @Mock private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
 
   @Mock private WebClient.RequestHeadersSpec requestHeadersSpec;
 
@@ -72,7 +71,7 @@ class PriceRepositoryCacheTest {
     StepVerifier.create(repository.getPrice(sku)).expectNext(cachedResponse).verifyComplete();
 
     // Verify no HTTP call was made
-    verify(webClient, never()).post();
+    verify(webClient, never()).get();
   }
 
   @Test
@@ -87,9 +86,8 @@ class PriceRepositoryCacheTest {
     when(cacheService.get(eq(cacheKey), eq(PriceResponse.class))).thenReturn(Mono.empty());
 
     // HTTP call setup
-    when(webClient.post()).thenReturn(requestBodyUriSpec);
-    when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-    when(requestBodySpec.bodyValue(any(PriceRequest.class))).thenReturn(requestHeadersSpec);
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), anyLong())).thenReturn(requestHeadersSpec);
     when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     when(responseSpec.bodyToMono(PriceResponse.class)).thenReturn(Mono.just(httpResponse));
 
@@ -119,9 +117,8 @@ class PriceRepositoryCacheTest {
     when(cacheService.get(eq(cacheKey), eq(PriceResponse.class))).thenReturn(Mono.empty());
 
     // HTTP call setup
-    when(webClient.post()).thenReturn(requestBodyUriSpec);
-    when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-    when(requestBodySpec.bodyValue(any(PriceRequest.class))).thenReturn(requestHeadersSpec);
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), anyLong())).thenReturn(requestHeadersSpec);
     when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     when(responseSpec.bodyToMono(PriceResponse.class))
         .thenReturn(Mono.just(new PriceResponse(new BigDecimal("10.00"), null, "USD")));
@@ -151,9 +148,8 @@ class PriceRepositoryCacheTest {
     when(cacheService.get(eq(cacheKey), eq(PriceResponse.class))).thenReturn(Mono.empty());
 
     // HTTP call setup
-    when(webClient.post()).thenReturn(requestBodyUriSpec);
-    when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-    when(requestBodySpec.bodyValue(any(PriceRequest.class))).thenReturn(requestHeadersSpec);
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), anyLong())).thenReturn(requestHeadersSpec);
     when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     when(responseSpec.bodyToMono(PriceResponse.class)).thenReturn(Mono.just(httpResponse));
 

@@ -48,9 +48,8 @@ public class PriceRepository {
   private Mono<PriceResponse> fetchAndCache(long sku, String cacheKey) {
     Mono<PriceResponse> call =
         priceWebClient
-            .post()
-            .uri("/price")
-            .bodyValue(new PriceRequest(sku))
+            .get()
+            .uri("/price/{sku}", sku)
             .retrieve()
             .bodyToMono(PriceResponse.class);
 

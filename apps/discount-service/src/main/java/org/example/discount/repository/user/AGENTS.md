@@ -7,7 +7,7 @@ Files that require careful review before changes:
 
 ## Conventions
 
-- Returns Mono<UserContext>
+- Returns `Mono<UserContext>`
 - Should implement resilience patterns when converted to HTTP client
 
 ## Warnings

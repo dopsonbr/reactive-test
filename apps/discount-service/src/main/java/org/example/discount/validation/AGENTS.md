@@ -7,7 +7,7 @@ Files that require careful review before changes:
 
 ## Conventions
 
-- Collects all errors before throwing (returns Map<String, String>)
+- Collects all errors before throwing (returns `Map<String, String>`)
 - Store number must be 1-2000
 - Discount codes cannot be blank
 - Cart IDs and markdown IDs cannot be blank

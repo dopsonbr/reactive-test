@@ -6,7 +6,7 @@ Files requiring careful review: GraphQLInputValidator.java (must stay synchroniz
 ## Conventions
 - Validation rules must match CartRequestValidator exactly
 - Errors collected in List before throwing ValidationException
-- All methods return Mono<Void> that errors on validation failure
+- All methods return `Mono<Void>` that errors on validation failure
 
 ## Warnings
 - Keep validation constants synchronized with REST validator

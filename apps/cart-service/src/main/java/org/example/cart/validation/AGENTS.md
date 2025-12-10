@@ -4,7 +4,7 @@
 Files requiring careful review: CartRequestValidator.java (business rule changes affect API contracts)
 
 ## Conventions
-- All validation methods return Mono<Void> for reactive error propagation
+- All validation methods return `Mono<Void>` for reactive error propagation
 - Collect all validation errors before throwing ValidationException
 - Validate path parameters, request body, and headers in single pass
 - Use constants for business constraints (min/max ranges)

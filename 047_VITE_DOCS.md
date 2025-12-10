@@ -77,7 +77,7 @@ Update any references to plan locations in root `CLAUDE.md`:
 ### Task 2.1: Install VitePress
 
 ```bash
-pnpm add -D vitepress
+pnpm add -Dw vitepress
 ```
 
 ### Task 2.2: Create VitePress config
@@ -186,8 +186,8 @@ export default defineConfig({
 
 ```json
 {
-  "docs:dev": "node tools/build-docs-explorer.mjs && vitepress dev docs",
-  "docs:build": "node tools/build-docs-explorer.mjs && vitepress build docs",
+  "docs:dev": "node tools/docs-explorer/build-docs-explorer.js && vitepress dev docs",
+  "docs:build": "node tools/docs-explorer/build-docs-explorer.js && vitepress build docs",
   "docs:preview": "vitepress preview docs",
   "docs:clean": "rm -rf docs/repo-explorer docs/.vitepress/cache docs/.vitepress/dist"
 }
@@ -208,9 +208,9 @@ docs/.vitepress/dist/
 
 ## Phase 3: Repo Explorer Script
 
-### Task 3.1: Create build-docs-explorer.mjs
+### Task 3.1: Create build-docs-explorer.js
 
-Create `tools/build-docs-explorer.mjs`:
+Create `tools/docs-explorer/build-docs-explorer.js` inside a directory that declares ESM explicitly:
 
 ```js
 #!/usr/bin/env node
@@ -224,13 +224,13 @@ Create `tools/build-docs-explorer.mjs`:
  */
 
 import { glob } from 'glob';
-import { copyFile, mkdir, rm, readdir } from 'fs/promises';
-import { dirname, join, relative } from 'path';
-import { fileURLToPath } from 'url';
+import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..');
-const OUTPUT = join(ROOT, 'docs', 'repo-explorer');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.join(__dirname, '..', '..');
+const OUTPUT = path.join(ROOT, 'docs', 'repo-explorer');
 
 const INCLUDE_PATTERNS = [
   'apps/**/README.md',
@@ -275,9 +275,9 @@ async function copyFiles() {
   console.log(`Found ${files.length} files to copy`);
 
   for (const file of files) {
-    const src = join(ROOT, file);
-    const dest = join(OUTPUT, file);
-    const destDir = dirname(dest);
+    const src = path.join(ROOT, file);
+    const dest = path.join(OUTPUT, file);
+    const destDir = path.dirname(dest);
 
     await mkdir(destDir, { recursive: true });
     await copyFile(src, dest);
@@ -300,10 +300,8 @@ This directory mirrors the actual repository structure, containing:
 > **Note:** This content is auto-generated at build time. Do not edit directly.
 `;
 
-  const indexPath = join(OUTPUT, 'index.md');
   await mkdir(OUTPUT, { recursive: true });
-  const { writeFile } = await import('fs/promises');
-  await writeFile(indexPath, indexContent);
+  await writeFile(path.join(OUTPUT, 'index.md'), indexContent);
 }
 
 async function main() {
@@ -320,10 +318,20 @@ main().catch((err) => {
 });
 ```
 
+Create `tools/docs-explorer/package.json`:
+
+```json
+{
+  "name": "@reactive-platform/docs-explorer",
+  "private": true,
+  "type": "module"
+}
+```
+
 ### Task 3.2: Make script executable
 
 ```bash
-chmod +x tools/build-docs-explorer.mjs
+chmod +x tools/docs-explorer/build-docs-explorer.js
 ```
 
 ---
@@ -512,7 +520,8 @@ pnpm docs:preview
 | Create | `docs/CONTENTS.md` |
 | Create | `docs/plans/active/index.md` |
 | Create | `docs/plans/completed/index.md` |
-| Create | `tools/build-docs-explorer.mjs` |
+| Create | `tools/docs-explorer/build-docs-explorer.js` |
+| Create | `tools/docs-explorer/package.json` |
 | Move | 6 plans from root → `docs/plans/active/` |
 | Move | 47 plans from `docs/archive/` → `docs/plans/completed/` |
 | Delete | `docs/archive/` (after move) |

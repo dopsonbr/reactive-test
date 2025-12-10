@@ -8,7 +8,7 @@ Files that require careful review before changes:
 
 ## Conventions
 
-- Validators return Mono<Void> (empty on success, error on failure)
+- Validators return `Mono<Void>` (empty on success, error on failure)
 - All errors aggregated before throwing ValidationException
 - Store number must be 1-2000
 - UUIDs validated for proper format

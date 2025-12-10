@@ -1,0 +1,5 @@
+{
+  "name": "@reactive-platform/docs-explorer",
+  "private": true,
+  "type": "module"
+}

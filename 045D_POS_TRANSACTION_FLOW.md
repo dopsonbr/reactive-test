@@ -1,6 +1,6 @@
 # 045D_POS_TRANSACTION_FLOW
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 

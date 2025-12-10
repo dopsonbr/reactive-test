@@ -1,0 +1,1 @@
+export { SplitPaymentPanel } from './SplitPaymentPanel';

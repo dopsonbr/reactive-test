@@ -1,0 +1,23 @@
+{
+  "name": "pos-ui",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/shared-ui/pos-ui/src",
+  "projectType": "library",
+  "tags": ["type:ui", "scope:pos", "platform:web"],
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/frontend/shared-ui/pos-ui"
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "options": {}
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

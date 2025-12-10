@@ -1,10 +1,14 @@
 package org.example.discount.controller;
 
 import org.example.discount.controller.dto.ApplyMarkdownRequest;
+import org.example.discount.controller.dto.MarkdownOverrideRequest;
+import org.example.discount.controller.dto.MarkdownOverrideResponse;
 import org.example.discount.exception.UnauthorizedMarkdownException;
 import org.example.discount.service.MarkdownService;
 import org.example.discount.validation.DiscountRequestValidator;
 import org.example.model.discount.Markdown;
+import org.example.model.discount.MarkdownLimit;
+import org.example.model.discount.MarkdownPermissionTier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -95,5 +99,38 @@ public class MarkdownController {
         .onErrorResume(
             UnauthorizedMarkdownException.class,
             e -> Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build()));
+  }
+
+  /**
+   * Apply a markdown with manager override authorization. Used when the requesting user's
+   * permission tier is insufficient for the requested markdown.
+   *
+   * @param request the override request including manager credentials
+   * @return the override response with the applied markdown or error
+   */
+  @PostMapping("/override")
+  public Mono<ResponseEntity<MarkdownOverrideResponse>> applyWithOverride(
+      @RequestBody MarkdownOverrideRequest request) {
+
+    return markdownService
+        .applyWithOverride(request)
+        .map(ResponseEntity::ok)
+        .onErrorResume(
+            UnauthorizedMarkdownException.class,
+            e -> Mono.just(ResponseEntity.ok(MarkdownOverrideResponse.failure(e.getMessage()))));
+  }
+
+  /**
+   * Get the markdown limits for a specific user based on their permission tier.
+   *
+   * @param userId the user ID
+   * @return the user's markdown limits
+   */
+  @GetMapping("/limits/{userId}")
+  public Mono<MarkdownLimit> getUserMarkdownLimits(@PathVariable String userId) {
+    return markdownService
+        .getUserPermissionTier(userId)
+        .map(MarkdownLimit::fromTier)
+        .defaultIfEmpty(MarkdownLimit.fromTier(MarkdownPermissionTier.ASSOCIATE));
   }
 }

@@ -1,0 +1,92 @@
+{
+  "mappings": [
+    {
+      "name": "customer-autocomplete-success",
+      "priority": 10,
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/customers/autocomplete",
+        "queryParameters": {
+          "q": {
+            "matches": ".{2,}"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": [
+          {
+            "customerId": "CUST-D2C-001",
+            "name": "Jane Consumer",
+            "email": "jane@email.com",
+            "phone": "555-123-4567",
+            "type": "CONSUMER",
+            "loyaltyTier": "GOLD",
+            "accountTier": null
+          },
+          {
+            "customerId": "CUST-D2C-002",
+            "name": "Bob Shopper",
+            "email": "bob@gmail.com",
+            "phone": "555-234-5678",
+            "type": "CONSUMER",
+            "loyaltyTier": "BRONZE",
+            "accountTier": null
+          },
+          {
+            "customerId": "CUST-B2B-001",
+            "name": "ACME Corporation",
+            "email": "orders@acme.com",
+            "phone": "555-999-0000",
+            "type": "BUSINESS",
+            "loyaltyTier": null,
+            "accountTier": "PREMIER"
+          }
+        ]
+      }
+    },
+    {
+      "name": "customer-autocomplete-empty",
+      "priority": 5,
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/customers/autocomplete",
+        "queryParameters": {
+          "q": {
+            "matches": "^notfound.*"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": []
+      }
+    },
+    {
+      "name": "customer-autocomplete-short-query",
+      "priority": 20,
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/customers/autocomplete",
+        "queryParameters": {
+          "q": {
+            "matches": "^.{0,1}$"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": []
+      }
+    }
+  ]
+}

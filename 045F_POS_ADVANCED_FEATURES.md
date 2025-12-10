@@ -1,6 +1,6 @@
 # 045F_POS_ADVANCED_FEATURES
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 

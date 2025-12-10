@@ -7,6 +7,41 @@ export * from './components/ui/card';
 export * from './components/ui/textarea';
 export * from './components/ui/checkbox';
 
+// Selection components
+export * from './components/ui/select';
+export * from './components/ui/radio-group';
+export * from './components/ui/switch';
+
+// Overlay components
+export * from './components/ui/dialog';
+export * from './components/ui/sheet';
+export * from './components/ui/popover';
+export * from './components/ui/tooltip';
+export * from './components/ui/dropdown-menu';
+
+// Navigation components
+export * from './components/ui/tabs';
+export * from './components/ui/command';
+
+// Display components
+export * from './components/ui/avatar';
+export * from './components/ui/badge';
+export * from './components/ui/skeleton';
+export * from './components/ui/separator';
+export * from './components/ui/progress';
+export * from './components/ui/calendar';
+export * from './components/ui/alert';
+export * from './components/ui/scroll-area';
+
+// Data components
+export * from './components/ui/data-table';
+export * from './components/ui/table';
+
+// Feedback components
+export * from './components/ui/toast';
+export * from './components/ui/toaster';
+export { useToast, toast } from './components/ui/use-toast';
+
 // Utilities
 export { cn } from './lib/utils';
 

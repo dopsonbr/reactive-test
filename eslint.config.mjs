@@ -20,6 +20,7 @@ export default [
       '**/node_modules',
       '**/target',
       '**/out-tsc',
+      '**/vite.config.*.timestamp*',
     ],
   },
   {

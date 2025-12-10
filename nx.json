@@ -42,6 +42,12 @@
         "testTargetName": "test",
         "ciTargetName": "test-ci"
       }
+    },
+    {
+      "plugin": "@nx/playwright/plugin",
+      "options": {
+        "targetName": "playwright:e2e"
+      }
     }
   ],
   "targetDefaults": {

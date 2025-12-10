@@ -36,6 +36,9 @@
       ],
       "@reactive-platform/commerce-ui": [
         "libs/frontend/shared-ui/commerce-ui/src/index.ts"
+      ],
+      "@reactive-platform/mock-handlers": [
+        "libs/frontend/shared-testing/mock-handlers/src/index.ts"
       ]
     }
   },

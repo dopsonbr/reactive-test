@@ -121,7 +121,8 @@
   "msw": {
     "workerDirectory": [
       "public",
-      "apps/ecommerce-web/public"
+      "apps/ecommerce-web/public",
+      "apps/kiosk-web/public"
     ]
   }
 }

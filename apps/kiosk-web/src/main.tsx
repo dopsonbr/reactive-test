@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { Providers } from './app/providers';
 import { logger } from './shared/utils/logger';
+import { enableMocking } from './mocks';
 import './styles.css';
 
 // Initialize logger with kiosk context
@@ -16,8 +17,11 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
-root.render(
-  <StrictMode>
-    <Providers />
-  </StrictMode>
-);
+// Enable MSW mocking if configured, then render the app
+enableMocking().then(() => {
+  root.render(
+    <StrictMode>
+      <Providers />
+    </StrictMode>
+  );
+});

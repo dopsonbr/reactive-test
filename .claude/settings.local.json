@@ -120,7 +120,8 @@
       "Bash(/Users/briandopson/github/dopsonbr/reactive-test-worktrees/043-model-alignment/gradlew :apps:cart-service:compileJava:*)",
       "Bash(pnpm lint:eslint:*)",
       "Skill(superpowers:using-git-worktrees)",
-      "Bash(pnpm eslint:*)"
+      "Bash(pnpm eslint:*)",
+      "Bash(pnpm dlx msw init:*)"
     ],
     "deny": [],
     "ask": [

@@ -27,7 +27,10 @@ export default defineConfig({
     command: 'pnpm exec nx run kiosk-web:preview',
     url: 'http://localhost:4200',
     reuseExistingServer: true,
-    cwd: workspaceRoot
+    cwd: workspaceRoot,
+    env: {
+      VITE_MSW_ENABLED: 'true',
+    },
   },
   projects: [
     {

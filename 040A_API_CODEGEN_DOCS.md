@@ -1,12 +1,14 @@
 # 040A_API_CODEGEN_DOCS
 
-**Status: DRAFT**
+**Status: DRAFT — Blocked pending 040 plan rewrite**
 
 ---
 
 ## Overview
 
 Documentation, standards, templates, and verification scripts for the API codegen workflow. This sub-plan establishes the patterns, validates compliance, and documents the developer workflow for generating and consuming TypeScript types from backend APIs.
+
+> Branch reality check (2025-01): Parent plan 040 is out of sync with the current branch (springdoc not centralized, legacy `tools/openapi-codegen/generate.sh`, no generated clients, frontend now using a manual GraphQL client + SSE). Do not proceed with documentation/standards until 040 is rewritten or superseded to match the new direction.
 
 **Related Plans:**
 - `040_API_CODEGEN.md` - Parent plan implementing the codegen infrastructure

@@ -17,7 +17,7 @@ Modern retail reference system built on Spring WebFlux. The original goal (react
 
 | Service | Host Port | Purpose |
 |---------|-----------|---------|
-| product-service | 8080 | Product aggregation (merchandise, price, inventory) |
+| product-service | 8090 | Product aggregation (merchandise, price, inventory) |
 | cart-service | 8081 | Cart and checkout |
 | customer-service | 8083 | Customer profiles |
 | discount-service | 8085 | Discounts and promos |

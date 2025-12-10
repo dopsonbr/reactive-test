@@ -36,8 +36,8 @@ export function ProductList({ category, query }: ProductListProps) {
         <ProductCard
           key={product.sku}
           product={product}
-          onAddToCart={(sku) => addToCart.mutate({ sku, quantity: 1 })}
-          isAddingToCart={addToCart.isPending && addToCart.variables?.sku === product.sku}
+          onAddToCart={(sku) => addToCart.mutate({ sku: String(sku), quantity: 1 })}
+          isAddingToCart={addToCart.isPending && addToCart.variables?.sku === String(product.sku)}
         />
       ))}
     </div>

@@ -12,6 +12,8 @@ import org.example.cart.graphql.input.UpdateFulfillmentInput;
 import org.example.cart.graphql.input.UpdateProductInput;
 import org.example.cart.graphql.validation.GraphQLInputValidator;
 import org.example.cart.service.CartService;
+import org.example.platform.webflux.context.ContextKeys;
+import org.example.platform.webflux.context.RequestMetadata;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +23,9 @@ import reactor.core.publisher.Mono;
 /**
  * GraphQL mutation resolver for cart operations. Provides write operations with parity to REST
  * POST/PUT/DELETE endpoints.
+ *
+ * <p>All operations validate request metadata (headers) from Reactor context before executing. The
+ * metadata is populated by {@link GraphQlContextInterceptor}.
  */
 @Controller
 public class CartMutationController {
@@ -33,6 +38,16 @@ public class CartMutationController {
     this.validator = validator;
   }
 
+  /** Extracts and validates RequestMetadata from Reactor context. */
+  private Mono<RequestMetadata> validateMetadataFromContext() {
+    return Mono.deferContextual(
+        ctx -> {
+          RequestMetadata metadata =
+              ctx.getOrDefault(ContextKeys.METADATA, new RequestMetadata(0, "", "", ""));
+          return validator.validateMetadata(metadata).thenReturn(metadata);
+        });
+  }
+
   // ─────────────────────────────────────────────────────────────────
   // Cart Lifecycle
   // ─────────────────────────────────────────────────────────────────
@@ -40,15 +55,18 @@ public class CartMutationController {
   @MutationMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> createCart(@Argument CreateCartInput input) {
-    return validator
-        .validateCreateCart(input)
+    return validateMetadataFromContext()
+        .then(validator.validateCreateCart(input))
         .then(cartService.createCart(input.storeNumber(), input.customerId()));
   }
 
   @MutationMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Boolean> deleteCart(@Argument String id) {
-    return validator.validateCartId(id).then(cartService.deleteCart(id)).thenReturn(true);
+    return validateMetadataFromContext()
+        .then(validator.validateCartId(id))
+        .then(cartService.deleteCart(id))
+        .thenReturn(true);
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -58,8 +76,8 @@ public class CartMutationController {
   @MutationMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> addProduct(@Argument String cartId, @Argument AddProductInput input) {
-    return validator
-        .validateAddProduct(cartId, input)
+    return validateMetadataFromContext()
+        .then(validator.validateAddProduct(cartId, input))
         .then(cartService.addProduct(cartId, Long.parseLong(input.sku()), input.quantity()));
   }
 
@@ -67,16 +85,16 @@ public class CartMutationController {
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> updateProduct(
       @Argument String cartId, @Argument String sku, @Argument UpdateProductInput input) {
-    return validator
-        .validateUpdateProduct(cartId, sku, input)
+    return validateMetadataFromContext()
+        .then(validator.validateUpdateProduct(cartId, sku, input))
         .then(cartService.updateProduct(cartId, Long.parseLong(sku), input.quantity()));
   }
 
   @MutationMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> removeProduct(@Argument String cartId, @Argument String sku) {
-    return validator
-        .validateProductAccess(cartId, sku)
+    return validateMetadataFromContext()
+        .then(validator.validateProductAccess(cartId, sku))
         .then(cartService.removeProduct(cartId, Long.parseLong(sku)));
   }
 
@@ -87,16 +105,16 @@ public class CartMutationController {
   @MutationMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> applyDiscount(@Argument String cartId, @Argument ApplyDiscountInput input) {
-    return validator
-        .validateApplyDiscount(cartId, input)
+    return validateMetadataFromContext()
+        .then(validator.validateApplyDiscount(cartId, input))
         .then(cartService.applyDiscount(cartId, input.code()));
   }
 
   @MutationMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> removeDiscount(@Argument String cartId, @Argument String discountId) {
-    return validator
-        .validateDiscountAccess(cartId, discountId)
+    return validateMetadataFromContext()
+        .then(validator.validateDiscountAccess(cartId, discountId))
         .then(cartService.removeDiscount(cartId, discountId));
   }
 
@@ -108,8 +126,8 @@ public class CartMutationController {
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> addFulfillment(@Argument String cartId, @Argument AddFulfillmentInput input) {
     List<Long> skus = input.skus().stream().map(Long::parseLong).collect(Collectors.toList());
-    return validator
-        .validateAddFulfillment(cartId, input)
+    return validateMetadataFromContext()
+        .then(validator.validateAddFulfillment(cartId, input))
         .then(cartService.addFulfillment(cartId, input.type(), skus));
   }
 
@@ -120,16 +138,16 @@ public class CartMutationController {
       @Argument String fulfillmentId,
       @Argument UpdateFulfillmentInput input) {
     List<Long> skus = input.skus().stream().map(Long::parseLong).collect(Collectors.toList());
-    return validator
-        .validateUpdateFulfillment(cartId, fulfillmentId, input)
+    return validateMetadataFromContext()
+        .then(validator.validateUpdateFulfillment(cartId, fulfillmentId, input))
         .then(cartService.updateFulfillment(cartId, fulfillmentId, input.type(), skus));
   }
 
   @MutationMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> removeFulfillment(@Argument String cartId, @Argument String fulfillmentId) {
-    return validator
-        .validateFulfillmentAccess(cartId, fulfillmentId)
+    return validateMetadataFromContext()
+        .then(validator.validateFulfillmentAccess(cartId, fulfillmentId))
         .then(cartService.removeFulfillment(cartId, fulfillmentId));
   }
 
@@ -140,14 +158,16 @@ public class CartMutationController {
   @MutationMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> setCustomer(@Argument String cartId, @Argument SetCustomerInput input) {
-    return validator
-        .validateSetCustomer(cartId, input)
+    return validateMetadataFromContext()
+        .then(validator.validateSetCustomer(cartId, input))
         .then(cartService.setCustomer(cartId, input.customerId(), input.name(), input.email()));
   }
 
   @MutationMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> removeCustomer(@Argument String cartId) {
-    return validator.validateCartId(cartId).then(cartService.removeCustomer(cartId));
+    return validateMetadataFromContext()
+        .then(validator.validateCartId(cartId))
+        .then(cartService.removeCustomer(cartId));
   }
 }

@@ -6,7 +6,7 @@ This directory contains Spring Boot WebFlux applications that demonstrate reacti
 
 | Application | Port | Description |
 |-------------|------|-------------|
-| [product-service](product-service/) | 8080 | Product aggregation from merchandise, price, and inventory services |
+| [product-service](product-service/) | 8090 | Product aggregation from merchandise, price, and inventory services |
 | [cart-service](cart-service/) | 8082 (local) / 8081 (docker) | Shopping cart management with Redis persistence |
 
 ## Architecture

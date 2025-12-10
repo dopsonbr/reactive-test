@@ -170,15 +170,30 @@ public abstract class AbstractGraphQLIntegrationTest {
 
     // Disable security for tests (method-level still works with @WithMockUser)
     registry.add("app.security.enabled", () -> false);
+
+    // Disable GraphQL status filter to maintain spec compliance (always HTTP 200) in tests
+    registry.add("graphql.status-filter.enabled", () -> false);
   }
 
   @TestConfiguration
   static class GraphQlTesterConfiguration {
+    // Test headers for GraphQL requests - required by GraphQlContextInterceptor
+    private static final String TEST_STORE_NUMBER = "100";
+    private static final String TEST_ORDER_NUMBER = "550e8400-e29b-41d4-a716-446655440000";
+    private static final String TEST_USER_ID = "USER01";
+    private static final String TEST_SESSION_ID = "7c9e6679-7425-40de-944b-e07fc1f90ae7";
+
     @Bean
     @Lazy
     HttpGraphQlTester httpGraphQlTester(@Value("${local.server.port}") int port) {
       WebTestClient graphQlClient =
-          WebTestClient.bindToServer().baseUrl("http://localhost:" + port + "/graphql").build();
+          WebTestClient.bindToServer()
+              .baseUrl("http://localhost:" + port + "/graphql")
+              .defaultHeader("x-store-number", TEST_STORE_NUMBER)
+              .defaultHeader("x-order-number", TEST_ORDER_NUMBER)
+              .defaultHeader("x-userid", TEST_USER_ID)
+              .defaultHeader("x-sessionid", TEST_SESSION_ID)
+              .build();
       return HttpGraphQlTester.create(graphQlClient);
     }
 

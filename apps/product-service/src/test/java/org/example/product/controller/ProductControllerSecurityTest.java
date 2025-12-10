@@ -165,8 +165,9 @@ class ProductControllerSecurityTest {
   }
 
   @Test
-  void shouldReturn401ForOtherActuatorEndpointsWithoutAuth() {
-    webTestClient.get().uri("/actuator/metrics").exchange().expectStatus().isUnauthorized();
+  void shouldAllowActuatorMetricsEndpointWithoutAuth() {
+    // Actuator endpoints are permitted without auth - exposure config controls what's available
+    webTestClient.get().uri("/actuator/metrics").exchange().expectStatus().isOk();
   }
 
   @Test

@@ -1,5 +1,5 @@
 {
-  "product-service": 8080,
+  "product-service": 8090,
   "cart-service": 8081,
   "wiremock": 8082,
   "customer-service": 8083,

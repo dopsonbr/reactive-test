@@ -190,7 +190,7 @@ Applications built on the platform libraries.
 
 | Application | Port | Description |
 |-------------|------|-------------|
-| `product-service` | 8080 | Product aggregation service |
+| `product-service` | 8090 | Product aggregation service |
 | `cart-service` | 8082 | Shopping cart management |
 
 ## Adding a New Application

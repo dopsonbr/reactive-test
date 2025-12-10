@@ -1,13 +1,50 @@
-import { http, HttpResponse, delay } from 'msw';
-import { mockProducts, mockCart, calculateCartTotals } from './data';
+import { http, HttpResponse, delay, graphql } from 'msw';
+import {
+  mockProducts,
+  mockCart,
+  calculateCartTotals,
+  findProductBySku,
+  productSkuToCartSku,
+} from './data';
+import type { Cart, CartItem } from '../features/cart/types/cart';
 
-// Base URLs for API mocking - matches both direct and proxied requests
-const PRODUCT_API = import.meta.env.VITE_PRODUCT_API_URL || 'http://localhost:8080';
-const CART_API = import.meta.env.VITE_CART_API_URL || 'http://localhost:8081';
+// MSW handlers use wildcard patterns to match both same-origin and cross-origin requests
+// This allows the same handlers to work in dev mode (same-origin via vite proxy)
+// and in tests (direct to backend URLs when VITE_*_API_URL is set)
+
+// GraphQL endpoint for cart operations - use wildcard to match any origin
+const graphqlCart = graphql.link('*/graphql');
+
+// Helper to build a CartItem from a Product
+function buildCartItem(
+  sku: string,
+  quantity: number,
+  product: { name: string; description: string; price: string; originalPrice?: string; availableQuantity: number; imageUrl: string; category: string; inStock: boolean }
+): CartItem {
+  const unitPrice = parseFloat(product.price);
+  return {
+    sku,
+    name: product.name,
+    description: product.description,
+    unitPrice: product.price,
+    originalUnitPrice: product.originalPrice,
+    quantity,
+    availableQuantity: product.availableQuantity,
+    imageUrl: product.imageUrl,
+    category: product.category,
+    lineTotal: (unitPrice * quantity).toFixed(2),
+    inStock: product.inStock,
+  };
+}
+
+// Helper to get cart with correct typing
+function getMockCartWithId(id: string): Cart {
+  return { ...mockCart, id, products: [...mockCart.products] };
+}
 
 export const handlers = [
-  // Product Search
-  http.get(`${PRODUCT_API}/products/search`, async ({ request }) => {
+  // Product Search (REST) - wildcard matches any origin
+  http.get('*/products/search', async ({ request }) => {
     await delay(100); // Simulate network latency
 
     const url = new URL(request.url);
@@ -43,8 +80,8 @@ export const handlers = [
     });
   }),
 
-  // Product Detail
-  http.get(`${PRODUCT_API}/products/:sku`, async ({ params }) => {
+  // Product Detail (REST) - wildcard matches any origin
+  http.get('*/products/:sku', async ({ params }) => {
     await delay(100);
 
     const sku = Number(params.sku);
@@ -58,22 +95,28 @@ export const handlers = [
     return HttpResponse.json(product);
   }),
 
-  // Get Cart
-  http.get(`${CART_API}/carts/:id`, async ({ params }) => {
+  // GraphQL: Cart query
+  graphqlCart.query('Cart', async ({ variables }) => {
     await delay(100);
 
-    // Return the mock cart with updated ID
-    const cart = { ...mockCart, id: params.id as string };
-    return HttpResponse.json(calculateCartTotals(cart));
+    const { id } = variables as { id: string };
+    const cart = getMockCartWithId(id);
+    return HttpResponse.json({
+      data: {
+        cart: calculateCartTotals(cart),
+      },
+    });
   }),
 
-  // Create Cart (POST to /carts)
-  http.post(`${CART_API}/carts`, async () => {
+  // GraphQL: CreateCart mutation
+  graphqlCart.mutation('CreateCart', async ({ variables }) => {
     await delay(100);
 
-    const newCart = {
+    const { input } = variables as { input: { storeNumber: number; customerId?: string } };
+    const newCart: Cart = {
       id: crypto.randomUUID(),
-      storeNumber: 1,
+      storeNumber: input.storeNumber,
+      customerId: input.customerId,
       products: [],
       totals: {
         subtotal: '0.00',
@@ -85,94 +128,119 @@ export const handlers = [
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    return HttpResponse.json(newCart, { status: 201 });
+
+    // Update the mock cart state
+    mockCart.id = newCart.id;
+    mockCart.storeNumber = newCart.storeNumber;
+    mockCart.products = [];
+    Object.assign(mockCart.totals, newCart.totals);
+
+    return HttpResponse.json({
+      data: {
+        createCart: newCart,
+      },
+    });
   }),
 
-  // Add to Cart
-  http.post(`${CART_API}/carts/:id/products`, async ({ params, request }) => {
+  // GraphQL: AddProduct mutation
+  graphqlCart.mutation('AddProduct', async ({ variables }) => {
     await delay(100);
 
-    const body = (await request.json()) as { sku: number; quantity: number };
-    const product = mockProducts.find((p) => p.sku === body.sku);
+    const { cartId, input } = variables as {
+      cartId: string;
+      input: { sku: string; quantity: number };
+    };
 
+    const product = findProductBySku(input.sku);
     if (!product) {
-      return new HttpResponse(
-        JSON.stringify({ message: 'Product not found', code: 'PRODUCT_NOT_FOUND' }),
-        { status: 404 }
-      );
-    }
-
-    // Check if item already exists in cart
-    const existingItem = mockCart.products.find((i) => i.sku === body.sku);
-    if (existingItem) {
-      existingItem.quantity += body.quantity;
-      const unitPrice = parseFloat(existingItem.unitPrice);
-      existingItem.lineTotal = (unitPrice * existingItem.quantity).toFixed(2);
-    } else {
-      const unitPrice = parseFloat(product.price);
-      const lineTotal = (unitPrice * body.quantity).toFixed(2);
-
-      mockCart.products.push({
-        sku: product.sku,
-        name: product.name,
-        description: product.description,
-        unitPrice: product.price,
-        originalUnitPrice: product.originalPrice,
-        quantity: body.quantity,
-        availableQuantity: product.availableQuantity,
-        imageUrl: product.imageUrl,
-        category: product.category,
-        lineTotal: lineTotal,
-        inStock: product.inStock,
+      return HttpResponse.json({
+        errors: [
+          {
+            message: 'Product not found',
+            extensions: { classification: 'NOT_FOUND', code: 'PRODUCT_NOT_FOUND' },
+          },
+        ],
       });
     }
 
-    const updatedCart = calculateCartTotals({ ...mockCart, id: params.id as string });
-    Object.assign(mockCart, updatedCart);
-
-    return HttpResponse.json(updatedCart);
-  }),
-
-  // Update Cart Item
-  http.put(`${CART_API}/carts/:id/products/:sku`, async ({ params, request }) => {
-    await delay(100);
-
-    const body = (await request.json()) as { quantity: number };
-    const sku = Number(params.sku);
-    const item = mockCart.products.find((i) => i.sku === sku);
-
-    if (!item) {
-      return new HttpResponse(
-        JSON.stringify({ message: 'Cart item not found', code: 'ITEM_NOT_FOUND' }),
-        { status: 404 }
+    // Check if item already exists in cart
+    const existingItem = mockCart.products.find((i) => i.sku === input.sku);
+    if (existingItem) {
+      existingItem.quantity += input.quantity;
+      const unitPrice = parseFloat(existingItem.unitPrice);
+      existingItem.lineTotal = (unitPrice * existingItem.quantity).toFixed(2);
+    } else {
+      mockCart.products.push(
+        buildCartItem(productSkuToCartSku(product.sku), input.quantity, product)
       );
     }
 
-    if (body.quantity < 1) {
+    const updatedCart = calculateCartTotals(getMockCartWithId(cartId));
+    Object.assign(mockCart, { ...updatedCart, products: [...updatedCart.products] });
+
+    return HttpResponse.json({
+      data: {
+        addProduct: updatedCart,
+      },
+    });
+  }),
+
+  // GraphQL: UpdateProduct mutation
+  graphqlCart.mutation('UpdateProduct', async ({ variables }) => {
+    await delay(100);
+
+    const { cartId, sku, input } = variables as {
+      cartId: string;
+      sku: string;
+      input: { quantity: number };
+    };
+
+    const item = mockCart.products.find((i) => i.sku === sku);
+    if (!item) {
+      return HttpResponse.json({
+        errors: [
+          {
+            message: 'Cart item not found',
+            extensions: { classification: 'NOT_FOUND', code: 'ITEM_NOT_FOUND' },
+          },
+        ],
+      });
+    }
+
+    if (input.quantity < 1) {
       // Remove item if quantity is 0 or less
       mockCart.products = mockCart.products.filter((i) => i.sku !== sku);
     } else {
-      item.quantity = body.quantity;
+      item.quantity = input.quantity;
       const unitPrice = parseFloat(item.unitPrice);
       item.lineTotal = (unitPrice * item.quantity).toFixed(2);
     }
 
-    const updatedCart = calculateCartTotals({ ...mockCart, id: params.id as string });
-    Object.assign(mockCart, updatedCart);
+    const updatedCart = calculateCartTotals(getMockCartWithId(cartId));
+    Object.assign(mockCart, { ...updatedCart, products: [...updatedCart.products] });
 
-    return HttpResponse.json(updatedCart);
+    return HttpResponse.json({
+      data: {
+        updateProduct: updatedCart,
+      },
+    });
   }),
 
-  // Remove from Cart
-  http.delete(`${CART_API}/carts/:id/products/:sku`, async ({ params }) => {
+  // GraphQL: RemoveProduct mutation
+  graphqlCart.mutation('RemoveProduct', async ({ variables }) => {
     await delay(100);
 
-    const sku = Number(params.sku);
+    const { cartId, sku } = variables as { cartId: string; sku: string };
+
     mockCart.products = mockCart.products.filter((i) => i.sku !== sku);
 
-    const updatedCart = calculateCartTotals({ ...mockCart, id: params.id as string });
-    Object.assign(mockCart, updatedCart);
+    const updatedCart = calculateCartTotals(getMockCartWithId(cartId));
+    Object.assign(mockCart, { ...updatedCart, products: [...updatedCart.products] });
 
-    return HttpResponse.json(updatedCart);
+    return HttpResponse.json({
+      data: {
+        removeProduct: updatedCart,
+      },
+    });
   }),
 ];

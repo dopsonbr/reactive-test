@@ -5,7 +5,7 @@ export default async function globalSetup() {
 
   // Check if services are already running
   try {
-    const response = await fetch('http://localhost:8080/actuator/health');
+    const response = await fetch('http://localhost:8090/actuator/health');
     if (response.ok) {
       console.log('Services already running');
       return;
@@ -29,9 +29,9 @@ export default async function globalSetup() {
 
 async function waitForServices(maxAttempts = 60) {
   const services = [
-    { name: 'Product Service', url: 'http://localhost:8080/actuator/health' },
+    { name: 'Product Service', url: 'http://localhost:8090/actuator/health' },
     { name: 'Cart Service', url: 'http://localhost:8081/actuator/health' },
-    { name: 'Frontend', url: 'http://localhost:4200/health' },
+    { name: 'Frontend', url: 'http://localhost:3001' },
   ];
 
   console.log('Waiting for services to become healthy...');

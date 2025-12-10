@@ -3,7 +3,7 @@ set -e
 
 # Fetch OpenAPI spec from running product-service
 echo "Fetching OpenAPI spec from product-service..."
-curl -s http://localhost:8080/v3/api-docs -o tools/openapi-codegen/product-api.json
+curl -s http://localhost:8090/v3/api-docs -o tools/openapi-codegen/product-api.json
 
 # Generate TypeScript client
 echo "Generating TypeScript client..."

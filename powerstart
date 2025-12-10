@@ -176,7 +176,7 @@ function checkPortConflicts() {
   const ports = [
     { port: 5432, service: 'PostgreSQL' },
     { port: 6379, service: 'Redis' },
-    { port: 8080, service: 'product-service' },
+    { port: 8090, service: 'product-service' },
     { port: 8081, service: 'cart-service' },
     { port: 8082, service: 'WireMock' },
     { port: 8083, service: 'customer-service' },
@@ -367,7 +367,7 @@ async function startBackendServices() {
   logHeader('Starting Backend Services');
 
   const services = [
-    { name: 'product-service', port: 8080 },
+    { name: 'product-service', port: 8090 },
     { name: 'customer-service', port: 8083 },
     { name: 'discount-service', port: 8084 },
     { name: 'fulfillment-service', port: 8085 },
@@ -479,7 +479,7 @@ function printSummary() {
 
   // Backend Services
   console.log(`${colors.bold}Backend Services:${colors.nc}`);
-  console.log(`  ${colors.cyan}product-service${colors.nc}   http://localhost:8080`);
+  console.log(`  ${colors.cyan}product-service${colors.nc}   http://localhost:8090`);
   console.log(`  ${colors.cyan}cart-service${colors.nc}      http://localhost:8081`);
   console.log(`  ${colors.cyan}customer-service${colors.nc}  http://localhost:8083`);
   console.log(`  ${colors.cyan}discount-service${colors.nc}  http://localhost:8084`);

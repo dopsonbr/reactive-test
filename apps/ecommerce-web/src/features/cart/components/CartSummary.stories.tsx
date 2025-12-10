@@ -4,7 +4,7 @@ import { CartSummary } from './CartSummary';
 import type { Cart, CartItem } from '../types';
 
 const mockCartItem: CartItem = {
-  sku: 1001,
+  sku: '1001',
   name: 'Wireless Headphones',
   description: 'High-quality wireless headphones',
   unitPrice: '299.99',
@@ -24,7 +24,7 @@ const mockCart: Cart = {
     mockCartItem,
     {
       ...mockCartItem,
-      sku: 1002,
+      sku: '1002',
       name: 'Phone Case',
       unitPrice: '29.99',
       originalUnitPrice: undefined,
@@ -103,7 +103,7 @@ export const LargeOrder: Story = () => (
           ...mockCart,
           products: Array(5).fill(mockCart.products[0]).map((item, i) => ({
             ...item,
-            sku: 1001 + i,
+            sku: String(1001 + i),
             quantity: i + 1,
             lineTotal: (299.99 * (i + 1)).toFixed(2),
           })),

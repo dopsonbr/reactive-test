@@ -183,7 +183,7 @@ The E2E Docker stack (`docker/docker-compose.e2e.yml`) includes:
 
 | Service | Internal Port | External Port | Notes |
 |---------|---------------|---------------|-------|
-| product-service | 8080 | 8080 | Uses `docker` Spring profile |
+| product-service | 8090 | 8090 | Uses `docker` Spring profile |
 | cart-service | 8082 | 8081 | Note: internal port is 8082 |
 | customer-service | 8083 | - | Internal only |
 | discount-service | 8085 | - | Internal only |

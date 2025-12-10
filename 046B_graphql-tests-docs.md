@@ -19,6 +19,13 @@ Add the missing GraphQL subscription integration test, broaden query/mutation co
 2. Expand mutation/query tests to exercise product/discount/fulfillment flows and validation failures.
 3. Document GraphQL endpoint usage, auth scopes, and examples.
 
+## Key Decisions
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Subscription test approach | Full HTTP layer via `WebGraphQlTester` | Tests real SSE transport, not just controller method; catches integration issues |
+| README location | `apps/cart-service/README.md` | Better discoverability at service root; schema files remain in `resources/graphql/` |
+
 ## References
 
 **Standards:**
@@ -49,7 +56,41 @@ GraphQL subscription resolver → Redis pub/sub → published event from mutatio
 - CREATE: `apps/cart-service/src/test/java/org/example/cart/graphql/CartSubscriptionControllerTest.java`
 
 **Implementation:**
-- Use `WebGraphQlTester` to open `cartUpdated` subscription, perform a mutation (e.g., `addProduct`), assert first event matches cartId/type, and completes via `StepVerifier`/flux take(1).
+- Use `WebGraphQlTester` to open `cartUpdated` subscription via full HTTP layer (SSE transport).
+- Test flow: subscribe → trigger mutation (e.g., `addProduct`) → assert first event matches cartId/type.
+- Use `StepVerifier` to verify subscription flux behavior.
+
+```java
+@Test
+void shouldReceiveCartUpdatedEventOnProductAdd() {
+    // Create cart first
+    String cartId = createTestCart();
+
+    // Subscribe to cart updates via SSE
+    Flux<CartEvent> events = graphQlTester
+        .document("""
+            subscription {
+                cartUpdated(cartId: "%s") {
+                    eventType
+                    cart { id itemCount }
+                }
+            }
+            """.formatted(cartId))
+        .executeSubscription()
+        .toFlux("cartUpdated", CartEvent.class);
+
+    // Trigger mutation in parallel
+    StepVerifier.create(events.take(1))
+        .then(() -> addProductToCart(cartId, "SKU-001", 2))
+        .assertNext(event -> {
+            assertThat(event.eventType()).isEqualTo("PRODUCT_ADDED");
+            assertThat(event.cart().id()).isEqualTo(cartId);
+        })
+        .verifyComplete();
+}
+```
+
+**Test Headers:** Ensure test sends required headers (`x-store-number`, `x-order-number`, `x-userid`, `x-sessionid`) via `HttpGraphQlTester` configuration.
 
 ---
 
@@ -81,13 +122,65 @@ GraphQL subscription resolver → Redis pub/sub → published event from mutatio
 **Prereqs:** Phases 1-2 in progress OK; contents align with final schema.  
 **Blockers:** None.
 
-### 3.1 Add README
+### 3.1 Update Service README with GraphQL Section
 
 **Files:**
-- CREATE: `apps/cart-service/src/main/resources/graphql/README.md`
+- MODIFY: `apps/cart-service/README.md`
 
 **Implementation:**
-- Document `/graphql` endpoint, auth scopes (`cart:read/write/admin`), example query/mutation/subscription, SSE note per ADR 004, and error format note (validation errors in extensions).
+Add a GraphQL API section documenting:
+- `/graphql` endpoint (POST for queries/mutations, SSE for subscriptions)
+- Auth scopes (`cart:read`, `cart:write`, `cart:admin`)
+- Required headers (`x-store-number`, `x-order-number`, `x-userid`, `x-sessionid`)
+- Example query, mutation, and subscription
+- SSE client note per ADR 004
+- Error format (validation errors in `extensions.validationErrors`)
+
+**README Section Template:**
+```markdown
+## GraphQL API
+
+### Endpoint
+- **URL:** `/graphql`
+- **Queries/Mutations:** POST with `Content-Type: application/json`
+- **Subscriptions:** GET/POST with `Accept: text/event-stream` (SSE)
+
+### Required Headers
+| Header | Format | Example |
+|--------|--------|---------|
+| `x-store-number` | Integer 1-2000 | `42` |
+| `x-order-number` | UUID | `550e8400-e29b-41d4-a716-446655440000` |
+| `x-userid` | 6 alphanumeric | `USER01` |
+| `x-sessionid` | UUID | `7c9e6679-7425-40de-944b-e07fc1f90ae7` |
+
+### Auth Scopes
+- `cart:read` — Query operations
+- `cart:write` — Mutation operations
+- `cart:admin` — Store-wide subscriptions
+
+### Example Subscription (SSE)
+```javascript
+const eventSource = new EventSource(
+  '/graphql?query=subscription{cartUpdated(cartId:"abc"){eventType,cart{id,totals{grandTotal}}}}',
+  { headers: { 'Authorization': 'Bearer <token>' } }
+);
+eventSource.onmessage = (e) => console.log(JSON.parse(e.data));
+```
+
+### Error Format
+Validation errors return 400 with details in extensions:
+```json
+{
+  "errors": [{
+    "message": "Validation failed",
+    "extensions": {
+      "classification": "BAD_REQUEST",
+      "validationErrors": { "x-store-number": "Must be between 1 and 2000" }
+    }
+  }]
+}
+```
+```
 
 ---
 
@@ -95,10 +188,10 @@ GraphQL subscription resolver → Redis pub/sub → published event from mutatio
 
 | Action | File | Purpose |
 |--------|------|---------|
-| CREATE | `apps/cart-service/src/test/java/org/example/cart/graphql/CartSubscriptionControllerTest.java` | Subscription coverage |
+| CREATE | `apps/cart-service/src/test/java/org/example/cart/graphql/CartSubscriptionControllerTest.java` | Subscription coverage via full HTTP/SSE layer |
 | MODIFY | `apps/cart-service/src/test/java/org/example/cart/graphql/CartMutationControllerTest.java` | Broader mutation coverage |
 | MODIFY | `apps/cart-service/src/test/java/org/example/cart/graphql/CartQueryControllerTest.java` | Broader query/validation coverage |
-| CREATE | `apps/cart-service/src/main/resources/graphql/README.md` | GraphQL usage documentation |
+| MODIFY | `apps/cart-service/README.md` | Add GraphQL API documentation section |
 
 ---
 
@@ -111,7 +204,7 @@ GraphQL subscription resolver → Redis pub/sub → published event from mutatio
 
 ## Checklist
 
-- [ ] Subscription test added and passing
-- [ ] Mutation/query tests expanded
-- [ ] GraphQL README added
+- [ ] Subscription test added and passing (full HTTP/SSE layer)
+- [ ] Mutation/query tests expanded (header validation coverage)
+- [ ] GraphQL section added to `apps/cart-service/README.md`
 - [ ] All tests passing

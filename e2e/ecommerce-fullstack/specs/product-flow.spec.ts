@@ -19,8 +19,14 @@ test.describe('Product Flow (Full-Stack)', () => {
     await page.waitForResponse('**/products/search**');
     await page.locator('[data-testid^="product-card-"]').first().waitFor();
 
-    // Click on first product
-    await page.locator('[data-testid^="product-card-"]').first().click();
+    // Click on product link inside the card (not the card container)
+    // The product name link navigates to detail page
+    await page
+      .locator('[data-testid^="product-card-"]')
+      .first()
+      .getByRole('link', { name: /.+/ })
+      .first()
+      .click();
 
     // Wait for navigation to product detail page
     await expect(page).toHaveURL(/\/products\/\d+/);

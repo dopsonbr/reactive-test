@@ -153,7 +153,7 @@ services:
       - SPRING_FLYWAY_PASSWORD=cart_pass
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - PRODUCT_SERVICE_URL=http://product-service:8080
+      - PRODUCT_SERVICE_URL=http://product-service:8090
       - CUSTOMER_SERVICE_URL=http://customer-service:8083
       - DISCOUNT_SERVICE_URL=http://discount-service:8084
       - FULFILLMENT_SERVICE_URL=http://fulfillment-service:8085

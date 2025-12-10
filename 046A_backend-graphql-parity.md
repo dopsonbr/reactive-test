@@ -18,6 +18,14 @@ Restore REST parity for cart-service GraphQL by propagating request metadata int
 1. Inject `RequestMetadata` into all GraphQL operations so service layer sees correct store/order/user/session values.
 2. Align GraphQL validation with REST rules, including header-derived constraints and error aggregation.
 
+## Key Decisions
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Interceptor responsibility | Context population only | Keeps concerns separated; interceptor sets up context, validator handles business rules |
+| Missing header behavior | Reject with 400 Bad Request | Standard HTTP semantics for malformed requests; descriptive error in GraphQL `errors` array |
+| Subscription context | Capture once at subscription start | Auth happens at subscribe time; events are data relay; cart data is self-contained |
+
 ## References
 
 **Standards:**
@@ -51,7 +59,37 @@ Resolvers → CartService → downstream clients (headers applied)
 - CREATE: `apps/cart-service/src/main/java/org/example/cart/graphql/GraphQlContextInterceptor.java`
 
 **Implementation:**
-- Implement `WebGraphQlInterceptor` to read `x-store-number`, `x-order-number`, `x-userid`, `x-sessionid`, build `RequestMetadata`, and write it into Reactor context before data fetchers run. Log missing headers in dev mode but fail validation later.
+- Implement `WebGraphQlInterceptor` to read `x-store-number`, `x-order-number`, `x-userid`, `x-sessionid` from request headers.
+- Build `RequestMetadata` record and write it into Reactor context via `contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata))`.
+- **Do NOT validate in interceptor** — only populate context. Validation happens in `GraphQLInputValidator`.
+- If headers are missing/malformed, still populate context with defaults (e.g., `storeNumber=0`, empty strings) so validator can produce aggregated errors.
+
+```java
+@Component
+public class GraphQlContextInterceptor implements WebGraphQlInterceptor {
+    @Override
+    public Mono<WebGraphQlResponse> intercept(WebGraphQlRequest request, Chain chain) {
+        HttpHeaders headers = request.getHeaders();
+        RequestMetadata metadata = extractMetadata(headers);
+        return chain.next(request)
+            .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+    }
+
+    private RequestMetadata extractMetadata(HttpHeaders headers) {
+        int storeNumber = parseStoreNumber(headers.getFirst("x-store-number"));
+        String orderNumber = headers.getFirst("x-order-number");
+        String userId = headers.getFirst("x-userid");
+        String sessionId = headers.getFirst("x-sessionid");
+        return new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    }
+
+    private int parseStoreNumber(String value) {
+        if (value == null || value.isBlank()) return 0;
+        try { return Integer.parseInt(value); }
+        catch (NumberFormatException e) { return 0; }
+    }
+}
+```
 
 ### 1.2 Wire Controllers to Context
 
@@ -80,6 +118,53 @@ Resolvers → CartService → downstream clients (headers applied)
 - Reuse constants/helpers for UUID/SKU/quantity/store ranges.
 - Add validation that leverages metadata (storeNumber/orderNumber/userId/sessionId) similar to REST, preserving aggregated `ValidationException` output.
 - Validate null/missing inputs (body equivalents) to match REST behavior.
+
+**Header Validation in GraphQLInputValidator:**
+```java
+public Mono<Void> validateMetadata(RequestMetadata metadata) {
+    List<ValidationError> errors = new ArrayList<>();
+
+    // x-store-number: required, 1-2000
+    if (metadata.storeNumber() < 1 || metadata.storeNumber() > 2000) {
+        errors.add(new ValidationError("x-store-number", "Must be between 1 and 2000"));
+    }
+
+    // x-order-number: required, UUID format
+    if (!isValidUuid(metadata.orderNumber())) {
+        errors.add(new ValidationError("x-order-number", "Must be a valid UUID"));
+    }
+
+    // x-userid: required, 6 alphanumeric
+    if (!isValidUserId(metadata.userId())) {
+        errors.add(new ValidationError("x-userid", "Must be 6 alphanumeric characters"));
+    }
+
+    // x-sessionid: required, UUID format
+    if (!isValidUuid(metadata.sessionId())) {
+        errors.add(new ValidationError("x-sessionid", "Must be a valid UUID"));
+    }
+
+    return errors.isEmpty()
+        ? Mono.empty()
+        : Mono.error(new ValidationException(errors)); // Returns 400 with all errors
+}
+```
+
+**Error Response Format (400 Bad Request):**
+```json
+{
+  "errors": [{
+    "message": "Validation failed",
+    "extensions": {
+      "classification": "BAD_REQUEST",
+      "validationErrors": {
+        "x-store-number": "Must be between 1 and 2000",
+        "x-userid": "Must be 6 alphanumeric characters"
+      }
+    }
+  }]
+}
+```
 
 ---
 

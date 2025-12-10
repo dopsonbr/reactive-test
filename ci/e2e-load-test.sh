@@ -72,7 +72,7 @@ docker compose run --rm \
     -e K6_OUT=experimental-prometheus-rw \
     -e K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write \
     -e K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true \
-    -e BASE_URL=http://product-service:8080 \
+    -e BASE_URL=http://product-service:8090 \
     -e WIREMOCK_URL=http://wiremock:8080 \
     k6-product run --vus "$VUS" --iterations "$ITERATIONS" /scripts/load-test.js
 

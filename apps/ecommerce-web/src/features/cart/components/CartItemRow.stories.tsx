@@ -3,7 +3,7 @@ import { CartItemRow } from './CartItemRow';
 import type { CartItem } from '../types';
 
 const mockItem: CartItem = {
-  sku: 1001,
+  sku: '1001',
   name: 'Wireless Headphones',
   description: 'High-quality wireless headphones',
   unitPrice: '299.99',

@@ -29,8 +29,8 @@ spring:
 # Application Security Configuration
 app:
   security:
-    # Disable the JwtValidatorConfig so TestSecurityConfig's decoder is used
-    enabled: false
+    # Enable security for tests - TestSecurityConfig provides the test JWT decoder
+    enabled: true
     # Disable OAuth2 client for most tests - use mock WebClient instead
     oauth2-client:
       enabled: false

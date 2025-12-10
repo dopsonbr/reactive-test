@@ -50,6 +50,10 @@ export default defineConfig(() => ({
     globals: true,
     environment: 'node',
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    env: {
+      VITE_PRODUCT_API_URL: 'http://localhost:8090',
+      VITE_CART_API_URL: 'http://localhost:8081',
+    },
     reporters: ['default'],
     coverage: {
       reportsDirectory: '../../../../coverage/libs/frontend/shared-data/api-client',

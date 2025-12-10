@@ -191,7 +191,7 @@ services:
     volumes:
       - app-logs:/app/logs
     ports:
-      - "8080:8080"
+      - "8090:8090"
     depends_on:
       wiremock:
         condition: service_healthy
@@ -200,7 +200,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
       interval: 10s
       timeout: 5s
       start_period: 60s
@@ -226,7 +226,7 @@ services:
       - SPRING_FLYWAY_USER=cart_user
       - SPRING_FLYWAY_PASSWORD=cart_pass
       - APP_SECURITY_ENABLED=false
-      - PRODUCT_SERVICE_URL=http://product-service:8080
+      - PRODUCT_SERVICE_URL=http://product-service:8090
       - CUSTOMER_SERVICE_URL=http://customer-service:8083
       - DISCOUNT_SERVICE_URL=http://discount-service:8084
       - FULFILLMENT_SERVICE_URL=http://fulfillment-service:8085
@@ -581,7 +581,7 @@ services:
       - K6_OUT=experimental-prometheus-rw
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
-      - BASE_URL=http://product-service:8080
+      - BASE_URL=http://product-service:8090
       - WIREMOCK_URL=http://wiremock:8080
     command: >
       run
@@ -610,7 +610,7 @@ services:
       - K6_OUT=experimental-prometheus-rw
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
-      - BASE_URL=http://product-service:8080
+      - BASE_URL=http://product-service:8090
       - WIREMOCK_URL=http://wiremock:8080
     command: run /scripts/resilience-test.js
     depends_on:
@@ -636,7 +636,7 @@ services:
       - K6_OUT=experimental-prometheus-rw
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
-      - BASE_URL=http://product-service:8080
+      - BASE_URL=http://product-service:8090
       - WIREMOCK_URL=http://wiremock:8080
     command: run /scripts/circuit-breaker-test.js
     depends_on:
@@ -663,7 +663,7 @@ services:
       - K6_OUT=experimental-prometheus-rw
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
-      - BASE_URL=http://product-service:8080
+      - BASE_URL=http://product-service:8090
       - WIREMOCK_URL=http://wiremock:8080
     command: run /scripts/oauth-chaos-test.js
     depends_on:
@@ -689,7 +689,7 @@ services:
       - K6_OUT=experimental-prometheus-rw
       - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
       - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
-      - BASE_URL=http://product-service:8080
+      - BASE_URL=http://product-service:8090
       - WIREMOCK_URL=http://wiremock:8080
     command: run /scripts/oauth-circuit-breaker-test.js
     depends_on:

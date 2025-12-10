@@ -28,7 +28,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /** Security tests for CartController. Verifies OAuth2 authentication and authorization. */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"app.security.enabled=true"})
 @AutoConfigureWebTestClient
 @Import(TestSecurityConfig.class)
 class CartControllerSecurityTest extends AbstractIntegrationTest {

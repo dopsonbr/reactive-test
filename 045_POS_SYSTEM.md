@@ -288,15 +288,13 @@ apps/pos-web/                          # Port 3003
 │   │   ├── components/
 │   │   └── hooks/
 │   └── mocks/                         # MSW handlers
-├── e2e/                               # Playwright E2E tests
-│   ├── specs/
-│   │   ├── business/                  # Business scenario tests
-│   │   └── technical/                 # Technical flow tests
-│   └── fixtures/
-└── docs/                              # Business documentation
-    ├── BUSINESS_FLOWS.md              # Detailed business flows
-    ├── USER_GUIDE.md                  # End user documentation
-    └── TEST_SCENARIOS.md              # E2E test scenario docs
+│
+apps/pos-web-e2e/                      # Playwright E2E tests
+├── specs/
+│   ├── business/                      # Business scenario tests
+│   └── accessibility/                 # Accessibility tests
+├── fixtures/                          # Test fixtures and helpers
+└── playwright.config.ts               # Playwright configuration
 ```
 
 ---

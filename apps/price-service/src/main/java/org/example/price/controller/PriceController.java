@@ -20,9 +20,7 @@ public class PriceController {
     this.service = service;
   }
 
-  /**
-   * Get price by SKU - used by product-service (service-to-service).
-   */
+  /** Get price by SKU - used by product-service (service-to-service). */
   @GetMapping("/{sku}")
   public Mono<ResponseEntity<PriceResponse>> getPrice(@PathVariable Long sku) {
     return service
@@ -31,23 +29,17 @@ public class PriceController {
         .defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
-  /**
-   * List all prices - used by merchant portal.
-   */
+  /** List all prices - used by merchant portal. */
   @GetMapping
   public Flux<PriceEntity> listPrices(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size) {
+      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
     return service.listPrices(page, size);
   }
 
-  /**
-   * Set/update price - used by merchant portal (requires PRICING_SPECIALIST role).
-   */
+  /** Set/update price - used by merchant portal (requires PRICING_SPECIALIST role). */
   @PutMapping("/{sku}")
   public Mono<PriceEntity> setPrice(
-      @PathVariable Long sku,
-      @Valid @RequestBody UpdatePriceRequest request) {
+      @PathVariable Long sku, @Valid @RequestBody UpdatePriceRequest request) {
     return service.setPrice(sku, request);
   }
 }

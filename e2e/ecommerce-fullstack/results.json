@@ -89,12 +89,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1133,
+                      "duration": 645,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:49:28.601Z",
+                      "startTime": "2025-12-10T00:12:02.053Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -109,7 +109,7 @@
             },
             {
               "title": "cart page loads from real backend via GraphQL",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -122,25 +122,9 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 60084,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-flow.spec.ts",
-                            "column": 16,
-                            "line": 75
-                          },
-                          "message": "Error: page.waitForResponse: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 73 |\u001b[39m\n \u001b[90m 74 |\u001b[39m     \u001b[90m// Wait for GraphQL cart query\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 75 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForResponse((res) \u001b[33m=>\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 76 |\u001b[39m       res\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/graphql'\u001b[39m) \u001b[33m&&\u001b[39m res\u001b[33m.\u001b[39mrequest()\u001b[33m.\u001b[39mmethod() \u001b[33m===\u001b[39m \u001b[32m'POST'\u001b[39m\n \u001b[90m 77 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 78 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-flow.spec.ts:75:16\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 267,
+                      "errors": [],
                       "stdout": [
                         {
                           "text": "Item added to cart for cart page load test\n"
@@ -148,33 +132,17 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:49:30.157Z",
+                      "startTime": "2025-12-10T00:12:03.110Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/test-results/cart-flow-Cart-Flow-Full-S-913df-om-real-backend-via-GraphQL-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/test-results/cart-flow-Cart-Flow-Full-S-913df-om-real-backend-via-GraphQL-chromium/error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/test-results/cart-flow-Cart-Flow-Full-S-913df-om-real-backend-via-GraphQL-chromium/trace.zip"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "1f2315bc14f58c0784bd-b73e6ab56411ce5eb7f6",
               "file": "cart-flow.spec.ts",
-              "line": 51,
+              "line": 54,
               "column": 3
             },
             {
@@ -190,10 +158,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "timedOut",
-                      "duration": 60072,
+                      "duration": 60086,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -205,16 +173,16 @@
                         {
                           "location": {
                             "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-flow.spec.ts",
-                            "column": 16,
-                            "line": 103
+                            "column": 35,
+                            "line": 111
                           },
-                          "message": "Error: page.waitForResponse: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 101 |\u001b[39m     \u001b[90m// Go to cart\u001b[39m\n \u001b[90m 102 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'cart-link'\u001b[39m)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 103 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForResponse((res) \u001b[33m=>\u001b[39m\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 104 |\u001b[39m       res\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/graphql'\u001b[39m) \u001b[33m&&\u001b[39m res\u001b[33m.\u001b[39mrequest()\u001b[33m.\u001b[39mmethod() \u001b[33m===\u001b[39m \u001b[32m'POST'\u001b[39m\n \u001b[90m 105 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 106 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-flow.spec.ts:103:16\u001b[22m"
+                          "message": "Error: page.waitForResponse: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 109 |\u001b[39m\n \u001b[90m 110 |\u001b[39m     \u001b[90m// Set up cart query listener before navigation\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 111 |\u001b[39m     \u001b[36mconst\u001b[39m cartQueryPromise \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mwaitForResponse((res) \u001b[33m=>\u001b[39m\n \u001b[90m     |\u001b[39m                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 112 |\u001b[39m       res\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/graphql'\u001b[39m) \u001b[33m&&\u001b[39m res\u001b[33m.\u001b[39mrequest()\u001b[33m.\u001b[39mmethod() \u001b[33m===\u001b[39m \u001b[32m'POST'\u001b[39m\n \u001b[90m 113 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 114 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-flow.spec.ts:111:35\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:50:30.658Z",
+                      "startTime": "2025-12-10T00:12:03.384Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -240,7 +208,7 @@
               ],
               "id": "1f2315bc14f58c0784bd-8b15553b0f43b66c1c46",
               "file": "cart-flow.spec.ts",
-              "line": 85,
+              "line": 91,
               "column": 3
             },
             {
@@ -256,31 +224,34 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 1,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 60077,
+                      "status": "failed",
+                      "duration": 472,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-flow.spec.ts:181:39",
+                        "location": {
+                          "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-flow.spec.ts",
+                          "column": 39,
+                          "line": 181
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 179 |\u001b[39m       \u001b[36mconst\u001b[39m deleteResponse \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m deleteResponsePromise\u001b[33m;\u001b[39m\n \u001b[90m 180 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 181 |\u001b[39m       expect(deleteResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 182 |\u001b[39m\n \u001b[90m 183 |\u001b[39m       \u001b[36mconst\u001b[39m body \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m deleteResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 184 |\u001b[39m       expect(body\u001b[33m.\u001b[39mdata)\u001b[33m.\u001b[39mtoBeDefined()\u001b[33m;\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
-                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
-                        },
-                        {
                           "location": {
                             "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-flow.spec.ts",
-                            "column": 16,
-                            "line": 143
+                            "column": 39,
+                            "line": 181
                           },
-                          "message": "Error: page.waitForResponse: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 141 |\u001b[39m     \u001b[90m// Go to cart\u001b[39m\n \u001b[90m 142 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'cart-link'\u001b[39m)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 143 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForResponse((res) \u001b[33m=>\u001b[39m\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 144 |\u001b[39m       res\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/graphql'\u001b[39m) \u001b[33m&&\u001b[39m res\u001b[33m.\u001b[39mrequest()\u001b[33m.\u001b[39mmethod() \u001b[33m===\u001b[39m \u001b[32m'POST'\u001b[39m\n \u001b[90m 145 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 146 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-flow.spec.ts:143:16\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n\u001b[0m \u001b[90m 179 |\u001b[39m       \u001b[36mconst\u001b[39m deleteResponse \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m deleteResponsePromise\u001b[33m;\u001b[39m\n \u001b[90m 180 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 181 |\u001b[39m       expect(deleteResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 182 |\u001b[39m\n \u001b[90m 183 |\u001b[39m       \u001b[36mconst\u001b[39m body \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m deleteResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 184 |\u001b[39m       expect(body\u001b[33m.\u001b[39mdata)\u001b[33m.\u001b[39mtoBeDefined()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-flow.spec.ts:181:39\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:51:31.411Z",
+                      "startTime": "2025-12-10T00:13:03.945Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -298,7 +269,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/test-results/cart-flow-Cart-Flow-Full-S-796c1-m-calls-backend-via-GraphQL-chromium/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-flow.spec.ts",
+                        "column": 39,
+                        "line": 181
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -306,7 +282,7 @@
               ],
               "id": "1f2315bc14f58c0784bd-5f7cae5b4195a56cf741",
               "file": "cart-flow.spec.ts",
-              "line": 125,
+              "line": 140,
               "column": 3
             }
           ]
@@ -339,10 +315,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 295,
+                      "duration": 297,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/your cart/i).or(getByText(/empty/i))\nExpected: visible\nError: strict mode violation: getByText(/your cart/i).or(getByText(/empty/i)) resolved to 3 elements:\n    1) <h1 class=\"text-2xl font-bold mb-6\">Your Cart</h1> aka getByRole('heading', { name: 'Your Cart', exact: true })\n    2) <h2 class=\"text-xl font-semibold\">Your cart is empty</h2> aka getByRole('heading', { name: 'Your cart is empty' })\n    3) <p class=\"text-muted-foreground mt-1\">Looks like you haven't added anything to your car…</p> aka getByText('Looks like you haven\\'t added')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/your cart/i).or(getByText(/empty/i))\u001b[22m\n",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/your cart/i).or(getByText(/empty/i))\nExpected: visible\nError: strict mode violation: getByText(/your cart/i).or(getByText(/empty/i)) resolved to 3 elements:\n    1) <h1 class=\"text-2xl font-bold mb-6\">Your Cart</h1> aka getByRole('heading', { name: 'Your Cart', exact: true })\n    2) <h2 class=\"text-xl font-semibold\">Your cart is empty</h2> aka getByRole('heading', { name: 'Your cart is empty' })\n    3) <p class=\"text-muted-foreground mt-1\">Looks like you haven't added anything to your car…</p> aka getByText('Looks like you haven\\'t added')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/your cart/i).or(getByText(/empty/i))\u001b[22m\n\n    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:33:7",
@@ -366,7 +342,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:52:32.166Z",
+                      "startTime": "2025-12-10T00:13:05.050Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -413,10 +389,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 4,
+                      "workerIndex": 3,
                       "parallelIndex": 0,
                       "status": "timedOut",
-                      "duration": 60100,
+                      "duration": 60088,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -428,16 +404,16 @@
                         {
                           "location": {
                             "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts",
-                            "column": 42,
-                            "line": 97
+                            "column": 43,
+                            "line": 100
                           },
-                          "message": "Error: page.waitForResponse: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m  95 |\u001b[39m\n \u001b[90m  96 |\u001b[39m     \u001b[90m// Wait for GraphQL cart query\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  97 |\u001b[39m     \u001b[36mconst\u001b[39m cartQueryResponse \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForResponse((res) \u001b[33m=>\u001b[39m\n \u001b[90m     |\u001b[39m                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  98 |\u001b[39m       res\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/graphql'\u001b[39m) \u001b[33m&&\u001b[39m res\u001b[33m.\u001b[39mrequest()\u001b[33m.\u001b[39mmethod() \u001b[33m===\u001b[39m \u001b[32m'POST'\u001b[39m\n \u001b[90m  99 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 100 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:97:42\u001b[22m"
+                          "message": "Error: page.waitForResponse: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m  98 |\u001b[39m\n \u001b[90m  99 |\u001b[39m     \u001b[90m// Set up cart query listener before navigation\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 100 |\u001b[39m     \u001b[36mconst\u001b[39m cartQueryResponsePromise \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mwaitForResponse((res) \u001b[33m=>\u001b[39m\n \u001b[90m     |\u001b[39m                                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 101 |\u001b[39m       res\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/graphql'\u001b[39m) \u001b[33m&&\u001b[39m res\u001b[33m.\u001b[39mrequest()\u001b[33m.\u001b[39mmethod() \u001b[33m===\u001b[39m \u001b[32m'POST'\u001b[39m\n \u001b[90m 102 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 103 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:100:43\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:52:33.032Z",
+                      "startTime": "2025-12-10T00:13:05.914Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -463,7 +439,7 @@
               ],
               "id": "d102a67545d502afc6eb-375bce8dd6f7502a5f5a",
               "file": "cart-subscriptions.spec.ts",
-              "line": 75,
+              "line": 78,
               "column": 3
             },
             {
@@ -479,10 +455,10 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 5,
+                      "workerIndex": 4,
                       "parallelIndex": 0,
                       "status": "timedOut",
-                      "duration": 60086,
+                      "duration": 60107,
                       "error": {
                         "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
@@ -494,16 +470,16 @@
                         {
                           "location": {
                             "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts",
-                            "column": 16,
-                            "line": 132
+                            "column": 35,
+                            "line": 141
                           },
-                          "message": "Error: page.waitForResponse: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 130 |\u001b[39m\n \u001b[90m 131 |\u001b[39m     \u001b[90m// Wait for cart to load\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 132 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForResponse((res) \u001b[33m=>\u001b[39m\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 133 |\u001b[39m       res\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/graphql'\u001b[39m) \u001b[33m&&\u001b[39m res\u001b[33m.\u001b[39mrequest()\u001b[33m.\u001b[39mmethod() \u001b[33m===\u001b[39m \u001b[32m'POST'\u001b[39m\n \u001b[90m 134 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 135 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:132:16\u001b[22m"
+                          "message": "Error: page.waitForResponse: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 139 |\u001b[39m\n \u001b[90m 140 |\u001b[39m     \u001b[90m// Set up cart query listener before navigation\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 141 |\u001b[39m     \u001b[36mconst\u001b[39m cartQueryPromise \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mwaitForResponse((res) \u001b[33m=>\u001b[39m\n \u001b[90m     |\u001b[39m                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 142 |\u001b[39m       res\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/graphql'\u001b[39m) \u001b[33m&&\u001b[39m res\u001b[33m.\u001b[39mrequest()\u001b[33m.\u001b[39mmethod() \u001b[33m===\u001b[39m \u001b[32m'POST'\u001b[39m\n \u001b[90m 143 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 144 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:141:35\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:53:33.652Z",
+                      "startTime": "2025-12-10T00:14:06.567Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -529,7 +505,7 @@
               ],
               "id": "d102a67545d502afc6eb-d13cb1e9671706ef3605",
               "file": "cart-subscriptions.spec.ts",
-              "line": 112,
+              "line": 121,
               "column": 3
             },
             {
@@ -545,31 +521,34 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 6,
+                      "workerIndex": 5,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 60085,
+                      "status": "failed",
+                      "duration": 412,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeUndefined\u001b[2m()\u001b[22m\n\nReceived: \u001b[31m[{\"extensions\": {\"classification\": \"NOT_FOUND\"}, \"locations\": [{\"column\": 5, \"line\": 3}], \"message\": \"Product not found in cart\", \"path\": [\"removeProduct\"]}]\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeUndefined\u001b[2m()\u001b[22m\n\nReceived: \u001b[31m[{\"extensions\": {\"classification\": \"NOT_FOUND\"}, \"locations\": [{\"column\": 5, \"line\": 3}], \"message\": \"Product not found in cart\", \"path\": [\"removeProduct\"]}]\u001b[39m\n    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:215:35",
+                        "location": {
+                          "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts",
+                          "column": 35,
+                          "line": 215
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 213 |\u001b[39m       \u001b[36mconst\u001b[39m responseBody \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m deleteResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 214 |\u001b[39m       expect(responseBody\u001b[33m.\u001b[39mdata)\u001b[33m.\u001b[39mtoBeDefined()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 215 |\u001b[39m       expect(responseBody\u001b[33m.\u001b[39merrors)\u001b[33m.\u001b[39mtoBeUndefined()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 216 |\u001b[39m\n \u001b[90m 217 |\u001b[39m       \u001b[90m// Cart should show empty state\u001b[39m\n \u001b[90m 218 |\u001b[39m       \u001b[36mawait\u001b[39m expect(\u001b[0m"
                       },
                       "errors": [
                         {
-                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
-                        },
-                        {
                           "location": {
                             "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts",
-                            "column": 16,
-                            "line": 172
+                            "column": 35,
+                            "line": 215
                           },
-                          "message": "Error: page.waitForResponse: Test timeout of 60000ms exceeded.\n\n\u001b[0m \u001b[90m 170 |\u001b[39m\n \u001b[90m 171 |\u001b[39m     \u001b[90m// Wait for cart to load\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 172 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForResponse((res) \u001b[33m=>\u001b[39m\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 173 |\u001b[39m       res\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/graphql'\u001b[39m) \u001b[33m&&\u001b[39m res\u001b[33m.\u001b[39mrequest()\u001b[33m.\u001b[39mmethod() \u001b[33m===\u001b[39m \u001b[32m'POST'\u001b[39m\n \u001b[90m 174 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 175 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:172:16\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeUndefined\u001b[2m()\u001b[22m\n\nReceived: \u001b[31m[{\"extensions\": {\"classification\": \"NOT_FOUND\"}, \"locations\": [{\"column\": 5, \"line\": 3}], \"message\": \"Product not found in cart\", \"path\": [\"removeProduct\"]}]\u001b[39m\n\n\u001b[0m \u001b[90m 213 |\u001b[39m       \u001b[36mconst\u001b[39m responseBody \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m deleteResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 214 |\u001b[39m       expect(responseBody\u001b[33m.\u001b[39mdata)\u001b[33m.\u001b[39mtoBeDefined()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 215 |\u001b[39m       expect(responseBody\u001b[33m.\u001b[39merrors)\u001b[33m.\u001b[39mtoBeUndefined()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 216 |\u001b[39m\n \u001b[90m 217 |\u001b[39m       \u001b[90m// Cart should show empty state\u001b[39m\n \u001b[90m 218 |\u001b[39m       \u001b[36mawait\u001b[39m expect(\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:215:35\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:54:34.438Z",
+                      "startTime": "2025-12-10T00:15:07.319Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -587,7 +566,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/test-results/cart-subscriptions-Cart-Su-766f4--item-uses-GraphQL-mutation-chromium/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts",
+                        "column": 35,
+                        "line": 215
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -595,12 +579,12 @@
               ],
               "id": "d102a67545d502afc6eb-3805b599ca6727307d4f",
               "file": "cart-subscriptions.spec.ts",
-              "line": 152,
+              "line": 170,
               "column": 3
             },
             {
               "title": "GraphQL error handling shows user feedback",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -611,65 +595,25 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 7,
+                      "workerIndex": 6,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 10192,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/your cart/i).or(getByText(/error/i)).or(getByText(/empty/i))\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/your cart/i).or(getByText(/error/i)).or(getByText(/empty/i))\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/your cart/i).or(getByText(/error/i)).or(getByText(/empty/i))\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/your cart/i).or(getByText(/error/i)).or(getByText(/empty/i))\u001b[22m\n\n    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:209:7",
-                        "location": {
-                          "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts",
-                          "column": 7,
-                          "line": 209
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 207 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 208 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/your cart/i\u001b[39m)\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/error/i\u001b[39m))\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/empty/i\u001b[39m))\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 209 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 210 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 211 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 212 |\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts",
-                            "column": 7,
-                            "line": 209
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/your cart/i).or(getByText(/error/i)).or(getByText(/empty/i))\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/your cart/i).or(getByText(/error/i)).or(getByText(/empty/i))\u001b[22m\n\n\n\u001b[0m \u001b[90m 207 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 208 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/your cart/i\u001b[39m)\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/error/i\u001b[39m))\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/empty/i\u001b[39m))\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 209 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 210 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 211 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 212 |\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:209:7\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 176,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:55:35.148Z",
+                      "startTime": "2025-12-10T00:15:08.336Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/test-results/cart-subscriptions-Cart-Su-a43e2-andling-shows-user-feedback-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/test-results/cart-subscriptions-Cart-Su-a43e2-andling-shows-user-feedback-chromium/error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/test-results/cart-subscriptions-Cart-Su-a43e2-andling-shows-user-feedback-chromium/trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts",
-                        "column": 7,
-                        "line": 209
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "d102a67545d502afc6eb-ec9372a2242c96528066",
               "file": "cart-subscriptions.spec.ts",
-              "line": 197,
+              "line": 224,
               "column": 3
             }
           ]
@@ -677,7 +621,7 @@
         {
           "title": "SSE Subscription Transport",
           "file": "cart-subscriptions.spec.ts",
-          "line": 217,
+          "line": 249,
           "column": 6,
           "specs": [
             {
@@ -693,34 +637,34 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 8,
+                      "workerIndex": 6,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 284,
+                      "duration": 265,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/your cart/i).or(getByText(/empty/i))\nExpected: visible\nError: strict mode violation: getByText(/your cart/i).or(getByText(/empty/i)) resolved to 3 elements:\n    1) <h1 class=\"text-2xl font-bold mb-6\">Your Cart</h1> aka getByRole('heading', { name: 'Your Cart', exact: true })\n    2) <h2 class=\"text-xl font-semibold\">Your cart is empty</h2> aka getByRole('heading', { name: 'Your cart is empty' })\n    3) <p class=\"text-muted-foreground mt-1\">Looks like you haven't added anything to your car…</p> aka getByText('Looks like you haven\\'t added')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/your cart/i).or(getByText(/empty/i))\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/your cart/i).or(getByText(/empty/i))\nExpected: visible\nError: strict mode violation: getByText(/your cart/i).or(getByText(/empty/i)) resolved to 3 elements:\n    1) <h1 class=\"text-2xl font-bold mb-6\">Your Cart</h1> aka getByRole('heading', { name: 'Your Cart', exact: true })\n    2) <h2 class=\"text-xl font-semibold\">Your cart is empty</h2> aka getByRole('heading', { name: 'Your cart is empty' })\n    3) <p class=\"text-muted-foreground mt-1\">Looks like you haven't added anything to your car…</p> aka getByText('Looks like you haven\\'t added')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/your cart/i).or(getByText(/empty/i))\u001b[22m\n\n    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:248:7",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /your cart/i }).or(getByRole('heading', { name: /empty/i }))\nExpected: visible\nError: strict mode violation: getByRole('heading', { name: /your cart/i }).or(getByRole('heading', { name: /empty/i })) resolved to 2 elements:\n    1) <h1 class=\"text-2xl font-bold mb-6\">Your Cart</h1> aka getByRole('heading', { name: 'Your Cart', exact: true })\n    2) <h2 class=\"text-xl font-semibold\">Your cart is empty</h2> aka getByRole('heading', { name: 'Your cart is empty' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /your cart/i }).or(getByRole('heading', { name: /empty/i }))\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /your cart/i }).or(getByRole('heading', { name: /empty/i }))\nExpected: visible\nError: strict mode violation: getByRole('heading', { name: /your cart/i }).or(getByRole('heading', { name: /empty/i })) resolved to 2 elements:\n    1) <h1 class=\"text-2xl font-bold mb-6\">Your Cart</h1> aka getByRole('heading', { name: 'Your Cart', exact: true })\n    2) <h2 class=\"text-xl font-semibold\">Your cart is empty</h2> aka getByRole('heading', { name: 'Your cart is empty' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /your cart/i }).or(getByRole('heading', { name: /empty/i }))\u001b[22m\n\n    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:280:7",
                         "location": {
                           "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts",
                           "column": 7,
-                          "line": 248
+                          "line": 280
                         },
-                        "snippet": "\u001b[0m \u001b[90m 246 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 247 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/your cart/i\u001b[39m)\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/empty/i\u001b[39m))\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 248 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 249 |\u001b[39m\n \u001b[90m 250 |\u001b[39m     \u001b[90m// Give time for subscription to establish\u001b[39m\n \u001b[90m 251 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 278 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 279 |\u001b[39m       page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/your cart/i\u001b[39m })\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/empty/i\u001b[39m }))\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 280 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 281 |\u001b[39m\n \u001b[90m 282 |\u001b[39m     \u001b[90m// Give time for subscription to establish\u001b[39m\n \u001b[90m 283 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
                             "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts",
                             "column": 7,
-                            "line": 248
+                            "line": 280
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/your cart/i).or(getByText(/empty/i))\nExpected: visible\nError: strict mode violation: getByText(/your cart/i).or(getByText(/empty/i)) resolved to 3 elements:\n    1) <h1 class=\"text-2xl font-bold mb-6\">Your Cart</h1> aka getByRole('heading', { name: 'Your Cart', exact: true })\n    2) <h2 class=\"text-xl font-semibold\">Your cart is empty</h2> aka getByRole('heading', { name: 'Your cart is empty' })\n    3) <p class=\"text-muted-foreground mt-1\">Looks like you haven't added anything to your car…</p> aka getByText('Looks like you haven\\'t added')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/your cart/i).or(getByText(/empty/i))\u001b[22m\n\n\n\u001b[0m \u001b[90m 246 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 247 |\u001b[39m       page\u001b[33m.\u001b[39mgetByText(\u001b[35m/your cart/i\u001b[39m)\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/empty/i\u001b[39m))\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 248 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 249 |\u001b[39m\n \u001b[90m 250 |\u001b[39m     \u001b[90m// Give time for subscription to establish\u001b[39m\n \u001b[90m 251 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:248:7\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /your cart/i }).or(getByRole('heading', { name: /empty/i }))\nExpected: visible\nError: strict mode violation: getByRole('heading', { name: /your cart/i }).or(getByRole('heading', { name: /empty/i })) resolved to 2 elements:\n    1) <h1 class=\"text-2xl font-bold mb-6\">Your Cart</h1> aka getByRole('heading', { name: 'Your Cart', exact: true })\n    2) <h2 class=\"text-xl font-semibold\">Your cart is empty</h2> aka getByRole('heading', { name: 'Your cart is empty' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /your cart/i }).or(getByRole('heading', { name: /empty/i }))\u001b[22m\n\n\n\u001b[0m \u001b[90m 278 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 279 |\u001b[39m       page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/your cart/i\u001b[39m })\u001b[33m.\u001b[39mor(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/empty/i\u001b[39m }))\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 280 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 281 |\u001b[39m\n \u001b[90m 282 |\u001b[39m     \u001b[90m// Give time for subscription to establish\u001b[39m\n \u001b[90m 283 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts:280:7\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:55:45.957Z",
+                      "startTime": "2025-12-10T00:15:08.635Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -742,7 +686,7 @@
                       "errorLocation": {
                         "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/cart-subscriptions.spec.ts",
                         "column": 7,
-                        "line": 248
+                        "line": 280
                       }
                     }
                   ],
@@ -751,7 +695,7 @@
               ],
               "id": "d102a67545d502afc6eb-dba27bdfafa4c6e79267",
               "file": "cart-subscriptions.spec.ts",
-              "line": 231,
+              "line": 263,
               "column": 3
             }
           ]
@@ -784,15 +728,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 7,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 184,
+                      "duration": 194,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:55:46.716Z",
+                      "startTime": "2025-12-10T00:15:09.246Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -807,7 +751,7 @@
             },
             {
               "title": "product detail shows real inventory status",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -818,60 +762,20 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 9,
+                      "workerIndex": 7,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 5293,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/products\\/\\d+/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:3001/\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    9 × unexpected value \"http://localhost:3001/\"\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/products\\/\\d+/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:3001/\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    9 × unexpected value \"http://localhost:3001/\"\u001b[22m\n\n    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/product-flow.spec.ts:26:24",
-                        "location": {
-                          "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/product-flow.spec.ts",
-                          "column": 24,
-                          "line": 26
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 24 |\u001b[39m\n \u001b[90m 25 |\u001b[39m     \u001b[90m// Wait for navigation to product detail page\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[35m/\\/products\\/\\d+/\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m\n \u001b[90m 28 |\u001b[39m     \u001b[90m// Verify stock status is displayed (from real backend)\u001b[39m\n \u001b[90m 29 |\u001b[39m     \u001b[90m// Use longer timeout to allow for API call and render\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/product-flow.spec.ts",
-                            "column": 24,
-                            "line": 26
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/products\\/\\d+/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:3001/\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    9 × unexpected value \"http://localhost:3001/\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 24 |\u001b[39m\n \u001b[90m 25 |\u001b[39m     \u001b[90m// Wait for navigation to product detail page\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[35m/\\/products\\/\\d+/\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m\n \u001b[90m 28 |\u001b[39m     \u001b[90m// Verify stock status is displayed (from real backend)\u001b[39m\n \u001b[90m 29 |\u001b[39m     \u001b[90m// Use longer timeout to allow for API call and render\u001b[39m\u001b[0m\n\u001b[2m    at /Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/product-flow.spec.ts:26:24\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 343,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:55:47.021Z",
+                      "startTime": "2025-12-10T00:15:09.557Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/test-results/product-flow-Product-Flow--5ca96-shows-real-inventory-status-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/test-results/product-flow-Product-Flow--5ca96-shows-real-inventory-status-chromium/error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/test-results/product-flow-Product-Flow--5ca96-shows-real-inventory-status-chromium/trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/briandopson/github/dopsonbr/reactive-test-worktrees/046-cart-graphql-client-alignment/e2e/ecommerce-fullstack/specs/product-flow.spec.ts",
-                        "column": 24,
-                        "line": 26
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "f94eefc864c41bd6476d-b0ab22243d658dd3a0fe",
@@ -892,15 +796,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 10,
+                      "workerIndex": 7,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 317,
+                      "duration": 280,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-09T23:55:52.684Z",
+                      "startTime": "2025-12-10T00:15:09.906Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -910,7 +814,7 @@
               ],
               "id": "f94eefc864c41bd6476d-43ec2758bc414757c9d2",
               "file": "product-flow.spec.ts",
-              "line": 36,
+              "line": 42,
               "column": 3
             }
           ]
@@ -920,11 +824,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-12-09T23:49:28.120Z",
-    "duration": 385246.24,
-    "expected": 3,
+    "startTime": "2025-12-10T00:12:01.511Z",
+    "duration": 188976.071,
+    "expected": 6,
     "skipped": 0,
-    "unexpected": 10,
+    "unexpected": 7,
     "flaky": 0
   }
 }

@@ -9,3 +9,6 @@ export * from './types';
 // Client
 export * from './client';
 export * from './peripheral-client';
+
+// Services
+export * from './services';

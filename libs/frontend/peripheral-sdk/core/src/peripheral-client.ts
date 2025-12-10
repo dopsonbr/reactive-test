@@ -1,5 +1,6 @@
 import { StompClient, StompClientOptions, Unsubscribe } from './client';
 import { Capabilities, CapabilitiesMessage } from './types';
+import { ScannerService } from './services';
 
 /**
  * Options for PeripheralClient
@@ -28,9 +29,11 @@ export class PeripheralClient {
   private capabilitiesHandlers: Set<CapabilitiesHandler> = new Set();
   private connectionHandlers: Set<ConnectionHandler> = new Set();
   private subscriptions: Unsubscribe[] = [];
+  private _scanner: ScannerService;
 
   constructor(endpoint: string, options: PeripheralClientOptions = {}) {
     this.stomp = new StompClient(endpoint, options);
+    this._scanner = new ScannerService(this.stomp);
 
     // Wire up connection change notifications
     this.stomp.onConnectionChange((connected) => {
@@ -75,6 +78,9 @@ export class PeripheralClient {
    * Disconnect from the peripheral bridge
    */
   async disconnect(): Promise<void> {
+    // Clean up scanner
+    this._scanner.destroy();
+
     // Clean up subscriptions
     this.subscriptions.forEach((unsub) => unsub());
     this.subscriptions = [];
@@ -100,6 +106,13 @@ export class PeripheralClient {
     return () => {
       this.connectionHandlers.delete(handler);
     };
+  }
+
+  /**
+   * Scanner service
+   */
+  get scanner(): ScannerService {
+    return this._scanner;
   }
 
   /**

@@ -1,19 +1,35 @@
 export interface AppliedDiscount {
-  type: 'loyalty' | 'promo' | 'markdown';
-  description: string;
-  amount: number;
+  discountId?: string;
+  code?: string;
+  type: 'loyalty' | 'promo' | 'markdown' | string;
+  description?: string;
+  appliedSavings: number;
+}
+
+export interface OrderLineItem {
+  productId: string;
+  sku: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+  discountAmount: number;
 }
 
 export interface CheckoutSummary {
-  checkoutId: string;
+  checkoutSessionId: string;
   cartId: string;
-  customerId?: string;
+  orderNumber?: string;
+  storeNumber?: number;
+  lineItems: OrderLineItem[];
+  appliedDiscounts?: AppliedDiscount[];
   subtotal: number;
-  discounts: AppliedDiscount[];
   discountTotal: number;
-  tax: number;
-  total: number;
-  fulfillmentType: 'IMMEDIATE' | 'PICKUP' | 'DELIVERY';
+  taxTotal: number;
+  fulfillmentCost?: number;
+  grandTotal: number;
+  fulfillmentType?: 'IMMEDIATE' | 'PICKUP' | 'DELIVERY';
+  expiresAt?: string;
 }
 
 export interface OrderResponse {

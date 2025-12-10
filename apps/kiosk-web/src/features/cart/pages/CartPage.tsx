@@ -24,12 +24,15 @@ export function CartPage() {
   const session = useKioskSession();
 
   // Build cart scope from session
+  // x-order-number is required by cart-service (UUID format)
+  const orderNumber = session.transactionId || '';
   const cartScope: CartScope = {
     cartId: session.cartId || '',
     headers: {
       'x-store-number': session.storeNumber.toString(),
-      'x-sessionid': session.transactionId || '',
+      'x-sessionid': orderNumber,
       'x-userid': session.serviceAccountId,
+      'x-order-number': orderNumber,
     },
   };
 
@@ -111,7 +114,7 @@ export function CartPage() {
   }
 
   // Empty cart state
-  if (!cart || cart.items.length === 0) {
+  if (!cart || cart.products.length === 0) {
     return (
       <EmptyCartScreen
         onStartShopping={handleContinueShopping}
@@ -119,6 +122,9 @@ export function CartPage() {
       />
     );
   }
+
+  // Calculate item count from products
+  const itemCount = cart.products.reduce((sum, p) => sum + p.quantity, 0);
 
   // Cart with items
   return (
@@ -128,12 +134,12 @@ export function CartPage() {
         <div className="mb-6">
           <h1 className="text-4xl font-bold mb-2">Review Your Cart</h1>
           <p className="text-xl text-muted-foreground">
-            {cart.itemCount} {cart.itemCount === 1 ? 'item' : 'items'} in cart
+            {itemCount} {itemCount === 1 ? 'item' : 'items'} in cart
           </p>
         </div>
 
         <div className="flex-1 overflow-y-auto border rounded-lg bg-card">
-          {cart.items.map((item) => (
+          {cart.products.map((item) => (
             <KioskCartItem
               key={item.sku}
               item={item}
@@ -163,9 +169,9 @@ export function CartPage() {
       {/* Right side: Cart summary */}
       <div className="w-[400px] flex-shrink-0">
         <CartSummary
-          subtotal={cart.subtotal}
-          tax={cart.tax}
-          total={cart.total}
+          subtotal={cart.totals.subtotal}
+          tax={cart.totals.taxTotal}
+          total={cart.totals.grandTotal}
           showCheckoutButton
           onCheckout={handleContinueToLoyalty}
           checkoutLabel="Continue to Loyalty"

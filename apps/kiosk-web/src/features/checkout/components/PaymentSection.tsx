@@ -10,6 +10,7 @@ export interface PaymentSectionProps {
   total: number;
   onPayment: (details: PaymentDetails) => void;
   isProcessing: boolean;
+  isCheckoutLoading?: boolean;
   error?: string;
 }
 
@@ -17,6 +18,7 @@ export function PaymentSection({
   total,
   onPayment,
   isProcessing,
+  isCheckoutLoading = false,
   error,
 }: PaymentSectionProps) {
   const [isSimulating, setIsSimulating] = useState(false);
@@ -32,6 +34,7 @@ export function PaymentSection({
   };
 
   const showSpinner = isProcessing || isSimulating;
+  const isDisabled = showSpinner || isCheckoutLoading;
 
   return (
     <div className="sticky top-6 space-y-6 rounded-lg border bg-card p-6 shadow-lg">
@@ -66,11 +69,16 @@ export function PaymentSection({
       {/* Payment Button */}
       <Button
         onClick={handlePayment}
-        disabled={showSpinner}
+        disabled={isDisabled}
         size="lg"
         className="w-full text-lg"
       >
-        {showSpinner ? (
+        {isCheckoutLoading ? (
+          <span className="flex items-center gap-2">
+            <Spinner size="sm" />
+            Loading Checkout...
+          </span>
+        ) : showSpinner ? (
           <span className="flex items-center gap-2">
             <Spinner size="sm" />
             Processing Payment...

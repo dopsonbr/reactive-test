@@ -1,5 +1,6 @@
 import { useCart } from '@reactive-platform/commerce-hooks';
 import { formatCurrency } from '@reactive-platform/shared-ui/ui-components';
+import { useKioskSession } from '../../session';
 
 /**
  * Compact cart preview for the scan page
@@ -10,7 +11,22 @@ import { formatCurrency } from '@reactive-platform/shared-ui/ui-components';
  * - Last 2-3 items added (thumbnails)
  */
 export function CartMiniPreview() {
-  const { data: cart, isLoading } = useCart();
+  const { cartId, storeNumber, kioskId, serviceAccountId, transactionId } = useKioskSession();
+
+  // x-order-number is required by cart-service (UUID format)
+  const orderNumber = transactionId || '';
+  const cartScope = {
+    cartId: cartId || '',
+    headers: {
+      'x-store-number': String(storeNumber),
+      'x-sessionid': orderNumber,
+      'x-userid': serviceAccountId,
+      'x-order-number': orderNumber,
+    },
+  };
+
+  // Only fetch cart if we have a cartId
+  const { data: cart, isLoading } = useCart(cartScope, { enabled: Boolean(cartId) });
 
   if (isLoading) {
     return (
@@ -23,36 +39,37 @@ export function CartMiniPreview() {
     );
   }
 
-  if (!cart || cart.items.length === 0) {
+  if (!cart || !cart.products || cart.products.length === 0) {
     return (
-      <div className="bg-background-secondary rounded-lg p-6 text-center">
+      <div className="bg-background-secondary rounded-lg p-6 text-center" data-testid="cart-empty">
         <p className="text-secondary text-xl">Your cart is empty</p>
         <p className="text-secondary text-sm mt-2">
           Start scanning items to add them
         </p>
+        <span data-testid="cart-item-count" className="sr-only">0</span>
       </div>
     );
   }
 
-  const itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
-  const total = cart.subtotal ?? 0;
+  const itemCount = cart.products.reduce((sum, item) => sum + item.quantity, 0);
+  const total = cart.totals?.subtotal ?? 0;
 
   // Get last 3 items (most recently added)
-  const recentItems = cart.items.slice(-3).reverse();
+  const recentItems = cart.products.slice(-3).reverse();
 
   return (
-    <div className="bg-background-secondary rounded-lg p-6">
+    <div className="bg-background-secondary rounded-lg p-6" data-testid="cart-mini-preview">
       {/* Header with count and total */}
       <div className="flex justify-between items-baseline mb-4">
         <div>
           <p className="text-secondary text-lg">Cart</p>
           <p className="text-foreground text-2xl font-bold">
-            {itemCount} {itemCount === 1 ? 'item' : 'items'}
+            <span data-testid="cart-item-count">{itemCount}</span> {itemCount === 1 ? 'item' : 'items'}
           </p>
         </div>
         <div className="text-right">
           <p className="text-secondary text-lg">Total</p>
-          <p className="text-primary text-3xl font-bold">
+          <p className="text-primary text-3xl font-bold" data-testid="cart-total">
             {formatCurrency(total)}
           </p>
         </div>
@@ -65,7 +82,7 @@ export function CartMiniPreview() {
           <div className="space-y-2">
             {recentItems.map((item) => (
               <div
-                key={item.id}
+                key={item.sku}
                 className="flex items-center gap-3 bg-background rounded p-2"
               >
                 {/* Thumbnail placeholder - in real implementation would show product image */}

@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import type { Cart, CartItem, AddToCartRequest, UpdateCartItemRequest } from '@reactive-platform/commerce-hooks';
+import type { Cart, CartProduct, CartTotals, AddToCartRequest, UpdateCartItemRequest } from '@reactive-platform/commerce-hooks';
 import { mockProducts } from '../data/products';
 
 const API_BASE = 'http://localhost:8081';
@@ -7,12 +7,17 @@ const API_BASE = 'http://localhost:8081';
 // In-memory cart storage for the mock
 const carts = new Map<string, Cart>();
 
-function calculateCartTotals(items: CartItem[]): { subtotal: number; tax: number; total: number; itemCount: number } {
-  const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
-  const tax = subtotal * 0.08; // 8% tax
-  const total = subtotal + tax;
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  return { subtotal, tax, total, itemCount };
+function calculateCartTotals(products: CartProduct[]): CartTotals {
+  const subtotal = products.reduce((sum, item) => sum + item.lineTotal, 0);
+  const taxTotal = subtotal * 0.08; // 8% tax
+  const grandTotal = subtotal + taxTotal;
+  return {
+    subtotal,
+    discountTotal: 0,
+    fulfillmentTotal: 0,
+    taxTotal,
+    grandTotal,
+  };
 }
 
 export const cartHandlers = [
@@ -21,11 +26,14 @@ export const cartHandlers = [
     const cartId = `cart-${Date.now()}-${Math.random().toString(36).substring(7)}`;
     const newCart: Cart = {
       id: cartId,
-      items: [],
-      subtotal: 0,
-      tax: 0,
-      total: 0,
-      itemCount: 0,
+      products: [],
+      totals: {
+        subtotal: 0,
+        discountTotal: 0,
+        fulfillmentTotal: 0,
+        taxTotal: 0,
+        grandTotal: 0,
+      },
     };
     carts.set(cartId, newCart);
     return HttpResponse.json<Cart>(newCart);
@@ -68,29 +76,33 @@ export const cartHandlers = [
       });
     }
 
-    // Check if item already exists
-    const existingItemIndex = cart.items.findIndex((item) => item.sku === body.sku);
+    // Check if item already exists (convert both to string for comparison since mock uses string SKUs)
+    const existingItemIndex = cart.products.findIndex((item) => String(item.sku) === String(body.sku));
 
     if (existingItemIndex >= 0) {
       // Update quantity
-      const newQuantity = cart.items[existingItemIndex].quantity + body.quantity;
-      cart.items[existingItemIndex].quantity = newQuantity;
-      cart.items[existingItemIndex].lineTotal = newQuantity * product.price;
+      const newQuantity = cart.products[existingItemIndex].quantity + body.quantity;
+      cart.products[existingItemIndex].quantity = newQuantity;
+      cart.products[existingItemIndex].lineTotal = newQuantity * product.price;
     } else {
-      // Add new item
-      const newItem: CartItem = {
-        sku: product.sku,
+      // Add new item - convert string SKU to number for mock (using hash)
+      const skuNum = typeof product.sku === 'string'
+        ? parseInt(product.sku.replace(/\D/g, ''), 10) || Date.now()
+        : product.sku;
+      const newItem: CartProduct = {
+        sku: skuNum,
         name: product.name,
-        price: product.price,
+        description: product.description,
+        unitPrice: product.price,
         quantity: body.quantity,
         imageUrl: product.imageUrl,
         lineTotal: product.price * body.quantity,
       };
-      cart.items.push(newItem);
+      cart.products.push(newItem);
     }
 
     // Recalculate totals
-    Object.assign(cart, calculateCartTotals(cart.items));
+    cart.totals = calculateCartTotals(cart.products);
 
     return HttpResponse.json<Cart>(cart);
   }),
@@ -108,7 +120,7 @@ export const cartHandlers = [
     }
 
     const body = (await request.json()) as UpdateCartItemRequest;
-    const itemIndex = cart.items.findIndex((item) => item.sku === sku);
+    const itemIndex = cart.products.findIndex((item) => String(item.sku) === String(sku));
 
     if (itemIndex < 0) {
       return new HttpResponse(null, {
@@ -119,15 +131,15 @@ export const cartHandlers = [
 
     if (body.quantity <= 0) {
       // Remove item if quantity is 0 or negative
-      cart.items.splice(itemIndex, 1);
+      cart.products.splice(itemIndex, 1);
     } else {
       // Update quantity
-      cart.items[itemIndex].quantity = body.quantity;
-      cart.items[itemIndex].lineTotal = cart.items[itemIndex].price * body.quantity;
+      cart.products[itemIndex].quantity = body.quantity;
+      cart.products[itemIndex].lineTotal = cart.products[itemIndex].unitPrice * body.quantity;
     }
 
     // Recalculate totals
-    Object.assign(cart, calculateCartTotals(cart.items));
+    cart.totals = calculateCartTotals(cart.products);
 
     return HttpResponse.json<Cart>(cart);
   }),
@@ -144,7 +156,7 @@ export const cartHandlers = [
       });
     }
 
-    const itemIndex = cart.items.findIndex((item) => item.sku === sku);
+    const itemIndex = cart.products.findIndex((item) => String(item.sku) === String(sku));
 
     if (itemIndex < 0) {
       return new HttpResponse(null, {
@@ -153,10 +165,10 @@ export const cartHandlers = [
       });
     }
 
-    cart.items.splice(itemIndex, 1);
+    cart.products.splice(itemIndex, 1);
 
     // Recalculate totals
-    Object.assign(cart, calculateCartTotals(cart.items));
+    cart.totals = calculateCartTotals(cart.products);
 
     return HttpResponse.json<Cart>(cart);
   }),
@@ -173,8 +185,8 @@ export const cartHandlers = [
       });
     }
 
-    cart.items = [];
-    Object.assign(cart, calculateCartTotals([]));
+    cart.products = [];
+    cart.totals = calculateCartTotals([]);
 
     return HttpResponse.json<Cart>(cart);
   }),

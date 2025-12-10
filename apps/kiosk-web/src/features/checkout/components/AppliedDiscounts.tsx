@@ -53,7 +53,7 @@ export function AppliedDiscounts({ discounts }: AppliedDiscountsProps) {
 
             <div className="text-right">
               <PriceDisplay
-                price={-discount.amount}
+                price={-discount.appliedSavings}
                 className="font-semibold text-success"
               />
             </div>
@@ -65,7 +65,7 @@ export function AppliedDiscounts({ discounts }: AppliedDiscountsProps) {
         <p className="text-sm font-medium text-success">
           Total Savings:{' '}
           <PriceDisplay
-            price={-discounts.reduce((sum, d) => sum + d.amount, 0)}
+            price={-discounts.reduce((sum, d) => sum + d.appliedSavings, 0)}
             className="text-lg font-bold"
           />
         </p>

@@ -6,7 +6,15 @@
   "implicitDependencies": [
     "kiosk-web"
   ],
-  "tags": [],
-  "// targets": "to see all targets run: nx show project kiosk-web-e2e --web",
-  "targets": {}
+  "tags": ["scope:kiosk", "type:e2e", "platform:web"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "options": {
+        "config": "apps/kiosk-web-e2e/playwright.config.ts",
+        "skipInstall": true
+      },
+      "outputs": ["{workspaceRoot}/dist/.playwright/apps/kiosk-web-e2e/test-output"]
+    }
+  }
 }

@@ -3,7 +3,9 @@ import type { CheckoutSummary, OrderResponse } from '../types';
 import { apiClient } from '../utils/apiClient';
 import { cartKeys } from './useCart';
 
-const API_BASE = import.meta.env.VITE_CHECKOUT_SERVICE_URL || 'http://localhost:8087';
+// Use empty string by default to leverage Vite proxy in development
+// Set VITE_CHECKOUT_SERVICE_URL for production deployments
+const API_BASE = import.meta.env.VITE_CHECKOUT_SERVICE_URL ?? '';
 
 // Query key factories
 export const checkoutKeys = {
@@ -31,7 +33,8 @@ export function useInitiateCheckout() {
 
   return useMutation({
     mutationFn: async (request: InitiateCheckoutRequest) => {
-      const url = `${API_BASE}/api/checkouts`;
+      // Backend endpoint: POST /checkout/initiate
+      const url = `${API_BASE}/api/checkout/initiate`;
       const body = {
         cartId: request.cartId,
         customerId: request.customerId,
@@ -41,13 +44,13 @@ export function useInitiateCheckout() {
     },
     onSuccess: (data) => {
       // Cache checkout summary
-      queryClient.setQueryData(checkoutKeys.summary(data.checkoutId), data);
+      queryClient.setQueryData(checkoutKeys.summary(data.checkoutSessionId), data);
     },
   });
 }
 
 export interface CompleteCheckoutRequest {
-  checkoutId: string;
+  checkoutSessionId: string;
   paymentMethod: 'CASH' | 'CREDIT' | 'DEBIT';
   headers?: Record<string, string>;
 }
@@ -60,8 +63,11 @@ export function useCompleteCheckout() {
 
   return useMutation({
     mutationFn: async (request: CompleteCheckoutRequest) => {
-      const url = `${API_BASE}/api/checkouts/${request.checkoutId}/complete`;
+      // Backend endpoint: POST /checkout/complete
+      // Note: checkoutId is passed in the request body, not the URL
+      const url = `${API_BASE}/api/checkout/complete`;
       const body = {
+        checkoutSessionId: request.checkoutSessionId,
         paymentMethod: request.paymentMethod,
       };
       return apiClient.post<OrderResponse>(url, body, { headers: request.headers });
@@ -72,7 +78,7 @@ export function useCompleteCheckout() {
 
       // Get checkout summary to find cartId for invalidation
       const checkoutSummary = queryClient.getQueryData<CheckoutSummary>(
-        checkoutKeys.summary(variables.checkoutId)
+        checkoutKeys.summary(variables.checkoutSessionId)
       );
 
       // Invalidate cart cache if we have the cartId

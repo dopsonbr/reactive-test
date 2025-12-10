@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import type { Product, ProductSearchParams, ProductSearchResult } from '../types';
 import { apiClient } from '../utils/apiClient';
 
-const API_BASE = import.meta.env.VITE_PRODUCT_SERVICE_URL || 'http://localhost:8090';
+// Use empty string by default to leverage Vite proxy in development
+// Set VITE_PRODUCT_SERVICE_URL for production deployments
+const API_BASE = import.meta.env.VITE_PRODUCT_SERVICE_URL ?? '';
 
 // Query key factories
 export const productKeys = {
@@ -29,12 +31,14 @@ export function useProducts(options: UseProductsOptions = {}) {
     queryKey: productKeys.list(params),
     queryFn: async () => {
       const queryParams = new URLSearchParams();
-      if (params.query) queryParams.set('query', params.query);
+      if (params.query) queryParams.set('q', params.query);
       if (params.category) queryParams.set('category', params.category);
       if (params.page !== undefined) queryParams.set('page', String(params.page));
       if (params.limit !== undefined) queryParams.set('limit', String(params.limit));
 
-      const url = `${API_BASE}/api/products?${queryParams.toString()}`;
+      // Use /search endpoint when query is provided
+      const endpoint = params.query ? '/api/products/search' : '/api/products';
+      const url = `${API_BASE}${endpoint}?${queryParams.toString()}`;
       return apiClient.get<ProductSearchResult>(url, { headers });
     },
     enabled,

@@ -88,7 +88,11 @@ const ScannedItemDisplay = React.forwardRef<HTMLDivElement, ScannedItemDisplayPr
       );
     }
 
-    const hasDiscount = product.finalPrice < product.basePrice;
+    // Support both API field names: finalPrice/basePrice (commerce-ui) and price/originalPrice (commerce-hooks)
+    const currentPrice = product.finalPrice ?? (product as { price?: number }).price ?? 0;
+    const originalPrice = product.basePrice ?? (product as { originalPrice?: number }).originalPrice;
+    const stockLevel = product.stockLevel ?? (product as { stockQuantity?: number }).stockQuantity;
+    const hasDiscount = originalPrice !== undefined && currentPrice < originalPrice;
 
     return (
       <Card
@@ -112,7 +116,7 @@ const ScannedItemDisplay = React.forwardRef<HTMLDivElement, ScannedItemDisplayPr
             {!product.inStock && (
               <Badge variant="destructive">Out of Stock</Badge>
             )}
-            {product.inStock && product.stockLevel && product.stockLevel < 5 && (
+            {product.inStock && stockLevel && stockLevel < 5 && (
               <Badge variant="secondary">Low Stock</Badge>
             )}
           </div>
@@ -124,8 +128,8 @@ const ScannedItemDisplay = React.forwardRef<HTMLDivElement, ScannedItemDisplayPr
 
         <CardContent className="space-y-4">
           <PriceDisplay
-            price={product.finalPrice}
-            originalPrice={hasDiscount ? product.basePrice : undefined}
+            price={currentPrice}
+            originalPrice={hasDiscount ? originalPrice : undefined}
             size="xl"
           />
 
@@ -133,10 +137,10 @@ const ScannedItemDisplay = React.forwardRef<HTMLDivElement, ScannedItemDisplayPr
             <Badge variant="outline">{product.category}</Badge>
           )}
 
-          {hasDiscount && (
+          {hasDiscount && originalPrice !== undefined && (
             <Alert>
               <p className="font-semibold text-green-600">
-                Save ${(product.basePrice - product.finalPrice).toFixed(2)}!
+                Save ${(originalPrice - currentPrice).toFixed(2)}!
               </p>
             </Alert>
           )}

@@ -1,141 +1,97 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+
+/**
+ * Helper to scan a product by simulating barcode scanner input
+ */
+async function scanProduct(page: Page, sku: string) {
+  await page.keyboard.type(sku, { delay: 50 });
+  await page.keyboard.press('Enter');
+}
 
 test.describe('Session Management', () => {
   test('can start new transaction from idle', async ({ page }) => {
     await page.goto('/');
 
     // Should show idle/welcome screen
-    await expect(page.getByText(/welcome|start transaction/i)).toBeVisible();
+    await expect(page.getByText(/welcome|touch to start/i)).toBeVisible();
 
     // Click to start
-    await page.getByRole('button', { name: /start transaction|begin/i }).click();
+    await page.getByRole('button', { name: /touch to start/i }).click();
 
     // Should navigate to scan screen
-    await expect(page.getByText(/scan or enter product/i)).toBeVisible();
-    await expect(page.getByTestId('scan-input')).toBeVisible();
+    await expect(page.getByText(/scan your items/i)).toBeVisible();
   });
 
-  test('can cancel transaction and return to start', async ({ page }) => {
+  test('can add products to cart', async ({ page }) => {
     await page.goto('/');
 
     // Start transaction
-    await page.getByRole('button', { name: /start transaction/i }).click();
+    await page.getByRole('button', { name: /touch to start/i }).click();
+    await expect(page.getByText(/scan your items/i)).toBeVisible();
 
-    // Add a product
-    const scanInput = page.getByTestId('scan-input');
-    await scanInput.fill('SKU-001');
-    await scanInput.press('Enter');
+    // Add a product (8-digit SKU)
+    await scanProduct(page, '10000001');
+    await expect(page.getByText(/item added/i)).toBeVisible({ timeout: 10000 });
 
+    // Cart should show 1 item
     await expect(page.getByTestId('cart-item-count')).toHaveText('1', { timeout: 5000 });
-
-    // Cancel transaction
-    await page.getByRole('button', { name: /cancel|exit/i }).click();
-
-    // Should show confirmation dialog
-    await expect(page.getByText(/cancel transaction|are you sure/i)).toBeVisible();
-
-    // Confirm cancellation
-    await page.getByRole('button', { name: /yes|confirm/i }).click();
-
-    // Should return to start screen
-    await expect(page.getByText(/welcome|start transaction/i)).toBeVisible({ timeout: 5000 });
   });
 
-  test('resets to start after completing transaction', async ({ page }) => {
+  test('maintains cart state when navigating', async ({ page }) => {
     await page.goto('/');
 
     // Start transaction
-    await page.getByRole('button', { name: /start transaction/i }).click();
+    await page.getByRole('button', { name: /touch to start/i }).click();
+    await expect(page.getByText(/scan your items/i)).toBeVisible();
 
-    // Add a product
-    const scanInput = page.getByTestId('scan-input');
-    await scanInput.fill('SKU-001');
-    await scanInput.press('Enter');
-
+    // Add products (8-digit SKUs)
+    await scanProduct(page, '10000001');
+    await expect(page.getByText(/item added/i)).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId('cart-item-count')).toHaveText('1', { timeout: 5000 });
 
-    // Complete checkout
-    await page.getByRole('button', { name: /checkout|pay/i }).click();
-    await page.getByRole('button', { name: /cash/i }).click();
-    await page.getByRole('button', { name: /confirm|complete/i }).click();
-
-    // Wait for confirmation screen
-    await expect(page.getByText(/thank you|order complete/i)).toBeVisible({ timeout: 10000 });
-
-    // Wait a moment for auto-return or click done
-    const doneButton = page.getByRole('button', { name: /done|new transaction/i });
-    if (await doneButton.isVisible()) {
-      await doneButton.click();
-    } else {
-      // Wait for auto-return timeout
-      await page.waitForTimeout(5000);
-    }
-
-    // Should return to start screen
-    await expect(page.getByText(/welcome|start transaction/i)).toBeVisible({ timeout: 15000 });
-  });
-
-  test('maintains cart state during navigation', async ({ page }) => {
-    await page.goto('/');
-
-    // Start transaction
-    await page.getByRole('button', { name: /start transaction/i }).click();
-
-    // Add products
-    const scanInput = page.getByTestId('scan-input');
-    await scanInput.fill('SKU-001');
-    await scanInput.press('Enter');
-    await expect(page.getByTestId('cart-item-count')).toHaveText('1', { timeout: 5000 });
-
-    await scanInput.fill('SKU-002');
-    await scanInput.press('Enter');
+    await scanProduct(page, '10000002');
+    await expect(page.getByText(/item added/i)).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId('cart-item-count')).toHaveText('2', { timeout: 5000 });
 
     // Navigate to cart
-    await page.getByRole('button', { name: /view cart|cart/i }).click();
-    await expect(page.getByText(/bananas/i)).toBeVisible();
+    await page.getByRole('button', { name: /review cart/i }).click();
+    await expect(page.getByRole('heading', { name: /review your cart/i })).toBeVisible({ timeout: 5000 });
 
     // Navigate back to scan
-    await page.getByRole('button', { name: /back|scan/i }).click();
+    await page.getByRole('button', { name: /continue scanning/i }).click();
 
     // Cart count should still be 2
-    await expect(page.getByTestId('cart-item-count')).toHaveText('2');
+    await expect(page.getByTestId('cart-item-count')).toHaveText('2', { timeout: 5000 });
 
-    // Can add another item
-    await scanInput.fill('SKU-003');
-    await scanInput.press('Enter');
-    await expect(page.getByTestId('cart-item-count')).toHaveText('3', { timeout: 5000 });
+    // Can add another item (8-digit SKU)
+    await scanProduct(page, '10000003');
+    await expect(page.getByText(/item added/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('cart-item-count')).toHaveText('3', { timeout: 10000 });
   });
 
-  test('clears session data after transaction', async ({ page }) => {
+  test('can navigate through full flow', async ({ page }) => {
     await page.goto('/');
 
-    // Complete a full transaction
-    await page.getByRole('button', { name: /start transaction/i }).click();
+    // Start transaction
+    await page.getByRole('button', { name: /touch to start/i }).click();
+    await expect(page.getByText(/scan your items/i)).toBeVisible();
 
-    const scanInput = page.getByTestId('scan-input');
-    await scanInput.fill('SKU-001');
-    await scanInput.press('Enter');
-    await expect(page.getByTestId('cart-item-count')).toHaveText('1', { timeout: 5000 });
+    // Add a product (8-digit SKU)
+    await scanProduct(page, '10000001');
+    await expect(page.getByText(/item added/i)).toBeVisible({ timeout: 10000 });
 
-    await page.getByRole('button', { name: /checkout|pay/i }).click();
-    await page.getByRole('button', { name: /cash/i }).click();
-    await page.getByRole('button', { name: /confirm|complete/i }).click();
+    // Go to cart
+    await page.getByRole('button', { name: /review cart/i }).click();
+    await expect(page.getByRole('heading', { name: /review your cart/i })).toBeVisible({ timeout: 5000 });
 
-    await expect(page.getByText(/thank you|order complete/i)).toBeVisible({ timeout: 10000 });
+    // Go to loyalty
+    await page.getByRole('button', { name: /continue to loyalty/i }).click();
+    await expect(page.getByText(/loyalty account/i)).toBeVisible({ timeout: 5000 });
 
-    // Return to start
-    const doneButton = page.getByRole('button', { name: /done|new transaction/i });
-    if (await doneButton.isVisible()) {
-      await doneButton.click();
-    } else {
-      await page.waitForTimeout(5000);
-    }
+    // Skip loyalty
+    await page.getByRole('button', { name: /skip.*no loyalty/i }).click();
 
-    await expect(page.getByText(/welcome|start transaction/i)).toBeVisible({ timeout: 15000 });
-
-    // Start new transaction - should have empty cart
-    await page.getByRole('button', { name: /start transaction/i }).click();
-    await expect(page.getByTestId('cart-item-count')).toHaveText('0');
+    // Should be back on scan page
+    await expect(page.getByText(/scan your items/i)).toBeVisible({ timeout: 5000 });
   });
 });

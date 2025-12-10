@@ -22,7 +22,7 @@ export function LoyaltyPage() {
   const [phoneValue, setPhoneValue] = useState('');
   const [emailValue, setEmailValue] = useState('');
   const navigate = useNavigate();
-  const { linkCustomer, storeNumber, serviceAccountId } = useKioskSession();
+  const { linkCustomer, storeNumber, serviceAccountId, transactionId } = useKioskSession();
 
   const {
     mutate: lookupCustomer,
@@ -36,9 +36,13 @@ export function LoyaltyPage() {
   const handleLookup = () => {
     if (!currentValue.trim()) return;
 
+    // x-order-number is required by backend services (UUID format)
+    const orderNumber = transactionId || crypto.randomUUID();
     const headers = {
       'x-store-number': storeNumber.toString(),
       'x-userid': serviceAccountId,
+      'x-sessionid': orderNumber,
+      'x-order-number': orderNumber,
     };
 
     if (inputMode === 'phone') {
@@ -58,11 +62,11 @@ export function LoyaltyPage() {
     if (customer) {
       linkCustomer(customer.id);
     }
-    navigate({ to: '/scan' });
+    navigate({ to: '/checkout' });
   };
 
   const handleSkip = () => {
-    navigate({ to: '/scan' });
+    navigate({ to: '/checkout' });
   };
 
   const isValidPhone = phoneValue.length === 10;

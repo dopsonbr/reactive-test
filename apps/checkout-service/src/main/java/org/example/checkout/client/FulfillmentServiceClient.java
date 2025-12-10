@@ -39,7 +39,7 @@ public class FulfillmentServiceClient {
     Mono<ReservationResponse> httpRequest =
         webClient
             .post()
-            .uri("/fulfillments/reservations")
+            .uri("/fulfillments/reserve")
             .bodyValue(request)
             .retrieve()
             .bodyToMono(ReservationResponse.class);

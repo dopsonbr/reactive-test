@@ -1,0 +1,13 @@
+{
+  "name": "home-portal",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/home-portal/src",
+  "projectType": "application",
+  "tags": [
+    "type:app",
+    "scope:home",
+    "platform:web"
+  ],
+  "// targets": "to see all targets run: nx show project home-portal --web",
+  "targets": {}
+}

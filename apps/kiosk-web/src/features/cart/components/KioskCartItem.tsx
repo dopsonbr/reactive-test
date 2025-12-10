@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import type { CartItem } from '@reactive-platform/commerce-hooks';
+import type { CartProduct } from '@reactive-platform/commerce-hooks';
 import {
   Button,
   QuantitySelector,
@@ -10,7 +10,7 @@ import {
 } from '@reactive-platform/shared-ui/ui-components';
 
 export interface KioskCartItemProps {
-  item: CartItem;
+  item: CartProduct;
   onUpdateQuantity: (sku: string, quantity: number) => void;
   onRemove: (sku: string) => void;
   isUpdating?: boolean;
@@ -29,7 +29,7 @@ export function KioskCartItem({
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
 
   const handleQuantityChange = (newQuantity: number) => {
-    onUpdateQuantity(item.sku, newQuantity);
+    onUpdateQuantity(String(item.sku), newQuantity);
   };
 
   const handleRemoveClick = () => {
@@ -37,7 +37,7 @@ export function KioskCartItem({
   };
 
   const handleConfirmRemove = () => {
-    onRemove(item.sku);
+    onRemove(String(item.sku));
     setShowRemoveConfirm(false);
   };
 
@@ -67,7 +67,7 @@ export function KioskCartItem({
           </h3>
           <div className="flex items-center gap-4">
             <PriceDisplay
-              price={item.price}
+              price={item.unitPrice}
               size="lg"
               className="text-xl"
             />

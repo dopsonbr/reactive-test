@@ -42,11 +42,11 @@ public class CartValidator {
           new ValidationError("cart.storeNumber", "Cart does not belong to the specified store"));
     }
 
-    // Validate cart has items
-    if (cart.items() == null || cart.items().isEmpty()) {
-      errors.add(new ValidationError("cart.items", "Cart must have at least one item"));
+    // Validate cart has products
+    if (cart.products() == null || cart.products().isEmpty()) {
+      errors.add(new ValidationError("cart.products", "Cart must have at least one item"));
     } else {
-      validateCartItems(cart.items(), errors);
+      validateCartItems(cart.products(), errors);
     }
 
     // Validate totals

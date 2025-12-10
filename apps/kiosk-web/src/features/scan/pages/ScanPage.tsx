@@ -1,11 +1,13 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@reactive-platform/shared-ui/ui-components';
+import type { Product } from '@reactive-platform/commerce-hooks';
 import { useKioskSession } from '../../session';
 import { useScannerInput } from '../hooks/useScannerInput';
 import { useProductScan } from '../hooks/useProductScan';
 import { ScanFeedback } from '../components/ScanFeedback';
 import { ManualSkuDialog } from '../components/ManualSkuDialog';
+import { ProductSearchDialog } from '../components/ProductSearchDialog';
 import { CartMiniPreview } from '../components/CartMiniPreview';
 
 /**
@@ -14,17 +16,36 @@ import { CartMiniPreview } from '../components/CartMiniPreview';
  * Features:
  * - Automatic barcode scanner input
  * - Manual SKU entry dialog
+ * - Product search dialog for items without barcodes
  * - Visual scan feedback
  * - Cart preview with running total
  * - Navigation to cart review
  */
 export function ScanPage() {
   const navigate = useNavigate();
-  const { updateActivity } = useKioskSession();
+  const { cartId, storeNumber, kioskId, transactionId, updateActivity } = useKioskSession();
   const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
+  const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+
+  // Build cart scope for commerce hooks
+  // x-userid = kiosk service account (identifies the machine)
+  // x-sessionid = kiosk ID (identifies the kiosk)
+  // x-order-number = transaction ID (unique per transaction, UUID format)
+  const cartScope = useMemo(() => {
+    const orderNumber = transactionId || crypto.randomUUID();
+    return {
+      cartId: cartId || '',
+      headers: {
+        'x-store-number': String(storeNumber),
+        'x-userid': kioskId,
+        'x-sessionid': orderNumber,
+        'x-order-number': orderNumber,
+      },
+    };
+  }, [cartId, storeNumber, kioskId, transactionId]);
 
   const { scanAndAdd, isLoading, error, lastScannedProduct } =
-    useProductScan();
+    useProductScan(cartScope);
 
   // Handle barcode scanner input
   const handleScan = useCallback(
@@ -43,7 +64,7 @@ export function ScanPage() {
   // Setup scanner input hook
   useScannerInput({
     onScan: handleScan,
-    enabled: !isManualDialogOpen, // Disable during manual entry
+    enabled: !isManualDialogOpen && !isSearchDialogOpen, // Disable during manual entry or search
   });
 
   // Handle manual SKU submission
@@ -69,6 +90,29 @@ export function ScanPage() {
     updateActivity();
     setIsManualDialogOpen(false);
   };
+
+  const handleOpenSearchDialog = () => {
+    updateActivity();
+    setIsSearchDialogOpen(true);
+  };
+
+  const handleCloseSearchDialog = () => {
+    updateActivity();
+    setIsSearchDialogOpen(false);
+  };
+
+  const handleProductSelect = useCallback(
+    async (product: Product) => {
+      updateActivity();
+      try {
+        await scanAndAdd(product.sku);
+      } catch (err) {
+        // Error is handled by useProductScan
+        console.error('Product selection error:', err);
+      }
+    },
+    [scanAndAdd, updateActivity]
+  );
 
   const handleReviewCart = () => {
     updateActivity();
@@ -97,7 +141,7 @@ export function ScanPage() {
       </div>
 
       {/* Action buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Button
           variant="outline"
           size="kiosk"
@@ -105,6 +149,15 @@ export function ScanPage() {
           className="w-full"
         >
           Enter SKU Manually
+        </Button>
+
+        <Button
+          variant="outline"
+          size="kiosk"
+          onClick={handleOpenSearchDialog}
+          className="w-full"
+        >
+          Search Products
         </Button>
 
         <Button
@@ -122,6 +175,14 @@ export function ScanPage() {
         isOpen={isManualDialogOpen}
         onClose={handleCloseManualDialog}
         onSubmit={handleManualSubmit}
+      />
+
+      {/* Product search dialog */}
+      <ProductSearchDialog
+        isOpen={isSearchDialogOpen}
+        onClose={handleCloseSearchDialog}
+        onSelectProduct={handleProductSelect}
+        headers={cartScope.headers}
       />
     </div>
   );

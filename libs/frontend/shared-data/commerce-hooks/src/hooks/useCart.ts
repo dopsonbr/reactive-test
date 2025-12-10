@@ -2,7 +2,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Cart, AddToCartRequest, UpdateCartItemRequest } from '../types';
 import { apiClient } from '../utils/apiClient';
 
-const API_BASE = import.meta.env.VITE_CART_SERVICE_URL || 'http://localhost:8081';
+// Use empty string by default to leverage Vite proxy in development
+// Set VITE_CART_SERVICE_URL for production deployments
+const API_BASE = import.meta.env.VITE_CART_SERVICE_URL ?? '';
 
 // Query key factories
 export const cartKeys = {

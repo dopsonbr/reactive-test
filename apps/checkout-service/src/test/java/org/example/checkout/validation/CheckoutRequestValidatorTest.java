@@ -342,10 +342,10 @@ class CheckoutRequestValidatorTest {
         new InitiateCheckoutRequest(
             UUID.randomUUID().toString(), FulfillmentType.IMMEDIATE, null, null, null);
 
-    // Too short
+    // Empty - should fail
     StepVerifier.create(
             validator.validateInitiateCheckout(
-                request, VALID_STORE, VALID_ORDER, "abc", VALID_SESSION))
+                request, VALID_STORE, VALID_ORDER, "", VALID_SESSION))
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
@@ -353,10 +353,10 @@ class CheckoutRequestValidatorTest {
                         .getErrors().stream().anyMatch(e -> e.field().equals("x-userid")))
         .verify();
 
-    // Invalid characters
+    // Invalid characters (special chars not allowed)
     StepVerifier.create(
             validator.validateInitiateCheckout(
-                request, VALID_STORE, VALID_ORDER, "user_1", VALID_SESSION))
+                request, VALID_STORE, VALID_ORDER, "user!1", VALID_SESSION))
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
@@ -366,14 +366,50 @@ class CheckoutRequestValidatorTest {
   }
 
   @Test
+  void shouldAcceptRelaxedUserId() {
+    InitiateCheckoutRequest request =
+        new InitiateCheckoutRequest(
+            UUID.randomUUID().toString(), FulfillmentType.IMMEDIATE, null, null, null);
+
+    // Short alphanumeric - now valid with 1-50 char pattern
+    StepVerifier.create(
+            validator.validateInitiateCheckout(
+                request, VALID_STORE, VALID_ORDER, "abc", VALID_SESSION))
+        .verifyComplete();
+
+    // Underscores allowed with relaxed pattern
+    StepVerifier.create(
+            validator.validateInitiateCheckout(
+                request, VALID_STORE, VALID_ORDER, "user_1", VALID_SESSION))
+        .verifyComplete();
+
+    // Kiosk-style IDs
+    StepVerifier.create(
+            validator.validateInitiateCheckout(
+                request, VALID_STORE, VALID_ORDER, "KIOSK-001", VALID_SESSION))
+        .verifyComplete();
+  }
+
+  @Test
   void shouldRejectInvalidSessionId() {
     InitiateCheckoutRequest request =
         new InitiateCheckoutRequest(
             UUID.randomUUID().toString(), FulfillmentType.IMMEDIATE, null, null, null);
 
+    // Empty - should fail
+    StepVerifier.create(
+            validator.validateInitiateCheckout(request, VALID_STORE, VALID_ORDER, VALID_USER, ""))
+        .expectErrorMatches(
+            error ->
+                error instanceof ValidationException
+                    && ((ValidationException) error)
+                        .getErrors().stream().anyMatch(e -> e.field().equals("x-sessionid")))
+        .verify();
+
+    // Special characters - should fail
     StepVerifier.create(
             validator.validateInitiateCheckout(
-                request, VALID_STORE, VALID_ORDER, VALID_USER, "not-a-uuid"))
+                request, VALID_STORE, VALID_ORDER, VALID_USER, "session!id"))
         .expectErrorMatches(
             error ->
                 error instanceof ValidationException
@@ -383,11 +419,30 @@ class CheckoutRequestValidatorTest {
   }
 
   @Test
+  void shouldAcceptRelaxedSessionId() {
+    InitiateCheckoutRequest request =
+        new InitiateCheckoutRequest(
+            UUID.randomUUID().toString(), FulfillmentType.IMMEDIATE, null, null, null);
+
+    // Kiosk-style identifier - now valid with relaxed pattern
+    StepVerifier.create(
+            validator.validateInitiateCheckout(
+                request, VALID_STORE, VALID_ORDER, VALID_USER, "not-a-uuid"))
+        .verifyComplete();
+
+    // Another kiosk-style ID
+    StepVerifier.create(
+            validator.validateInitiateCheckout(
+                request, VALID_STORE, VALID_ORDER, VALID_USER, "KIOSK-001"))
+        .verifyComplete();
+  }
+
+  @Test
   void shouldCollectAllValidationErrors() {
-    // Multiple invalid fields
+    // Multiple invalid fields - use values that actually fail with relaxed patterns
     InitiateCheckoutRequest request = new InitiateCheckoutRequest("bad-id", null, null, null, null);
 
-    StepVerifier.create(validator.validateInitiateCheckout(request, 0, "bad", "x", "bad"))
+    StepVerifier.create(validator.validateInitiateCheckout(request, 0, "bad", "", "invalid!chars"))
         .expectErrorMatches(
             error -> {
               if (!(error instanceof ValidationException)) return false;

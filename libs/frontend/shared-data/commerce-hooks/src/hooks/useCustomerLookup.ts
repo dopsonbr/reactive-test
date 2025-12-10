@@ -2,7 +2,9 @@ import { useMutation } from '@tanstack/react-query';
 import type { Customer } from '../types';
 import { apiClient } from '../utils/apiClient';
 
-const API_BASE = import.meta.env.VITE_CUSTOMER_SERVICE_URL || 'http://localhost:8083';
+// Use empty string by default to leverage Vite proxy in development
+// Set VITE_CUSTOMER_SERVICE_URL for production deployments
+const API_BASE = import.meta.env.VITE_CUSTOMER_SERVICE_URL ?? '';
 
 export interface CustomerLookupRequest {
   phone?: string;

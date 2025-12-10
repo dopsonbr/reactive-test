@@ -23,25 +23,27 @@ export function CheckoutOrderSummary({ summary, isLoading }: CheckoutOrderSummar
     );
   }
 
+  const itemCount = summary.lineItems?.length ?? 0;
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h2 className="text-2xl font-semibold">Order Summary</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {summary.items.length} {summary.items.length === 1 ? 'item' : 'items'}
+          {itemCount} {itemCount === 1 ? 'item' : 'items'}
         </p>
       </div>
 
       {/* Items */}
       <div className="space-y-4">
-        {summary.items.map((item) => (
+        {summary.lineItems?.map((item, index) => (
           <div
-            key={item.lineItemId}
+            key={item.sku || index}
             className="flex items-start justify-between gap-4 rounded-lg border bg-card p-4"
           >
             <div className="flex-1">
-              <p className="font-medium">{item.productName}</p>
+              <p className="font-medium">{item.name}</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Qty: {item.quantity} × <PriceDisplay price={item.unitPrice} />
               </p>
@@ -60,21 +62,21 @@ export function CheckoutOrderSummary({ summary, isLoading }: CheckoutOrderSummar
           <PriceDisplay price={summary.subtotal} />
         </div>
 
-        {summary.totalDiscount > 0 && (
+        {summary.discountTotal > 0 && (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Discounts</span>
-            <PriceDisplay price={-summary.totalDiscount} className="text-success" />
+            <PriceDisplay price={-summary.discountTotal} className="text-success" />
           </div>
         )}
 
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Tax</span>
-          <PriceDisplay price={summary.tax} />
+          <PriceDisplay price={summary.taxTotal} />
         </div>
 
         <div className="flex justify-between border-t pt-4 text-2xl font-bold">
           <span>Total</span>
-          <PriceDisplay price={summary.finalTotal} />
+          <PriceDisplay price={summary.grandTotal} />
         </div>
       </div>
     </div>

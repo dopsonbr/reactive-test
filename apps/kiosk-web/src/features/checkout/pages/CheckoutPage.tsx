@@ -12,12 +12,23 @@ import { PaymentSection, type PaymentDetails } from '../components/PaymentSectio
 import { logger } from '../../../shared/utils/logger';
 
 export function CheckoutPage() {
-  const { cartId, customerId, setCheckoutId, completeTransaction } = useKioskSession();
+  const { cartId, customerId, storeNumber, serviceAccountId, transactionId, setCheckoutId, completeTransaction } = useKioskSession();
   const navigate = useNavigate();
   const [isPaymentError, setIsPaymentError] = useState(false);
+  const [hasInitiated, setHasInitiated] = useState(false);
 
   const initiate = useInitiateCheckout();
   const complete = useCompleteCheckout();
+
+  // Common headers for API calls
+  // x-order-number is required by backend services (UUID format)
+  const orderNumber = transactionId || crypto.randomUUID();
+  const headers = {
+    'x-store-number': String(storeNumber),
+    'x-sessionid': orderNumber,
+    'x-userid': serviceAccountId,
+    'x-order-number': orderNumber,
+  };
 
   // Auto-initiate checkout on page load
   useEffect(() => {
@@ -27,6 +38,12 @@ export function CheckoutPage() {
       return;
     }
 
+    // Skip if already initiated, has data, is loading, or has error
+    if (hasInitiated || initiate.data || initiate.isPending || initiate.isError) {
+      return;
+    }
+
+    setHasInitiated(true);
     logger.info('Initiating checkout', { cartId, customerId });
 
     initiate.mutate(
@@ -34,35 +51,39 @@ export function CheckoutPage() {
         cartId,
         customerId: customerId || undefined,
         fulfillmentType: 'IMMEDIATE',
+        headers,
       },
       {
         onSuccess: (summary) => {
-          logger.info('Checkout initiated', { checkoutId: summary.checkoutId });
-          setCheckoutId(summary.checkoutId);
+          logger.info('Checkout initiated', { checkoutSessionId: summary.checkoutSessionId });
+          setCheckoutId(summary.checkoutSessionId);
         },
         onError: (error) => {
           logger.error('Failed to initiate checkout', { error });
         },
       }
     );
-  }, [cartId, customerId, initiate, navigate, setCheckoutId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartId, hasInitiated, initiate.data, initiate.isPending, initiate.isError]);
 
   const handlePayment = (details: PaymentDetails) => {
-    if (!initiate.data?.checkoutId) {
-      logger.error('No checkout ID available for payment');
+    if (!initiate.data?.checkoutSessionId) {
+      logger.error('No checkout session ID available for payment');
       setIsPaymentError(true);
       return;
     }
 
     logger.info('Processing payment', {
-      checkoutId: initiate.data.checkoutId,
+      checkoutSessionId: initiate.data.checkoutSessionId,
       method: details.method,
     });
 
     complete.mutate(
       {
-        checkoutId: initiate.data.checkoutId,
-        paymentMethod: details.method,
+        checkoutSessionId: initiate.data.checkoutSessionId,
+        // Map 'card' to 'CREDIT' for backend compatibility
+        paymentMethod: details.method === 'card' ? 'CREDIT' : details.method,
+        headers,
       },
       {
         onSuccess: (order) => {
@@ -118,9 +139,10 @@ export function CheckoutPage() {
         {/* Right Column: Payment */}
         <div className="lg:col-span-1">
           <PaymentSection
-            total={summary?.finalTotal || 0}
+            total={summary?.grandTotal || 0}
             onPayment={handlePayment}
             isProcessing={complete.isPending}
+            isCheckoutLoading={isLoading}
             error={isPaymentError ? 'Payment processing failed' : undefined}
           />
         </div>

@@ -1,15 +1,18 @@
 # 040_API_CODEGEN
 
-**Status: DRAFT**
+**Status: DRAFT — Needs rewrite to align with current branch direction**
 
 **Prerequisites:**
 - `043_MODEL_ALIGNMENT.md` - **MUST BE COMPLETE** before starting this plan
+- Re-scoping decision to align with current GraphQL client/SSE direction before executing any phases
 
 ---
 
 ## Overview
 
 Implement the frontend-backend domain model sharing strategy from ADR 012. This adds springdoc-openapi to all backend services, configures graphql-codegen for cart/order services, and establishes a committed-specs workflow where OpenAPI and GraphQL schemas are versioned in git for LLM agent discovery and offline TypeScript generation.
+
+> Branch reality check (2025-01): This plan no longer matches the current branch. Springdoc is not centralized (product-service still hardcodes the dependency; other services lack config), `tools/openapi-codegen/generate.sh` remains the old single-service script, no generated clients exist under `libs/frontend/shared-data/api-client/src/generated/**`, and the cart frontend now uses a hand-rolled GraphQL client + SSE (046) instead of graphql-codegen outputs. Executing this plan as-is would fight the new GraphQL client direction. Rewrite required before execution (either align with the manual GraphQL client or mark superseded).
 
 **Prerequisite Plans:**
 - `043_MODEL_ALIGNMENT.md` - Backend/frontend model alignment (must complete first)

@@ -12,6 +12,7 @@ import org.example.cart.graphql.input.UpdateFulfillmentInput;
 import org.example.cart.graphql.input.UpdateProductInput;
 import org.example.platform.error.ValidationException;
 import org.example.platform.error.ValidationException.ValidationError;
+import org.example.platform.webflux.context.RequestMetadata;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -31,8 +32,57 @@ public class GraphQLInputValidator {
   private static final Pattern UUID_PATTERN =
       Pattern.compile(
           "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+  private static final Pattern USER_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9]{6}$");
   private static final Pattern EMAIL_PATTERN =
       Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+
+  // ─────────────────────────────────────────────────────────────────
+  // Request Metadata Validation (Headers)
+  // ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Validates request metadata extracted from HTTP headers.
+   *
+   * <p>This method validates all required headers for GraphQL operations, matching the REST
+   * validation behavior. Errors are aggregated and returned together.
+   *
+   * @param metadata the RequestMetadata populated by GraphQlContextInterceptor
+   * @return Mono.empty() if valid, Mono.error(ValidationException) with all errors if invalid
+   */
+  public Mono<Void> validateMetadata(RequestMetadata metadata) {
+    List<ValidationError> errors = new ArrayList<>();
+
+    // x-store-number: required, 1-2000
+    if (metadata.storeNumber() < STORE_NUMBER_MIN || metadata.storeNumber() > STORE_NUMBER_MAX) {
+      errors.add(
+          new ValidationError(
+              "x-store-number",
+              "Must be between " + STORE_NUMBER_MIN + " and " + STORE_NUMBER_MAX));
+    }
+
+    // x-order-number: required, UUID format
+    if (metadata.orderNumber() == null
+        || metadata.orderNumber().isBlank()
+        || !UUID_PATTERN.matcher(metadata.orderNumber()).matches()) {
+      errors.add(new ValidationError("x-order-number", "Must be a valid UUID"));
+    }
+
+    // x-userid: required, 6 alphanumeric characters
+    if (metadata.userId() == null
+        || metadata.userId().isBlank()
+        || !USER_ID_PATTERN.matcher(metadata.userId()).matches()) {
+      errors.add(new ValidationError("x-userid", "Must be 6 alphanumeric characters"));
+    }
+
+    // x-sessionid: required, UUID format
+    if (metadata.sessionId() == null
+        || metadata.sessionId().isBlank()
+        || !UUID_PATTERN.matcher(metadata.sessionId()).matches()) {
+      errors.add(new ValidationError("x-sessionid", "Must be a valid UUID"));
+    }
+
+    return toMono(errors);
+  }
 
   // ─────────────────────────────────────────────────────────────────
   // Cart Operations

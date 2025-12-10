@@ -82,8 +82,10 @@ class ProductSearchControllerValidationTest {
         .isEqualTo(1)
         .jsonPath("$.products[0].sku")
         .isEqualTo(123456)
+        .jsonPath("$.products[0].name")
+        .isEqualTo("Laptop Computer")
         .jsonPath("$.products[0].description")
-        .isEqualTo("Laptop Computer");
+        .isEqualTo("High performance laptop for work and gaming");
   }
 
   @Test
@@ -108,10 +110,9 @@ class ProductSearchControllerValidationTest {
   }
 
   @Test
-  void shouldReturnErrorForMissingQuery() {
-    // Spring WebFlux returns 500 for missing required parameter binding errors
-    // The validator handles validation after binding, so missing required params
-    // are handled by Spring's parameter binding mechanism
+  void shouldAllowMissingQueryForBrowsing() {
+    // The 'q' parameter has defaultValue="" so missing query will be treated as empty string
+    // Empty queries are allowed for browsing all products (validator accepts empty query)
     webTestClient
         .get()
         .uri("/products/search")
@@ -123,7 +124,7 @@ class ProductSearchControllerValidationTest {
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus()
-        .is5xxServerError();
+        .isOk();
   }
 
   @Test

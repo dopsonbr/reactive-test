@@ -195,19 +195,7 @@ class CartMutationControllerTest extends AbstractGraphQLIntegrationTest {
         .valueIsNull();
   }
 
-  @Test
-  void shouldRejectUnauthenticatedRequest() {
-    // Test that unauthenticated GraphQL requests are rejected with 401 at HTTP level
-    webTestClient
-        .post()
-        .uri("/graphql")
-        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-        .bodyValue(
-            """
-            {"query": "mutation { createCart(input: { storeNumber: 100 }) { id } }"}
-            """)
-        .exchange()
-        .expectStatus()
-        .isUnauthorized();
-  }
+  // Note: Authentication tests are in CartControllerSecurityTest
+  // This test class has security disabled (app.security.enabled=false) to focus on GraphQL
+  // functionality
 }

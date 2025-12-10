@@ -40,7 +40,7 @@ export function ProductDetail({ sku }: ProductDetailProps) {
   }
 
   const handleAddToCart = () => {
-    addToCart.mutate({ sku: product.sku, quantity: 1 });
+    addToCart.mutate({ sku: String(product.sku), quantity: 1 });
   };
 
   return (

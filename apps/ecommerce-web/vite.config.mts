@@ -11,8 +11,16 @@ export default defineConfig(() => ({
     port: 4200,
     host: 'localhost',
     proxy: {
+      // Cart service GraphQL (must be before /api catch-all)
+      // Note: cart-service runs on 8082 locally, 8081 in Docker
+      '/api/cart/graphql': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/cart/, ''),
+      },
+      // Product service (catch-all for /api)
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8090',
         changeOrigin: true,
       },
       '/auth': {

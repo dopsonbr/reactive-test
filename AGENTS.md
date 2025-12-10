@@ -273,7 +273,7 @@ docker compose logs -f cart-service
 
 | Application           | Port | Description                                                      |
 | --------------------- | ---- | ---------------------------------------------------------------- |
-| `product-service`     | 8080 | Product aggregation from merchandise, price, inventory           |
+| `product-service`     | 8090 | Product aggregation from merchandise, price, inventory           |
 | `cart-service`        | 8081 | Shopping cart management                                         |
 | `customer-service`    | 8083 | Customer management                                              |
 | `discount-service`    | 8084 | Discount pricing engine with promo codes, markdowns, and loyalty |
@@ -511,7 +511,7 @@ environment:
 
 | Service             | Port | Description                  |
 | ------------------- | ---- | ---------------------------- |
-| product-service     | 8080 | Product aggregation service  |
+| product-service     | 8090 | Product aggregation service  |
 | cart-service        | 8081 (Docker) / 8082 (local) | Shopping cart service        |
 | wiremock            | 8082 | Mock external services       |
 | customer-service    | 8083 | Customer management          |

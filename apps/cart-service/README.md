@@ -156,12 +156,25 @@ The GraphQL API provides full parity with REST plus real-time subscriptions.
 - **Method**: `POST` (queries/mutations), `GET` (subscriptions with SSE)
 - **Interactive Explorer**: `/graphiql` (development only)
 
-### Authentication
+### Required Headers
+
+All GraphQL operations require the same headers as REST:
+
+| Header | Format | Example |
+|--------|--------|---------|
+| `x-store-number` | Integer 1-2000 | `42` |
+| `x-order-number` | UUID | `550e8400-e29b-41d4-a716-446655440000` |
+| `x-userid` | 6 alphanumeric | `USER01` |
+| `x-sessionid` | UUID | `7c9e6679-7425-40de-944b-e07fc1f90ae7` |
+| `Authorization` | Bearer JWT | `Bearer eyJhbGciOiJSUzI1NiIs...` |
+
+### Auth Scopes
 
 | Operation Type | Required Scope |
 |----------------|----------------|
 | Queries | cart:read |
 | Mutations | cart:write |
+| Cart Subscriptions | cart:read |
 | Store Subscriptions | cart:admin |
 
 ### Queries

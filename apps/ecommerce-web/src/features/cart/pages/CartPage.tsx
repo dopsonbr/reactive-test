@@ -1,4 +1,5 @@
-import { useCart, useUpdateCartItem, useRemoveFromCart } from '../api/useCart';
+import { useCart, useUpdateCartItem, useRemoveFromCart, getCartId } from '../api/useCart';
+import { useCartSubscription } from '../api/useCartSubscription';
 import { CartItemRow } from '../components/CartItemRow';
 import { CartSummary } from '../components/CartSummary';
 import { EmptyCart } from '../components/EmptyCart';
@@ -7,6 +8,9 @@ import { ErrorCard } from '../../../shared/components/ErrorCard';
 
 export function CartPage() {
   const { data: cart, isLoading, isError, error, refetch } = useCart();
+
+  // Subscribe to real-time cart updates
+  useCartSubscription(cart?.id ?? getCartId());
   const updateItem = useUpdateCartItem();
   const removeItem = useRemoveFromCart();
 

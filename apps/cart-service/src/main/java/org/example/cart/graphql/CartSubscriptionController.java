@@ -3,17 +3,24 @@ package org.example.cart.graphql;
 import org.example.cart.event.CartEvent;
 import org.example.cart.graphql.validation.GraphQLInputValidator;
 import org.example.cart.pubsub.CartEventSubscriber;
+import org.example.platform.webflux.context.ContextKeys;
+import org.example.platform.webflux.context.RequestMetadata;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * GraphQL subscription resolver for real-time cart updates.
  *
  * <p>Uses Redis Pub/Sub for cross-instance event fan-out. SSE transport is used by default (no
  * WebSocket configuration needed).
+ *
+ * <p>All operations validate request metadata (headers) from Reactor context before subscribing.
+ * The metadata is populated by {@link GraphQlContextInterceptor} and captured once at subscription
+ * start time (auth happens at subscribe time; events are data relay).
  *
  * <p>Client connection via SSE:
  *
@@ -35,6 +42,16 @@ public class CartSubscriptionController {
     this.validator = validator;
   }
 
+  /** Extracts and validates RequestMetadata from Reactor context. */
+  private Mono<RequestMetadata> validateMetadataFromContext() {
+    return Mono.deferContextual(
+        ctx -> {
+          RequestMetadata metadata =
+              ctx.getOrDefault(ContextKeys.METADATA, new RequestMetadata(0, "", "", ""));
+          return validator.validateMetadata(metadata).thenReturn(metadata);
+        });
+  }
+
   /**
    * Subscribe to updates for a specific cart.
    *
@@ -44,7 +61,9 @@ public class CartSubscriptionController {
   @SubscriptionMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:read')")
   public Flux<CartEvent> cartUpdated(@Argument String cartId) {
-    return validator.validateCartId(cartId).thenMany(eventSubscriber.subscribe(cartId));
+    return validateMetadataFromContext()
+        .then(validator.validateCartId(cartId))
+        .thenMany(eventSubscriber.subscribe(cartId));
   }
 
   /**
@@ -56,8 +75,8 @@ public class CartSubscriptionController {
   @SubscriptionMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:admin')")
   public Flux<CartEvent> storeCartEvents(@Argument int storeNumber) {
-    return validator
-        .validateStoreNumber(storeNumber)
+    return validateMetadataFromContext()
+        .then(validator.validateStoreNumber(storeNumber))
         .thenMany(eventSubscriber.subscribeToStore(storeNumber));
   }
 }

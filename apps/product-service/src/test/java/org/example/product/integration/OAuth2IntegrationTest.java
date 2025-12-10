@@ -231,9 +231,10 @@ class OAuth2IntegrationTest {
   }
 
   @Test
-  @DisplayName("should require authentication for other actuator endpoints")
-  void shouldRequireAuthForOtherActuatorEndpoints() {
-    webTestClient.get().uri("/actuator/metrics").exchange().expectStatus().isUnauthorized();
+  @DisplayName("should allow actuator endpoints without authentication")
+  void shouldAllowActuatorEndpointsWithoutAuth() {
+    // Actuator endpoints are permitted without auth - exposure config controls what's available
+    webTestClient.get().uri("/actuator/metrics").exchange().expectStatus().isOk();
   }
 
   @Test

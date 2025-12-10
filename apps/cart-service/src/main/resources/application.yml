@@ -69,7 +69,7 @@ audit:
 # External service URLs
 services:
   product:
-    base-url: ${PRODUCT_SERVICE_URL:http://localhost:8080}
+    base-url: ${PRODUCT_SERVICE_URL:http://localhost:8090}
   customer:
     base-url: ${CUSTOMER_SERVICE_URL:http://localhost:8083}
   discount:

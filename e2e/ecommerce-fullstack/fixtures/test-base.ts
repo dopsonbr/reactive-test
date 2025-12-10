@@ -1,4 +1,4 @@
-import { test as base, expect, Page, Response } from '@playwright/test';
+import { test as base, expect, Response, Request } from '@playwright/test';
 
 /**
  * Interface for tracking API errors during tests
@@ -12,11 +12,32 @@ interface ApiError {
 }
 
 /**
+ * Interface for tracking GraphQL requests
+ */
+interface GraphQLRequest {
+  url: string;
+  operationName?: string;
+  query?: string;
+  timestamp: number;
+}
+
+/**
+ * Interface for tracking SSE connections
+ */
+interface SSEConnection {
+  url: string;
+  timestamp: number;
+  events: string[];
+}
+
+/**
  * Extended test fixture that automatically fails tests when API errors (5xx) occur.
- * This helps catch backend issues early in E2E tests.
+ * Also provides GraphQL and SSE monitoring helpers for subscription testing.
  */
 export const test = base.extend<{
   apiErrors: ApiError[];
+  graphqlRequests: GraphQLRequest[];
+  sseConnections: SSEConnection[];
 }>({
   apiErrors: async ({ page }, use) => {
     const errors: ApiError[] = [];
@@ -67,6 +88,61 @@ export const test = base.extend<{
           'Fix the backend errors or update the test to handle expected error scenarios.'
       );
     }
+  },
+
+  graphqlRequests: async ({ page }, use) => {
+    const requests: GraphQLRequest[] = [];
+
+    // Monitor GraphQL requests
+    const requestHandler = async (request: Request) => {
+      const url = request.url();
+      if (url.includes('/graphql') && request.method() === 'POST') {
+        try {
+          const postData = request.postData();
+          if (postData) {
+            const parsed = JSON.parse(postData);
+            requests.push({
+              url,
+              operationName: parsed.operationName,
+              query: parsed.query?.substring(0, 200), // Truncate for logging
+              timestamp: Date.now(),
+            });
+          }
+        } catch {
+          requests.push({ url, timestamp: Date.now() });
+        }
+      }
+    };
+
+    page.on('request', requestHandler);
+    await use(requests);
+  },
+
+  sseConnections: async ({ page }, use) => {
+    const connections: SSEConnection[] = [];
+
+    // Monitor SSE connections (EventSource)
+    const requestHandler = (request: Request) => {
+      const acceptHeader = request.headers()['accept'];
+      const url = request.url();
+
+      // SSE connections typically have text/event-stream accept header
+      // or use GET method to /graphql with subscription query
+      if (
+        acceptHeader?.includes('text/event-stream') ||
+        (url.includes('/graphql') && request.method() === 'GET')
+      ) {
+        connections.push({
+          url,
+          timestamp: Date.now(),
+          events: [],
+        });
+        console.log(`[SSE] Connection established: ${url}`);
+      }
+    };
+
+    page.on('request', requestHandler);
+    await use(connections);
   },
 });
 

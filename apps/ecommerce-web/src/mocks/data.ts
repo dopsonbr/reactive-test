@@ -1,5 +1,15 @@
 import type { Product } from '../features/products/types/product';
-import type { Cart } from '../features/cart/types/cart';
+import type { Cart, CartItem } from '../features/cart/types/cart';
+
+/** Helper to convert product SKU (number) to cart item SKU (string) */
+export function productSkuToCartSku(sku: number): string {
+  return String(sku);
+}
+
+/** Helper to find a product by string SKU */
+export function findProductBySku(sku: string): Product | undefined {
+  return mockProducts.find((p) => String(p.sku) === sku);
+}
 
 export const mockProducts: Product[] = [
   {

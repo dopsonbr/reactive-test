@@ -46,7 +46,7 @@ Options:
 const logger = new Logger(options);
 
 const APPLICATIONS = [
-  { name: 'product-service', path: 'apps/product-service', port: 8080 },
+  { name: 'product-service', path: 'apps/product-service', port: 8090 },
   { name: 'cart-service', path: 'apps/cart-service', port: 8082 },
 ];
 

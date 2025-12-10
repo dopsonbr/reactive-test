@@ -20,7 +20,7 @@ describe('apiClient', () => {
 
     expect(result).toEqual(mockData);
     expect(mockFetch).toHaveBeenCalledWith(
-      'http://localhost:8080/products/1',
+      'http://localhost:8090/products/1',
       expect.objectContaining({
         headers: expect.any(Headers),
       })
@@ -52,7 +52,7 @@ describe('apiClient', () => {
     });
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'http://localhost:8080/products/search?q=test&category=electronics',
+      'http://localhost:8090/products/search?q=test&category=electronics',
       expect.any(Object)
     );
   });

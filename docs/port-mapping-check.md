@@ -24,7 +24,7 @@ Usage:
 Create a JSON file where each service maps to either a host port (number) or an object with `host` and `container`:
 ```json
 {
-  "product-service": { "host": 8080, "container": 8080 },
+  "product-service": { "host": 8090, "container": 8090 },
   "cart-service":    { "host": 8081, "container": 8080 },
   "customer-service":{ "host": 8083, "container": 8083 },
   "discount-service":{ "host": 8085, "container": 8085 },

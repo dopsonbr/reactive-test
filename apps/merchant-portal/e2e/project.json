@@ -1,0 +1,18 @@
+{
+  "name": "merchant-portal-e2e",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/merchant-portal/e2e",
+  "projectType": "application",
+  "tags": ["scope:merchant", "type:e2e", "platform:web"],
+  "implicitDependencies": ["merchant-portal"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "options": {
+        "config": "apps/merchant-portal/e2e/playwright.config.ts",
+        "skipInstall": true
+      },
+      "outputs": ["{workspaceRoot}/apps/merchant-portal/e2e/playwright-report"]
+    }
+  }
+}

@@ -29,12 +29,15 @@ test.describe('Cart Flow (Full-Stack)', () => {
       .first()
       .getByRole('button', { name: /add to cart/i });
 
+    // Set up response listener BEFORE clicking to avoid race condition
+    const cartResponsePromise = page.waitForResponse((res) =>
+      res.url().includes('/graphql') && res.request().method() === 'POST'
+    );
+
     await addButton.click();
 
     // Wait for GraphQL mutation (POST to /graphql or /api/cart/graphql)
-    const cartResponse = await page.waitForResponse((res) =>
-      res.url().includes('/graphql') && res.request().method() === 'POST'
-    );
+    const cartResponse = await cartResponsePromise;
 
     // GraphQL returns 200 even for successful mutations
     expect(cartResponse.status()).toBe(200);
@@ -67,14 +70,17 @@ test.describe('Cart Flow (Full-Stack)', () => {
     await cartAddResponsePromise;
     console.log('Item added to cart for cart page load test');
 
+    // Set up response listener before navigation to avoid race condition
+    const cartQueryResponsePromise = page.waitForResponse((res) =>
+      res.url().includes('/graphql') && res.request().method() === 'POST'
+    );
+
     // Navigate to cart
     await page.getByTestId('cart-link').click();
     await expect(page).toHaveURL('/cart');
 
     // Wait for GraphQL cart query
-    await page.waitForResponse((res) =>
-      res.url().includes('/graphql') && res.request().method() === 'POST'
-    );
+    await cartQueryResponsePromise;
 
     // Verify cart loaded - check for cart page elements
     await expect(
@@ -88,31 +94,43 @@ test.describe('Cart Flow (Full-Stack)', () => {
     await page.waitForResponse('**/products/search**');
     await page.locator('[data-testid^="product-card-"]').first().waitFor();
 
+    // Set up response listener before action
+    const addResponsePromise = page.waitForResponse((res) =>
+      res.url().includes('/graphql') && res.request().method() === 'POST'
+    );
+
     await page
       .locator('[data-testid^="product-card-"]')
       .first()
       .getByRole('button', { name: /add to cart/i })
       .click();
 
-    await page.waitForResponse((res) =>
+    await addResponsePromise;
+
+    // Set up cart query listener before navigation
+    const cartQueryPromise = page.waitForResponse((res) =>
       res.url().includes('/graphql') && res.request().method() === 'POST'
     );
 
     // Go to cart
     await page.getByTestId('cart-link').click();
-    await page.waitForResponse((res) =>
-      res.url().includes('/graphql') && res.request().method() === 'POST'
-    );
+    await cartQueryPromise;
+
+    // Wait for cart items to be visible
+    await expect(page.locator('[data-testid^="cart-item-"]').first()).toBeVisible({ timeout: 10000 });
 
     // Find and click increase button
     const increaseButton = page.getByRole('button', { name: 'Increase quantity' });
     if (await increaseButton.isVisible({ timeout: 5000 })) {
+      // Set up update mutation listener before clicking
+      const updateResponsePromise = page.waitForResponse((res) =>
+        res.url().includes('/graphql') && res.request().method() === 'POST'
+      );
+
       await increaseButton.click();
 
       // Wait for GraphQL update mutation
-      const updateResponse = await page.waitForResponse((res) =>
-        res.url().includes('/graphql') && res.request().method() === 'POST'
-      );
+      const updateResponse = await updateResponsePromise;
 
       expect(updateResponse.status()).toBe(200);
 
@@ -128,31 +146,43 @@ test.describe('Cart Flow (Full-Stack)', () => {
     await page.waitForResponse('**/products/search**');
     await page.locator('[data-testid^="product-card-"]').first().waitFor();
 
+    // Set up response listener before action
+    const addResponsePromise = page.waitForResponse((res) =>
+      res.url().includes('/graphql') && res.request().method() === 'POST'
+    );
+
     await page
       .locator('[data-testid^="product-card-"]')
       .first()
       .getByRole('button', { name: /add to cart/i })
       .click();
 
-    await page.waitForResponse((res) =>
+    await addResponsePromise;
+
+    // Set up cart query listener before navigation
+    const cartQueryPromise = page.waitForResponse((res) =>
       res.url().includes('/graphql') && res.request().method() === 'POST'
     );
 
     // Go to cart
     await page.getByTestId('cart-link').click();
-    await page.waitForResponse((res) =>
-      res.url().includes('/graphql') && res.request().method() === 'POST'
-    );
+    await cartQueryPromise;
+
+    // Wait for cart items to be visible
+    await expect(page.locator('[data-testid^="cart-item-"]').first()).toBeVisible({ timeout: 10000 });
 
     // Remove item
     const removeButton = page.getByRole('button', { name: 'Remove' });
     if (await removeButton.isVisible({ timeout: 5000 })) {
+      // Set up delete mutation listener before clicking
+      const deleteResponsePromise = page.waitForResponse((res) =>
+        res.url().includes('/graphql') && res.request().method() === 'POST'
+      );
+
       await removeButton.click();
 
       // Wait for GraphQL remove mutation
-      const deleteResponse = await page.waitForResponse((res) =>
-        res.url().includes('/graphql') && res.request().method() === 'POST'
-      );
+      const deleteResponse = await deleteResponsePromise;
 
       expect(deleteResponse.status()).toBe(200);
 

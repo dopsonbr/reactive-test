@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/reactive-platform/peripheral-emulator/internal/payment"
 	"github.com/reactive-platform/peripheral-emulator/internal/scanner"
 	"github.com/reactive-platform/peripheral-emulator/internal/stomp"
 )
@@ -55,6 +56,7 @@ type Server struct {
 	caps     Capabilities
 	clients  map[*websocket.Conn]map[string]bool // conn -> subscribed destinations
 	scanner  *scanner.Scanner
+	payment  *payment.Payment
 	mu       sync.RWMutex
 }
 
@@ -78,11 +80,22 @@ func NewServer(wsPort, httpPort int, deviceID string) *Server {
 		},
 		clients: make(map[*websocket.Conn]map[string]bool),
 		scanner: scanner.New(),
+		payment: payment.New(payment.Config{
+			ReadingDelay:     500 * time.Millisecond,
+			PinDelay:         2 * time.Second,
+			AuthorizingDelay: 1 * time.Second,
+			DeclineRate:      0.1, // 10% decline rate by default
+		}),
 	}
 
 	// Wire scanner events to broadcast
 	s.scanner.OnScan(func(e scanner.ScanEvent) {
 		s.broadcastScanEvent(e)
+	})
+
+	// Wire payment events to broadcast
+	s.payment.OnEvent(func(e payment.Event) {
+		s.broadcastPaymentEvent(e)
 	})
 
 	return s
@@ -108,6 +121,9 @@ func (s *Server) Start() error {
 	httpMux.HandleFunc("/control/scanner/scan", s.handleTriggerScan)
 	httpMux.HandleFunc("/control/scanner/enable", s.handleScannerEnable)
 	httpMux.HandleFunc("/control/scanner/disable", s.handleScannerDisable)
+	httpMux.HandleFunc("/control/payment/insert", s.handlePaymentInsert)
+	httpMux.HandleFunc("/control/payment/approve", s.handlePaymentApprove)
+	httpMux.HandleFunc("/control/payment/decline", s.handlePaymentDecline)
 	httpMux.HandleFunc("/health", s.handleHealth)
 
 	addr := fmt.Sprintf(":%d", s.httpPort)
@@ -183,6 +199,13 @@ func (s *Server) handleFrame(conn *websocket.Conn, frame *stomp.Frame) {
 			s.scanner.Enable()
 		case "/app/scanner/disable":
 			s.scanner.Disable()
+		case "/app/payment/collect":
+			var req payment.Request
+			if err := json.Unmarshal(frame.Body, &req); err == nil {
+				s.payment.StartCollection(req)
+			}
+		case "/app/payment/cancel":
+			s.payment.Cancel()
 		}
 
 	case "DISCONNECT":
@@ -214,6 +237,7 @@ func (s *Server) handleState(w http.ResponseWriter, r *http.Request) {
 		"capabilities":   s.caps,
 		"clients":        len(s.clients),
 		"scannerEnabled": s.scanner.Enabled(),
+		"paymentState":   s.payment.State(),
 	})
 }
 
@@ -296,4 +320,78 @@ func (s *Server) handleScannerDisable(w http.ResponseWriter, r *http.Request) {
 	s.scanner.Disable()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]bool{"enabled": false})
+}
+
+func (s *Server) broadcastPaymentEvent(e payment.Event) {
+	frame, err := stomp.NewMessageFrame("/topic/payment/events", e)
+	if err != nil {
+		log.Printf("Error creating payment frame: %v", err)
+		return
+	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	for conn, subs := range s.clients {
+		if subs["/topic/payment/events"] {
+			conn.WriteMessage(websocket.TextMessage, frame.Serialize())
+		}
+	}
+}
+
+func (s *Server) handlePaymentInsert(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Method string `json:"method"`
+	}
+	json.NewDecoder(r.Body).Decode(&req)
+
+	if req.Method == "" {
+		req.Method = "chip"
+	}
+
+	if err := s.payment.InsertCard(req.Method); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
+
+func (s *Server) handlePaymentApprove(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	s.payment.ForceApprove()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "approved"})
+}
+
+func (s *Server) handlePaymentDecline(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Reason string `json:"reason"`
+	}
+	json.NewDecoder(r.Body).Decode(&req)
+
+	if req.Reason == "" {
+		req.Reason = "declined_by_test"
+	}
+
+	s.payment.ForceDecline(req.Reason)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "declined"})
 }

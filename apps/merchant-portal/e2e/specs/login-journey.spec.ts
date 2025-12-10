@@ -42,8 +42,8 @@ test.describe('Login Journey', () => {
     await expect(page).toHaveURL('/');
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 
-    // Verify sidebar shows username
-    await expect(page.getByText('merchant1')).toBeVisible();
+    // Verify welcome message shows username
+    await expect(page.getByText('Welcome back, merchant1')).toBeVisible();
   });
 
   test('can login as admin1 user', async ({ page }) => {
@@ -59,8 +59,8 @@ test.describe('Login Journey', () => {
     await expect(page).toHaveURL('/');
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 
-    // Verify sidebar shows username
-    await expect(page.getByText('admin1')).toBeVisible();
+    // Verify welcome message shows username
+    await expect(page.getByText('Welcome back, admin1')).toBeVisible();
   });
 
   test('logout returns to login page', async ({ page }) => {

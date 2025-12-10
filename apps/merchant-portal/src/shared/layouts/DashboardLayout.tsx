@@ -1,4 +1,5 @@
-import { Outlet, Link, useLocation } from '@tanstack/react-router';
+import { useEffect } from 'react';
+import { Outlet, Link, useLocation, useNavigate } from '@tanstack/react-router';
 import { Package, DollarSign, Boxes, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuth } from '../../features/auth';
 import { Button } from '@reactive-platform/shared-ui-components';
@@ -13,6 +14,14 @@ const navItems = [
 export function DashboardLayout() {
   const { isAuthenticated, user, logout, hasPermission } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Redirect unauthenticated users to login
+  useEffect(() => {
+    if (!isAuthenticated && location.pathname !== '/login') {
+      navigate({ to: '/login' });
+    }
+  }, [isAuthenticated, location.pathname, navigate]);
 
   // Show only content (no sidebar) for login page or unauthenticated users
   if (location.pathname === '/login' || !isAuthenticated) {

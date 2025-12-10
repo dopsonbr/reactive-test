@@ -1,0 +1,8 @@
+{
+  "name": "merchant-portal",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/merchant-portal/src",
+  "projectType": "application",
+  "tags": ["type:app", "scope:merchant", "platform:web"],
+  "targets": {}
+}

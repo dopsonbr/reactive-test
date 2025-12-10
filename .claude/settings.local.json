@@ -119,7 +119,9 @@
       "Bash(/Users/briandopson/github/dopsonbr/reactive-test-worktrees/043-model-alignment/gradlew :apps:product-service:compileJava:*)",
       "Bash(/Users/briandopson/github/dopsonbr/reactive-test-worktrees/043-model-alignment/gradlew :apps:cart-service:compileJava:*)",
       "Bash(pnpm lint:eslint:*)",
-      "Skill(superpowers:using-git-worktrees)"
+      "Skill(superpowers:using-git-worktrees)",
+      "Skill(superpowers:writing-plans)",
+      "mcp__nx-mcp__nx_project_details"
     ],
     "deny": [],
     "ask": [

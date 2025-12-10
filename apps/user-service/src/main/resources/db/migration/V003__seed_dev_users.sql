@@ -12,7 +12,7 @@ VALUES (
     1234,
     'employee@dev.local',
     'Dev Employee'
-);
+) ON CONFLICT (username) DO NOTHING;
 
 -- Dev customer
 INSERT INTO users (id, username, password_hash, user_type, permissions, email, display_name)
@@ -24,7 +24,7 @@ VALUES (
     '{read,write}',
     'customer@dev.local',
     'Dev Customer'
-);
+) ON CONFLICT (username) DO NOTHING;
 
 -- Dev service account (kiosk)
 INSERT INTO users (id, username, password_hash, user_type, permissions, display_name)
@@ -35,13 +35,14 @@ VALUES (
     'SERVICE_ACCOUNT',
     '{read}',
     'Dev Kiosk'
-);
+) ON CONFLICT (username) DO NOTHING;
 
 -- Default preferences for dev users
 INSERT INTO user_preferences (user_id) VALUES
     ('11111111-1111-1111-1111-111111111111'),
     ('22222222-2222-2222-2222-222222222222'),
-    ('33333333-3333-3333-3333-333333333333');
+    ('33333333-3333-3333-3333-333333333333')
+ON CONFLICT (user_id) DO NOTHING;
 
 -- Merchant Portal Test Users
 
@@ -109,3 +110,12 @@ VALUES (
     'admin1@test.com',
     'Test Admin'
 ) ON CONFLICT (username) DO NOTHING;
+
+-- Default preferences for merchant portal users
+INSERT INTO user_preferences (user_id) VALUES
+    ('44444444-4444-4444-4444-444444444444'),
+    ('55555555-5555-5555-5555-555555555555'),
+    ('66666666-6666-6666-6666-666666666666'),
+    ('77777777-7777-7777-7777-777777777777'),
+    ('88888888-8888-8888-8888-888888888888')
+ON CONFLICT (user_id) DO NOTHING;

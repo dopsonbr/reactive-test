@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/reactive-platform/peripheral-emulator/internal/scanner"
 	"github.com/reactive-platform/peripheral-emulator/internal/stomp"
 )
 
@@ -53,12 +54,13 @@ type Server struct {
 	deviceID string
 	caps     Capabilities
 	clients  map[*websocket.Conn]map[string]bool // conn -> subscribed destinations
+	scanner  *scanner.Scanner
 	mu       sync.RWMutex
 }
 
 // NewServer creates a new emulator server
 func NewServer(wsPort, httpPort int, deviceID string) *Server {
-	return &Server{
+	s := &Server{
 		wsPort:   wsPort,
 		httpPort: httpPort,
 		deviceID: deviceID,
@@ -75,7 +77,15 @@ func NewServer(wsPort, httpPort int, deviceID string) *Server {
 			},
 		},
 		clients: make(map[*websocket.Conn]map[string]bool),
+		scanner: scanner.New(),
 	}
+
+	// Wire scanner events to broadcast
+	s.scanner.OnScan(func(e scanner.ScanEvent) {
+		s.broadcastScanEvent(e)
+	})
+
+	return s
 }
 
 // Start starts the server
@@ -95,6 +105,9 @@ func (s *Server) Start() error {
 	// HTTP control server
 	httpMux := http.NewServeMux()
 	httpMux.HandleFunc("/control/state", s.handleState)
+	httpMux.HandleFunc("/control/scanner/scan", s.handleTriggerScan)
+	httpMux.HandleFunc("/control/scanner/enable", s.handleScannerEnable)
+	httpMux.HandleFunc("/control/scanner/disable", s.handleScannerDisable)
 	httpMux.HandleFunc("/health", s.handleHealth)
 
 	addr := fmt.Sprintf(":%d", s.httpPort)
@@ -164,7 +177,13 @@ func (s *Server) handleFrame(conn *websocket.Conn, frame *stomp.Frame) {
 	case "SEND":
 		dest := frame.Headers["destination"]
 		log.Printf("Received SEND to %s: %s", dest, string(frame.Body))
-		// Handle app messages (future: scanner enable, payment collect, etc.)
+
+		switch dest {
+		case "/app/scanner/enable":
+			s.scanner.Enable()
+		case "/app/scanner/disable":
+			s.scanner.Disable()
+		}
 
 	case "DISCONNECT":
 		log.Printf("Client disconnected")
@@ -191,9 +210,10 @@ func (s *Server) sendCapabilities(conn *websocket.Conn) {
 func (s *Server) handleState(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"deviceId":     s.deviceID,
-		"capabilities": s.caps,
-		"clients":      len(s.clients),
+		"deviceId":       s.deviceID,
+		"capabilities":   s.caps,
+		"clients":        len(s.clients),
+		"scannerEnabled": s.scanner.Enabled(),
 	})
 }
 
@@ -202,4 +222,78 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"status": "ok",
 	})
+}
+
+func (s *Server) broadcastScanEvent(e scanner.ScanEvent) {
+	msg := struct {
+		Type  string             `json:"type"`
+		Event scanner.ScanEvent `json:"event"`
+	}{
+		Type:  "scan",
+		Event: e,
+	}
+
+	frame, err := stomp.NewMessageFrame("/topic/scanner/events", msg)
+	if err != nil {
+		log.Printf("Error creating scan frame: %v", err)
+		return
+	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	for conn, subs := range s.clients {
+		if subs["/topic/scanner/events"] {
+			conn.WriteMessage(websocket.TextMessage, frame.Serialize())
+		}
+	}
+}
+
+func (s *Server) handleTriggerScan(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Barcode   string `json:"barcode"`
+		Symbology string `json:"symbology"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if req.Barcode == "" {
+		req.Barcode = "0012345678905"
+	}
+	if req.Symbology == "" {
+		req.Symbology = "ean13"
+	}
+
+	s.scanner.TriggerScan(req.Barcode, req.Symbology)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
+
+func (s *Server) handleScannerEnable(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	s.scanner.Enable()
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"enabled": true})
+}
+
+func (s *Server) handleScannerDisable(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	s.scanner.Disable()
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"enabled": false})
 }

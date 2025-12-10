@@ -231,7 +231,7 @@ SIMPLE ◄───────────────────────�
 ## Project Structure
 
 ```
-apps/pos-web/                          # Port 3003
+apps/pos-web/                          # Port 3004
 ├── src/
 │   ├── app/
 │   │   ├── App.tsx
@@ -291,9 +291,15 @@ apps/pos-web/                          # Port 3003
 │
 apps/pos-web-e2e/                      # Playwright E2E tests
 ├── specs/
+│   ├── sanity.spec.ts                 # Sanity checks (run first)
 │   ├── business/                      # Business scenario tests
 │   └── accessibility/                 # Accessibility tests
 ├── fixtures/                          # Test fixtures and helpers
+│   ├── auth.ts                        # Login/logout helpers
+│   ├── transaction.ts                 # Transaction helpers
+│   ├── customer.ts                    # Customer fixtures
+│   ├── payment.ts                     # Payment helpers
+│   └── index.ts                       # Re-exports
 └── playwright.config.ts               # Playwright configuration
 ```
 
@@ -322,10 +328,29 @@ apps/pos-web-e2e/                      # Playwright E2E tests
 
 ## Testing Strategy Overview
 
+### Two-Track E2E Approach
+
+Based on patterns from 044 Self-Checkout Kiosk (044D_KIOSK_E2E_TESTING.md):
+
+| Track | Purpose | Speed | When |
+|-------|---------|-------|------|
+| **Sanity (MSW)** | Catch fundamental issues | ~30 sec | Every test run, first |
+| **Business (MSW)** | Full scenario coverage | ~3 min | After sanity passes |
+| **Full-Stack** | Real service integration | ~10 min | Main branch, nightly |
+
+### E2E Test Execution Order
+
+Tests are configured with Playwright project dependencies:
+
+1. **sanity** - Basic app functionality (login, scan, cart)
+2. **chromium** (business scenarios) - Depends on sanity passing
+3. **accessibility** - Depends on sanity passing
+
 ### E2E Test Categories
 
 | Category | Description | Example Scenarios |
 |----------|-------------|-------------------|
+| **Sanity Checks** | Basic app functionality | App loads, login works, can scan items |
 | **Happy Path** | Standard successful flows | Complete transaction, find customer |
 | **Error Handling** | Graceful error recovery | Payment declined, customer not found |
 | **Authorization** | Permission verification | Markdown limits, manager override |

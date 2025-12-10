@@ -30,13 +30,23 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
+    // Run sanity checks first to catch fundamental issues
+    {
+      name: 'sanity',
+      testMatch: /sanity\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    // Business scenarios depend on sanity passing
     {
       name: 'chromium',
+      testMatch: /business\/.+\.spec\.ts/,
+      dependencies: ['sanity'],
       use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'accessibility',
       testMatch: /accessibility\/.+\.spec\.ts/,
+      dependencies: ['sanity'],
       use: { ...devices['Desktop Chrome'] },
     },
     // Uncomment for additional browser coverage

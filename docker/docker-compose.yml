@@ -147,6 +147,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
       - ./postgres/init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql:ro
       - ./postgres/init-audit.sql:/docker-entrypoint-initdb.d/02-init-audit.sql:ro
+      - ./postgres/init-product-data.sql:/docker-entrypoint-initdb.d/03-init-product-data.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s

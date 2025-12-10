@@ -1,6 +1,6 @@
 import { StompClient, StompClientOptions, Unsubscribe } from './client';
 import { Capabilities, CapabilitiesMessage } from './types';
-import { ScannerService } from './services';
+import { ScannerService, PaymentService } from './services';
 
 /**
  * Options for PeripheralClient
@@ -30,10 +30,12 @@ export class PeripheralClient {
   private connectionHandlers: Set<ConnectionHandler> = new Set();
   private subscriptions: Unsubscribe[] = [];
   private _scanner: ScannerService;
+  private _payment: PaymentService;
 
   constructor(endpoint: string, options: PeripheralClientOptions = {}) {
     this.stomp = new StompClient(endpoint, options);
     this._scanner = new ScannerService(this.stomp);
+    this._payment = new PaymentService(this.stomp);
 
     // Wire up connection change notifications
     this.stomp.onConnectionChange((connected) => {
@@ -81,6 +83,9 @@ export class PeripheralClient {
     // Clean up scanner
     this._scanner.destroy();
 
+    // Clean up payment
+    this._payment.destroy();
+
     // Clean up subscriptions
     this.subscriptions.forEach((unsub) => unsub());
     this.subscriptions = [];
@@ -113,6 +118,13 @@ export class PeripheralClient {
    */
   get scanner(): ScannerService {
     return this._scanner;
+  }
+
+  /**
+   * Payment service
+   */
+  get payment(): PaymentService {
+    return this._payment;
   }
 
   /**

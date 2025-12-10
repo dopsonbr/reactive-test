@@ -57,13 +57,13 @@ cache:
 # External service URLs (WireMock in test)
 services:
   merchandise:
-    base-url: http://localhost:8081
+    base-url: ${MERCHANDISE_SERVICE_URL:http://localhost:8091}
   price:
-    base-url: http://localhost:8081
+    base-url: ${PRICE_SERVICE_URL:http://localhost:8092}
   inventory:
-    base-url: http://localhost:8081
+    base-url: ${INVENTORY_SERVICE_URL:http://localhost:8093}
   catalog:
-    base-url: ${CATALOG_BASE_URL:http://localhost:8081}
+    base-url: ${CATALOG_BASE_URL:http://localhost:8082}
 
 # Logging
 logging:

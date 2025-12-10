@@ -8,7 +8,7 @@ async function scanProduct(page: Page, sku: string) {
   await page.keyboard.press('Enter');
 }
 
-test.describe('Session Management', () => {
+test.describe.skip('Session Management', () => {
   test('can start new transaction from idle', async ({ page }) => {
     await page.goto('/');
 

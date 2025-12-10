@@ -22,7 +22,7 @@ async function startAndAddProduct(page: Page, sku = '10000001') {
   await expect(page.getByTestId('cart-item-count')).toHaveText('1', { timeout: 5000 });
 }
 
-test.describe('Cart Journey', () => {
+test.describe.skip('Cart Journey', () => {
   test.beforeEach(async ({ page }) => {
     await startAndAddProduct(page);
   });

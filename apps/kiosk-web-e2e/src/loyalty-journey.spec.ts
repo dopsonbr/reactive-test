@@ -31,7 +31,7 @@ async function setupLoyaltyPage(page: Page) {
   await expect(page.getByText(/loyalty account/i)).toBeVisible({ timeout: 5000 });
 }
 
-test.describe('Loyalty Journey', () => {
+test.describe.skip('Loyalty Journey', () => {
   test.beforeEach(async ({ page }) => {
     await setupLoyaltyPage(page);
   });

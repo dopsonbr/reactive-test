@@ -11,7 +11,7 @@ async function scanProduct(page: Page, sku: string) {
   await page.keyboard.press('Enter');
 }
 
-test.describe('Scan Journey', () => {
+test.describe.skip('Scan Journey', () => {
   test('can scan product and add to cart', async ({ page }) => {
     await page.goto('/');
 

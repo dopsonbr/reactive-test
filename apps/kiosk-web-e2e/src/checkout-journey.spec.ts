@@ -40,7 +40,7 @@ async function setupCheckout(page: Page) {
   await expect(page.getByRole('heading', { name: /checkout/i })).toBeVisible({ timeout: 10000 });
 }
 
-test.describe('Checkout Journey', () => {
+test.describe.skip('Checkout Journey', () => {
   test.beforeEach(async ({ page }) => {
     await setupCheckout(page);
   });

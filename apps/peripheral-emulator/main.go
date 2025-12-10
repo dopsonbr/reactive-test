@@ -17,7 +17,7 @@ func main() {
 	log.Printf("Starting Peripheral Emulator")
 	log.Printf("  Device ID: %s", *deviceID)
 	log.Printf("  WebSocket: ws://localhost:%d/stomp", *wsPort)
-	log.Printf("  HTTP Control: http://localhost:%d", *httpPort)
+	log.Printf("  Dashboard: http://localhost:%d", *httpPort)
 
 	srv := server.NewServer(*wsPort, *httpPort, *deviceID)
 	if err := srv.Start(); err != nil {

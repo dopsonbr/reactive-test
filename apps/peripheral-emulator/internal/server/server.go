@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/reactive-platform/peripheral-emulator/internal/dashboard"
 	"github.com/reactive-platform/peripheral-emulator/internal/payment"
 	"github.com/reactive-platform/peripheral-emulator/internal/scanner"
 	"github.com/reactive-platform/peripheral-emulator/internal/stomp"
@@ -117,6 +118,11 @@ func (s *Server) Start() error {
 
 	// HTTP control server
 	httpMux := http.NewServeMux()
+
+	// Dashboard (serve at root)
+	httpMux.Handle("/", dashboard.Handler())
+
+	// Control endpoints
 	httpMux.HandleFunc("/control/state", s.handleState)
 	httpMux.HandleFunc("/control/scanner/scan", s.handleTriggerScan)
 	httpMux.HandleFunc("/control/scanner/enable", s.handleScannerEnable)

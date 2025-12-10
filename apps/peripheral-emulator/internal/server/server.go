@@ -201,8 +201,10 @@ func (s *Server) handleFrame(conn *websocket.Conn, frame *stomp.Frame) {
 			s.scanner.Disable()
 		case "/app/payment/collect":
 			var req payment.Request
-			if err := json.Unmarshal(frame.Body, &req); err == nil {
-				s.payment.StartCollection(req)
+			if err := json.Unmarshal(frame.Body, &req); err != nil {
+				log.Printf("Error unmarshaling payment request: %v", err)
+			} else if err := s.payment.StartCollection(req); err != nil {
+				log.Printf("Error starting payment collection: %v", err)
 			}
 		case "/app/payment/cancel":
 			s.payment.Cancel()

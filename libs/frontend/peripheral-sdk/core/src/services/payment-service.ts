@@ -35,8 +35,14 @@ export class PaymentService {
 
   /**
    * Collect payment
+   * @throws Error if payment collection is already in progress
    */
   async collect(request: PaymentRequest): Promise<PaymentResult> {
+    // Prevent race condition - reject if already collecting
+    if (this.pendingResolve !== null) {
+      throw new Error('Payment collection already in progress');
+    }
+
     // Ensure we're subscribed to events
     this.ensureSubscribed();
 

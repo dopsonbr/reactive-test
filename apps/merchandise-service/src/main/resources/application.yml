@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: merchandise-service
+
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:merchandisedb}
+    username: ${DB_USERNAME:merchandise_user}
+    password: ${DB_PASSWORD:merchandise_pass}
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:merchandisedb}
+    user: ${DB_USERNAME:merchandise_user}
+    password: ${DB_PASSWORD:merchandise_pass}
+    locations: classpath:db/migration
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:merchandisedb}
+    username: ${DB_USERNAME:merchandise_user}
+    password: ${DB_PASSWORD:merchandise_pass}
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: 8091
+
+app:
+  security:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+
+logging:
+  level:
+    org.example.merchandise: DEBUG
+    org.springframework.r2dbc: DEBUG

@@ -12,6 +12,8 @@ export interface StompClientOptions {
   heartbeatOutgoing?: number;
   /** Debug logging */
   debug?: boolean;
+  /** Connection timeout (ms), default 30000 */
+  connectionTimeout?: number;
 }
 
 /**
@@ -32,8 +34,10 @@ export class StompClient {
   private connectionPromise: Promise<void> | null = null;
   private connectionResolve: (() => void) | null = null;
   private connectionReject: ((error: Error) => void) | null = null;
+  private connectionTimeout: number;
 
   constructor(endpoint: string, options: StompClientOptions = {}) {
+    this.connectionTimeout = options.connectionTimeout ?? 30000;
     this.client = new Client({
       brokerURL: endpoint,
       reconnectDelay: options.reconnectDelay ?? 5000,
@@ -67,6 +71,28 @@ export class StompClient {
     this.connectionPromise = new Promise((resolve, reject) => {
       this.connectionResolve = resolve;
       this.connectionReject = reject;
+
+      // Add timeout protection
+      const timeout = setTimeout(() => {
+        const error = new Error('Connection timeout');
+        this.connectionReject?.(error);
+        this.connectionReject = null;
+        this.connectionResolve = null;
+      }, this.connectionTimeout);
+
+      // Store original resolve to clear timeout
+      const originalResolve = this.connectionResolve;
+      this.connectionResolve = () => {
+        clearTimeout(timeout);
+        originalResolve?.();
+      };
+
+      // Store original reject to clear timeout
+      const originalReject = this.connectionReject;
+      this.connectionReject = (error: Error) => {
+        clearTimeout(timeout);
+        originalReject?.(error);
+      };
     });
 
     this.client.activate();

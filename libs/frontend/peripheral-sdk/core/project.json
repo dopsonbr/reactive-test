@@ -13,7 +13,7 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "@nx/vitest:test",
       "outputs": ["{workspaceRoot}/coverage/libs/frontend/peripheral-sdk/core"],
       "options": {
         "reportsDirectory": "../../../../coverage/libs/frontend/peripheral-sdk/core"

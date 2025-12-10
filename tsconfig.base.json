@@ -39,6 +39,15 @@
       ],
       "@reactive-platform/mock-handlers": [
         "libs/frontend/shared-testing/mock-handlers/src/index.ts"
+      ],
+      "@reactive-platform/peripheral-core": [
+        "libs/frontend/peripheral-sdk/core/src/index.ts"
+      ],
+      "@reactive-platform/peripheral-react": [
+        "libs/frontend/peripheral-sdk/react/src/index.ts"
+      ],
+      "@reactive-platform/peripheral-mocks": [
+        "libs/frontend/peripheral-mocks/src/index.ts"
       ]
     }
   },

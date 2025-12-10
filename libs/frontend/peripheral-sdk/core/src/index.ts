@@ -1,0 +1,14 @@
+// @reactive-platform/peripheral-core
+// Framework-agnostic peripheral SDK
+
+export const VERSION = '0.0.1';
+
+// Types
+export * from './types';
+
+// Client
+export * from './client';
+export * from './peripheral-client';
+
+// Services
+export * from './services';

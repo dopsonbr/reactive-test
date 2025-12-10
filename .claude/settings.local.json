@@ -136,7 +136,16 @@
       "Bash(CART_ID=\"7e647bd4-4b08-41a0-bba2-b34081999d5f\" curl -v \"http://localhost:8081/carts/$CART_ID/products\" -X POST -H \"x-store-number: 100\" -H \"x-order-number: 00000000-0000-0000-0000-000000000001\" -H \"x-userid: test01\" -H \"x-sessionid: 00000000-0000-0000-0000-000000000002\" -H \"Content-Type: application/json\" -d '{\"\"\"\"sku\"\"\"\": \"\"\"\"10000002\"\"\"\", \"\"\"\"quantity\"\"\"\": 1}')",
       "Bash(BASE_URL=http://localhost:3002 pnpm nx e2e:*)",
       "Bash(CHECKOUT_SESSION_ID=\"cbd2bdb6-1f70-49c2-bbb7-2b98d1f01230\")",
-      "Bash(__NEW_LINE__ echo \"Completing checkout...\")"
+      "Bash(__NEW_LINE__ echo \"Completing checkout...\")",
+      "Skill(superpowers:subagent-driven-development)",
+      "Skill(superpowers:executing-plans)",
+      "Bash(pnpm vitest:*)",
+      "Bash(npx vitest:*)",
+      "Bash(go mod tidy:*)",
+      "Bash(go test:*)",
+      "Bash(brew list:*)",
+      "Bash(go build:*)",
+      "Skill(superpowers:finishing-a-development-branch)"
     ],
     "deny": [],
     "ask": [

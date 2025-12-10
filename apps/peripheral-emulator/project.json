@@ -1,0 +1,33 @@
+{
+  "name": "peripheral-emulator",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/peripheral-emulator",
+  "projectType": "application",
+  "tags": ["scope:tools", "type:app", "lang:go"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cd apps/peripheral-emulator && go build -o ../../dist/apps/peripheral-emulator/peripheral-emulator"
+        ],
+        "parallel": false
+      },
+      "outputs": ["{workspaceRoot}/dist/apps/peripheral-emulator"]
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["cd apps/peripheral-emulator && go run ."],
+        "parallel": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["cd apps/peripheral-emulator && go test ./..."],
+        "parallel": false
+      }
+    }
+  }
+}

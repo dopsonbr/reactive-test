@@ -1,0 +1,17 @@
+{
+  "name": "@reactive-platform/peripheral-react",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "@reactive-platform/peripheral-core": "workspace:*"
+  }
+}

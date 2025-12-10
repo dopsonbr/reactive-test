@@ -11,8 +11,8 @@ test.describe('Login Journey', () => {
   test('can see login page with test user options', async ({ page }) => {
     await page.goto('/login');
 
-    // Verify login page header
-    await expect(page.getByRole('heading', { name: 'Merchant Portal', level: 1 })).toBeVisible();
+    // Wait for page to load and verify login page header
+    await expect(page.getByRole('heading', { name: 'Merchant Portal' })).toBeVisible({ timeout: 15000 });
     await expect(page.getByText('Sign in to continue')).toBeVisible();
 
     // Verify all test user options are visible

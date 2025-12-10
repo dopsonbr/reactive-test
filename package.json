@@ -123,7 +123,8 @@
   "msw": {
     "workerDirectory": [
       "public",
-      "apps/ecommerce-web/public"
+      "apps/ecommerce-web/public",
+      "apps/merchant-portal/public"
     ]
   }
 }

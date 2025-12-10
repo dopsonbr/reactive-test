@@ -14,7 +14,8 @@ export function DashboardLayout() {
   const { isAuthenticated, user, logout, hasPermission } = useAuth();
   const location = useLocation();
 
-  if (!isAuthenticated && location.pathname !== '/login') {
+  // Show only content (no sidebar) for login page or unauthenticated users
+  if (location.pathname === '/login' || !isAuthenticated) {
     return <Outlet />;
   }
 

@@ -1,18 +1,29 @@
 # 040_API_CODEGEN
 
-**Status: DRAFT — Needs rewrite to align with current branch direction**
-
-**Prerequisites:**
-- `043_MODEL_ALIGNMENT.md` - **MUST BE COMPLETE** before starting this plan
-- Re-scoping decision to align with current GraphQL client/SSE direction before executing any phases
+**Status: DEFERRED — Optional enhancement, not required for 044/045**
 
 ---
 
-## Overview
+## Deferral Notice (2025-01)
+
+This plan is **deferred indefinitely**. Plans 044 (Self-Checkout Kiosk) and 045 (POS System) can proceed without OpenAPI codegen by using hand-written TypeScript types in a shared `commerce-hooks` library.
+
+**Why deferred:**
+1. **046 established a different pattern** - Cart now uses hand-rolled GraphQL client + SSE subscriptions, not generated hooks
+2. **044A extracts existing types** - The `commerce-hooks` library will contain hand-written types extracted from `ecommerce-web`
+3. **No blocking dependency** - Frontend apps don't require generated types to function
+4. **Codegen can be added later** - The `commerce-hooks` architecture allows swapping hand-written types for generated ones without changing consuming apps
+
+**If revisiting this plan:**
+- Drop Phase 3 (GraphQL codegen) entirely — conflicts with 046's SSE subscription approach
+- Focus only on Phases 1-2 (OpenAPI/REST) for services that don't use GraphQL
+- Consider generating types only, not full API clients
+
+---
+
+## Original Overview (Historical)
 
 Implement the frontend-backend domain model sharing strategy from ADR 012. This adds springdoc-openapi to all backend services, configures graphql-codegen for cart/order services, and establishes a committed-specs workflow where OpenAPI and GraphQL schemas are versioned in git for LLM agent discovery and offline TypeScript generation.
-
-> Branch reality check (2025-01): This plan no longer matches the current branch. Springdoc is not centralized (product-service still hardcodes the dependency; other services lack config), `tools/openapi-codegen/generate.sh` remains the old single-service script, no generated clients exist under `libs/frontend/shared-data/api-client/src/generated/**`, and the cart frontend now uses a hand-rolled GraphQL client + SSE (046) instead of graphql-codegen outputs. Executing this plan as-is would fight the new GraphQL client direction. Rewrite required before execution (either align with the manual GraphQL client or mark superseded).
 
 **Prerequisite Plans:**
 - `043_MODEL_ALIGNMENT.md` - Backend/frontend model alignment (must complete first)

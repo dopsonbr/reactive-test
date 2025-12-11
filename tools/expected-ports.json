@@ -8,5 +8,6 @@
   "audit-service": 8086,
   "checkout-service": 8087,
   "order-service": 8088,
-  "user-service": 8089
+  "user-service": 8089,
+  "peripheral-emulator": 9100
 }

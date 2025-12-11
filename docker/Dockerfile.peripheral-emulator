@@ -1,0 +1,30 @@
+# Build stage
+FROM golang:1.22-alpine AS builder
+
+WORKDIR /build
+
+# Copy go modules first for caching
+COPY apps/peripheral-emulator/go.mod apps/peripheral-emulator/go.sum ./
+RUN go mod download
+
+# Copy source and build
+COPY apps/peripheral-emulator/ ./
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o peripheral-emulator .
+
+# Runtime stage
+FROM alpine:3.20
+
+RUN apk add --no-cache ca-certificates curl
+
+WORKDIR /app
+COPY --from=builder /build/peripheral-emulator .
+
+# WebSocket port and HTTP control port
+EXPOSE 9100 9101
+
+# Health check via HTTP control endpoint
+HEALTHCHECK --interval=5s --timeout=3s --retries=10 \
+  CMD curl -f http://localhost:9101/control/state || exit 1
+
+ENTRYPOINT ["./peripheral-emulator"]
+CMD ["--port-ws=9100", "--port-http=9101", "--device-id=emulator-001"]

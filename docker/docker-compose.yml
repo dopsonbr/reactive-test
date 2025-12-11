@@ -569,6 +569,29 @@ services:
     networks:
       - observability
 
+  # === Peripheral Device Emulator ===
+  peripheral-emulator:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.peripheral-emulator
+    container_name: peripheral-emulator
+    environment:
+      - WEBSOCKET_PORT=9100
+      - HTTP_PORT=9101
+      - DEVICE_ID=emulator-001
+      - PAYMENT_DECLINE_RATE=0.1
+      - PAYMENT_AUTH_DELAY_MS=2000
+    ports:
+      - "9100:9100"   # WebSocket/STOMP
+      - "9101:9101"   # HTTP Control + Dashboard
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9101/control/state"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - observability
+
   # === Load Testing (Product Service) ===
   k6-product:
     image: grafana/k6:0.55.0

@@ -32,6 +32,8 @@ const ALL_APPS = {
   'checkout-service': { port: 8087, type: 'backend', docker: 'checkout-service' },
   'order-service': { port: 8088, type: 'backend', docker: 'order-service' },
   'user-service': { port: 8089, type: 'backend', docker: 'user-service' },
+  // Peripheral emulator (Docker)
+  'peripheral-emulator': { port: 9100, type: 'emulator', docker: 'peripheral-emulator', httpPort: 9101 },
   // Frontend apps (some Docker, some local)
   'ecommerce-web': { port: 3001, type: 'frontend', docker: 'ecommerce-web' },
   'kiosk-web': { port: 3002, type: 'frontend', docker: null }, // runs locally via nx serve
@@ -222,6 +224,8 @@ async function checkPortConflicts() {
     { port: 8087, service: 'checkout-service' },
     { port: 8088, service: 'order-service' },
     { port: 8089, service: 'user-service' },
+    { port: 9100, service: 'peripheral-emulator (WebSocket)' },
+    { port: 9101, service: 'peripheral-emulator (HTTP)' },
     { port: 3000, service: 'Grafana' },
     { port: 3001, service: 'ecommerce-web' },
     { port: 3002, service: 'kiosk-web' },
@@ -422,6 +426,27 @@ async function startObservability() {
   }
 }
 
+// Start peripheral emulator
+async function startPeripheralEmulator() {
+  logHeader('Starting Peripheral Emulator');
+
+  if (alreadyRunning.has('peripheral-emulator (WebSocket)')) {
+    logSuccess('peripheral-emulator already running');
+    startedServices.push('peripheral-emulator:9100', 'peripheral-emulator-http:9101');
+    return;
+  }
+
+  logStep('Starting peripheral-emulator...');
+  exec('docker compose up -d peripheral-emulator', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+
+  logStep('Waiting for peripheral-emulator to be healthy...');
+  if (await waitForHealth('peripheral-emulator', 9101, '/control/state')) {
+    startedServices.push('peripheral-emulator:9100', 'peripheral-emulator-http:9101');
+  } else {
+    failedServices.push('peripheral-emulator');
+  }
+}
+
 // Start backend services
 async function startBackendServices() {
   logHeader('Starting Backend Services');
@@ -616,6 +641,13 @@ function printSummary() {
   console.log(`  ${colors.cyan}user-service${colors.nc}      http://localhost:8089`);
   console.log('');
 
+  // Peripheral Devices
+  console.log(`${colors.bold}Peripheral Devices:${colors.nc}`);
+  console.log(`  ${colors.cyan}peripheral-emulator${colors.nc}`);
+  console.log(`                     WebSocket: ws://localhost:9100/stomp`);
+  console.log(`                     Dashboard: http://localhost:9101`);
+  console.log('');
+
   // Frontend
   console.log(`${colors.bold}Frontend Applications:${colors.nc}`);
   console.log(`  ${colors.cyan}home-portal${colors.nc}       http://localhost:3003`);
@@ -672,13 +704,17 @@ ${colors.bold}Available apps:${colors.nc}
     product-service, cart-service, customer-service, discount-service,
     fulfillment-service, audit-service, checkout-service, order-service, user-service
 
+  ${colors.cyan}Emulators:${colors.nc}
+    peripheral-emulator
+
   ${colors.cyan}Frontend:${colors.nc}
     ecommerce-web, kiosk-web, home-portal
 
 ${colors.bold}Examples:${colors.nc}
-  ./powerstart -r product-service    Rebuild and restart product-service
-  ./powerstart -r kiosk-web          Rebuild and restart kiosk-web
-  ./powerstart -r                    Show interactive menu to select app
+  ./powerstart -r product-service      Rebuild and restart product-service
+  ./powerstart -r peripheral-emulator  Rebuild and restart peripheral-emulator
+  ./powerstart -r kiosk-web            Rebuild and restart kiosk-web
+  ./powerstart -r                      Show interactive menu to select app
 `);
 }
 
@@ -696,6 +732,7 @@ async function selectAppInteractively() {
 
   const apps = Object.keys(ALL_APPS);
   const backendApps = apps.filter(a => ALL_APPS[a].type === 'backend');
+  const emulatorApps = apps.filter(a => ALL_APPS[a].type === 'emulator');
   const frontendApps = apps.filter(a => ALL_APPS[a].type === 'frontend');
 
   console.log('');
@@ -706,9 +743,15 @@ async function selectAppInteractively() {
     console.log(`  ${colors.bold}${i + 1}.${colors.nc} ${app} (port ${ALL_APPS[app].port})`);
   });
   console.log('');
+  console.log(`${colors.cyan}Emulators:${colors.nc}`);
+  emulatorApps.forEach((app, i) => {
+    const num = backendApps.length + i + 1;
+    console.log(`  ${colors.bold}${num}.${colors.nc} ${app} (WS: ${ALL_APPS[app].port}, HTTP: ${ALL_APPS[app].httpPort})`);
+  });
+  console.log('');
   console.log(`${colors.cyan}Frontend Applications:${colors.nc}`);
   frontendApps.forEach((app, i) => {
-    const num = backendApps.length + i + 1;
+    const num = backendApps.length + emulatorApps.length + i + 1;
     console.log(`  ${colors.bold}${num}.${colors.nc} ${app} (port ${ALL_APPS[app].port})`);
   });
   console.log('');
@@ -728,7 +771,7 @@ async function selectAppInteractively() {
           resolve(null);
           return;
         }
-        const allApps = [...backendApps, ...frontendApps];
+        const allApps = [...backendApps, ...emulatorApps, ...frontendApps];
         if (num >= 1 && num <= allApps.length) {
           resolve(allApps[num - 1]);
           return;
@@ -803,6 +846,40 @@ async function rebuildBackendApp(appName) {
   logStep(`Waiting for ${appName} to be healthy...`);
   if (await waitForHealth(appName, app.port)) {
     logSuccess(`${appName} is ready at http://localhost:${app.port}`);
+    return true;
+  } else {
+    logError(`${appName} failed to become healthy`);
+    return false;
+  }
+}
+
+// Rebuild and restart peripheral emulator
+async function rebuildEmulatorApp(appName) {
+  const app = ALL_APPS[appName];
+  if (!app || app.type !== 'emulator') {
+    logError(`${appName} is not a valid emulator app`);
+    return false;
+  }
+
+  logHeader(`Rebuilding ${appName}`);
+
+  // Stop the container
+  logStep(`Stopping ${appName} container...`);
+  exec(`docker compose stop ${app.docker}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  exec(`docker compose rm -f ${app.docker}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  logSuccess(`${appName} container stopped`);
+
+  // Rebuild and start (Go build happens in Docker)
+  logStep(`Rebuilding and starting ${appName} container...`);
+  exec(`docker compose build --no-cache ${app.docker}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  exec(`docker compose up -d ${app.docker}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+
+  // Wait for health
+  logStep(`Waiting for ${appName} to be healthy...`);
+  if (await waitForHealth(appName, app.httpPort, '/control/state')) {
+    logSuccess(`${appName} is ready`);
+    logInfo(`  WebSocket: ws://localhost:${app.port}/stomp`);
+    logInfo(`  Dashboard: http://localhost:${app.httpPort}`);
     return true;
   } else {
     logError(`${appName} failed to become healthy`);
@@ -903,6 +980,8 @@ async function rebuildApp(appName) {
 
   if (app.type === 'backend') {
     return await rebuildBackendApp(appName);
+  } else if (app.type === 'emulator') {
+    return await rebuildEmulatorApp(appName);
   } else {
     return await rebuildFrontendApp(appName);
   }
@@ -949,6 +1028,7 @@ async function main() {
   buildJars();
   await startInfrastructure();
   await startObservability();
+  await startPeripheralEmulator();
   await startBackendServices();
   await startFrontend();
   printSummary();

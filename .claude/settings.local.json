@@ -124,7 +124,8 @@
       "Skill(superpowers:receiving-code-review)",
       "Bash(docker build:*)",
       "Bash(E2E_BASE_URL=http://localhost:3010 pnpm exec playwright test:*)",
-      "Bash(do)"
+      "Bash(do)",
+      "Bash(do docker exec postgres psql -U postgres -d $db -c \"ALTER SCHEMA public OWNER TO postgres; GRANT CREATE ON SCHEMA public TO PUBLIC;\")"
     ],
     "deny": [],
     "ask": [

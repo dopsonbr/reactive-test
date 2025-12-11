@@ -4,11 +4,7 @@
  * powerstart - Start all reactive-platform services
  * A simple way to bring up the entire platform for local development
  *
- * Usage:
- *   ./powerstart           - Start everything (default)
- *   ./powerstart -r        - Interactive mode: select an app to rebuild and restart
- *   ./powerstart -r <app>  - Rebuild and restart a specific app
- *   ./powerstart --help    - Show help
+ * Run './powerstart --help' for full documentation and examples.
  */
 
 import { execSync, spawn } from 'child_process';
@@ -40,6 +36,84 @@ const ALL_APPS = {
   'home-portal': { port: 3003, type: 'frontend', docker: null }, // runs locally via nx serve
 };
 
+// Service groups for interactive mode
+const SERVICE_GROUPS = {
+  'frontend': {
+    name: 'Frontend/Web',
+    description: 'ecommerce-web, kiosk-web, home-portal',
+    default: true,
+  },
+  'backends': {
+    name: 'Backends + Infrastructure',
+    description: 'All backend services + PostgreSQL, Redis',
+    default: true,
+  },
+  'observability': {
+    name: 'Observability (Grafana Stack)',
+    description: 'Grafana, Prometheus, Loki, Tempo',
+    default: false,
+  },
+  'mocks': {
+    name: 'Mocks (WireMock)',
+    description: 'WireMock for external service mocks',
+    default: false,
+  },
+};
+
+// Built-in profiles for quick startup configurations
+const PROFILES = {
+  'full': {
+    name: 'Full Stack',
+    description: 'Everything: frontend, backends, observability, mocks',
+    selections: { frontend: true, backends: true, observability: true, mocks: true },
+  },
+  'dev': {
+    name: 'Development',
+    description: 'Frontend + backends (default)',
+    selections: { frontend: true, backends: true, observability: false, mocks: false },
+  },
+  'backend': {
+    name: 'Backend Only',
+    description: 'All backend services without frontend',
+    selections: { frontend: false, backends: true, observability: false, mocks: false },
+  },
+  'frontend': {
+    name: 'Frontend Only',
+    description: 'Frontend apps only (requires backends running)',
+    selections: { frontend: true, backends: false, observability: false, mocks: false },
+  },
+  'minimal': {
+    name: 'Minimal',
+    description: 'Infrastructure only: PostgreSQL, Redis',
+    selections: { frontend: false, backends: false, observability: false, mocks: false },
+    infraOnly: true,
+  },
+};
+
+// All services with their ports and health endpoints for status checks
+const ALL_SERVICES = [
+  { name: 'PostgreSQL', port: 5432, group: 'infra', docker: 'postgres' },
+  { name: 'Redis', port: 6379, group: 'infra', docker: 'redis' },
+  { name: 'WireMock', port: 8082, group: 'mocks', docker: 'wiremock', healthEndpoint: '/__admin/mappings' },
+  { name: 'product-service', port: 8090, group: 'backends', docker: 'product-service' },
+  { name: 'cart-service', port: 8081, group: 'backends', docker: 'cart-service' },
+  { name: 'customer-service', port: 8083, group: 'backends', docker: 'customer-service' },
+  { name: 'discount-service', port: 8084, group: 'backends', docker: 'discount-service' },
+  { name: 'fulfillment-service', port: 8085, group: 'backends', docker: 'fulfillment-service' },
+  { name: 'audit-service', port: 8086, group: 'backends', docker: 'audit-service' },
+  { name: 'checkout-service', port: 8087, group: 'backends', docker: 'checkout-service' },
+  { name: 'order-service', port: 8088, group: 'backends', docker: 'order-service' },
+  { name: 'user-service', port: 8089, group: 'backends', docker: 'user-service' },
+  { name: 'peripheral-emulator', port: 9101, group: 'backends', docker: 'peripheral-emulator', healthEndpoint: '/control/state' },
+  { name: 'Grafana', port: 3000, group: 'observability', docker: 'grafana', healthEndpoint: '/api/health' },
+  { name: 'Prometheus', port: 9090, group: 'observability', docker: 'prometheus' },
+  { name: 'Loki', port: 3100, group: 'observability', docker: 'loki' },
+  { name: 'Tempo', port: 3200, group: 'observability', docker: 'tempo' },
+  { name: 'ecommerce-web', port: 3001, group: 'frontend', docker: 'ecommerce-web', healthEndpoint: '/' },
+  { name: 'kiosk-web', port: 3002, group: 'frontend', docker: null, healthEndpoint: '/' },
+  { name: 'home-portal', port: 3003, group: 'frontend', docker: null, healthEndpoint: '/' },
+];
+
 // ANSI colors
 const colors = {
   red: '\x1b[0;31m',
@@ -47,7 +121,10 @@ const colors = {
   yellow: '\x1b[1;33m',
   blue: '\x1b[0;34m',
   cyan: '\x1b[0;36m',
+  magenta: '\x1b[0;35m',
+  gray: '\x1b[0;90m',
   bold: '\x1b[1m',
+  dim: '\x1b[2m',
   nc: '\x1b[0m',
 };
 
@@ -82,6 +159,279 @@ function logError(msg) {
 
 function logInfo(msg) {
   console.log(`${colors.blue}ℹ${colors.nc} ${msg}`);
+}
+
+// ============================================================================
+// STOP COMMAND
+// ============================================================================
+
+async function stopServices(group = null) {
+  logHeader(group ? `Stopping ${group} Services` : 'Stopping All Services');
+
+  // Kill local processes (kiosk-web, home-portal on their ports)
+  const localPorts = [3002, 3003]; // kiosk-web, home-portal
+  for (const port of localPorts) {
+    const pid = execSilent(`lsof -i :${port} -t`).trim().split('\n')[0];
+    if (pid) {
+      logStep(`Stopping local process on port ${port}...`);
+      try {
+        execSync(`kill ${pid}`, { stdio: 'pipe' });
+        logSuccess(`Stopped process on port ${port}`);
+      } catch {
+        // Process may have already stopped
+      }
+    }
+  }
+
+  // Stop Docker services
+  logStep('Stopping Docker services...');
+
+  if (group) {
+    // Stop specific group
+    const groupServices = ALL_SERVICES.filter(s => s.group === group && s.docker);
+    if (groupServices.length > 0) {
+      const dockerServices = groupServices.map(s => s.docker).join(' ');
+      exec(`docker compose stop ${dockerServices}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+    }
+  } else {
+    // Stop all
+    exec('docker compose down', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  }
+
+  logSuccess(group ? `${group} services stopped` : 'All services stopped');
+}
+
+// ============================================================================
+// STATUS COMMAND
+// ============================================================================
+
+async function showStatus() {
+  console.log('');
+  console.log(`${colors.bold}Service Status${colors.nc}`);
+  console.log(`${'─'.repeat(60)}`);
+
+  const groupOrder = ['infra', 'backends', 'mocks', 'observability', 'frontend'];
+  const groupNames = {
+    infra: 'Infrastructure',
+    backends: 'Backend Services',
+    mocks: 'Mocks',
+    observability: 'Observability',
+    frontend: 'Frontend',
+  };
+
+  let totalRunning = 0;
+  let totalStopped = 0;
+
+  for (const group of groupOrder) {
+    const services = ALL_SERVICES.filter(s => s.group === group);
+    if (services.length === 0) continue;
+
+    console.log('');
+    console.log(`${colors.bold}${groupNames[group]}:${colors.nc}`);
+
+    for (const service of services) {
+      const running = isPortInUse(service.port);
+      const status = running ? `${colors.green}● running${colors.nc}` : `${colors.gray}○ stopped${colors.nc}`;
+      const portInfo = `${colors.dim}:${service.port}${colors.nc}`;
+
+      // Check health if running and has health endpoint
+      let healthStatus = '';
+      if (running && service.healthEndpoint) {
+        const healthy = await isHealthy(service.port, service.healthEndpoint);
+        healthStatus = healthy ? ` ${colors.green}(healthy)${colors.nc}` : ` ${colors.yellow}(unhealthy)${colors.nc}`;
+      }
+
+      console.log(`  ${status} ${service.name.padEnd(22)} ${portInfo}${healthStatus}`);
+
+      if (running) totalRunning++;
+      else totalStopped++;
+    }
+  }
+
+  console.log('');
+  console.log(`${'─'.repeat(60)}`);
+  console.log(`${colors.green}Running: ${totalRunning}${colors.nc}  ${colors.gray}Stopped: ${totalStopped}${colors.nc}`);
+  console.log('');
+}
+
+// ============================================================================
+// LOGS COMMAND
+// ============================================================================
+
+function showLogs(serviceName, follow = true) {
+  if (!serviceName) {
+    logError('Service name required. Usage: ./powerstart -l <service>');
+    logInfo(`Available services: ${ALL_SERVICES.filter(s => s.docker).map(s => s.docker).join(', ')}`);
+    process.exit(1);
+  }
+
+  // Find the service
+  const service = ALL_SERVICES.find(s =>
+    s.docker === serviceName ||
+    s.name.toLowerCase() === serviceName.toLowerCase() ||
+    s.name.toLowerCase().includes(serviceName.toLowerCase())
+  );
+
+  if (!service || !service.docker) {
+    logError(`Unknown or non-Docker service: ${serviceName}`);
+    logInfo(`Available Docker services: ${ALL_SERVICES.filter(s => s.docker).map(s => s.docker).join(', ')}`);
+    process.exit(1);
+  }
+
+  const followFlag = follow ? '-f' : '';
+  logInfo(`Showing logs for ${service.name}... (Ctrl+C to exit)`);
+  console.log('');
+
+  try {
+    execSync(`docker compose logs ${followFlag} ${service.docker}`, {
+      cwd: DOCKER_DIR,
+      stdio: 'inherit',
+    });
+  } catch {
+    // User pressed Ctrl+C
+  }
+}
+
+// ============================================================================
+// HEALTH CHECK COMMAND
+// ============================================================================
+
+async function checkHealth() {
+  console.log('');
+  console.log(`${colors.bold}Health Check${colors.nc}`);
+  console.log(`${'─'.repeat(60)}`);
+
+  let healthy = 0;
+  let unhealthy = 0;
+  let stopped = 0;
+
+  for (const service of ALL_SERVICES) {
+    const running = isPortInUse(service.port);
+
+    if (!running) {
+      console.log(`  ${colors.gray}○${colors.nc} ${service.name.padEnd(22)} ${colors.gray}not running${colors.nc}`);
+      stopped++;
+      continue;
+    }
+
+    const endpoint = service.healthEndpoint || '/actuator/health';
+    const isOk = await isHealthy(service.port, endpoint);
+
+    if (isOk) {
+      console.log(`  ${colors.green}✓${colors.nc} ${service.name.padEnd(22)} ${colors.green}healthy${colors.nc}`);
+      healthy++;
+    } else {
+      console.log(`  ${colors.red}✗${colors.nc} ${service.name.padEnd(22)} ${colors.red}unhealthy${colors.nc} (${endpoint})`);
+      unhealthy++;
+    }
+  }
+
+  console.log('');
+  console.log(`${'─'.repeat(60)}`);
+  console.log(`${colors.green}Healthy: ${healthy}${colors.nc}  ${colors.red}Unhealthy: ${unhealthy}${colors.nc}  ${colors.gray}Stopped: ${stopped}${colors.nc}`);
+  console.log('');
+
+  return unhealthy === 0;
+}
+
+// ============================================================================
+// CLEANUP COMMAND
+// ============================================================================
+
+async function cleanup(removeVolumes = false) {
+  logHeader('Cleaning Up');
+
+  // Stop all services first
+  await stopServices();
+
+  if (removeVolumes) {
+    logStep('Removing Docker volumes...');
+    exec('docker compose down -v', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+    logSuccess('Volumes removed');
+  }
+
+  logStep('Pruning unused Docker resources...');
+  exec('docker system prune -f', { silent: true, ignoreError: true });
+  logSuccess('Docker resources pruned');
+
+  logStep('Removing orphaned containers...');
+  exec('docker compose rm -f', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  logSuccess('Orphaned containers removed');
+
+  logSuccess('Cleanup complete');
+}
+
+// ============================================================================
+// OPEN BROWSER COMMAND
+// ============================================================================
+
+function openBrowser(url = 'http://localhost:3003') {
+  logStep(`Opening ${url} in browser...`);
+  try {
+    // macOS
+    execSync(`open "${url}"`, { stdio: 'pipe' });
+    logSuccess('Browser opened');
+  } catch {
+    try {
+      // Linux
+      execSync(`xdg-open "${url}"`, { stdio: 'pipe' });
+      logSuccess('Browser opened');
+    } catch {
+      logWarning(`Could not open browser. Please visit: ${url}`);
+    }
+  }
+}
+
+// ============================================================================
+// MINIMAL INFRASTRUCTURE START
+// ============================================================================
+
+async function startMinimalInfra() {
+  logHeader('Starting Minimal Infrastructure');
+
+  logStep('Starting PostgreSQL and Redis...');
+  exec('docker compose up -d postgres redis', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+
+  // Wait for postgres
+  logStep('Waiting for PostgreSQL...');
+  let ready = false;
+  for (let i = 0; i < 30; i++) {
+    try {
+      execSilent('docker compose exec -T postgres pg_isready -U postgres');
+      ready = true;
+      break;
+    } catch {
+      await sleep(1000);
+    }
+  }
+  if (ready) {
+    logSuccess('PostgreSQL is ready');
+  } else {
+    logError('PostgreSQL failed to start');
+  }
+
+  // Wait for redis
+  logStep('Waiting for Redis...');
+  ready = false;
+  for (let i = 0; i < 30; i++) {
+    try {
+      execSilent('docker compose exec -T redis redis-cli ping');
+      ready = true;
+      break;
+    } catch {
+      await sleep(1000);
+    }
+  }
+  if (ready) {
+    logSuccess('Redis is ready');
+  } else {
+    logError('Redis failed to start');
+  }
+
+  console.log('');
+  logSuccess('Minimal infrastructure ready');
+  console.log(`  ${colors.cyan}PostgreSQL${colors.nc}  localhost:5432`);
+  console.log(`  ${colors.cyan}Redis${colors.nc}       localhost:6379`);
 }
 
 // Execute command and return output
@@ -691,30 +1041,112 @@ function printBanner() {
 // Show help
 function showHelp() {
   console.log(`
-${colors.bold}powerstart${colors.nc} - Start all reactive-platform services
+${colors.bold}${colors.cyan}powerstart${colors.nc} - Start, stop, and manage reactive-platform services
 
-${colors.bold}Usage:${colors.nc}
-  ./powerstart              Start everything (default)
-  ./powerstart -r           Interactive mode: select an app to rebuild and restart
-  ./powerstart -r <app>     Rebuild and restart a specific app
-  ./powerstart --help       Show this help
+${colors.bold}USAGE${colors.nc}
+  ./powerstart [command] [options]
 
-${colors.bold}Available apps:${colors.nc}
-  ${colors.cyan}Backend:${colors.nc}
-    product-service, cart-service, customer-service, discount-service,
-    fulfillment-service, audit-service, checkout-service, order-service, user-service
+${colors.bold}COMMANDS${colors.nc}
 
-  ${colors.cyan}Emulators:${colors.nc}
-    peripheral-emulator
+  ${colors.cyan}Starting Services:${colors.nc}
+    ${colors.bold}(default)${colors.nc}              Start everything (frontend + backends + observability + mocks)
+    ${colors.bold}-i, --interactive${colors.nc}     Interactive mode with checkboxes to select service groups
+    ${colors.bold}--profile <name>${colors.nc}      Start services using a predefined profile
+    ${colors.bold}--frontend${colors.nc}            Start frontend apps only
+    ${colors.bold}--backends${colors.nc}            Start backend services + infrastructure
+    ${colors.bold}--observability${colors.nc}       Start observability stack (Grafana, Prometheus, etc.)
+    ${colors.bold}--mocks${colors.nc}               Start WireMock
+    ${colors.bold}--no-frontend${colors.nc}         Start everything except frontend
+    ${colors.bold}--no-observability${colors.nc}    Start everything except observability
 
-  ${colors.cyan}Frontend:${colors.nc}
-    ecommerce-web, kiosk-web, home-portal
+  ${colors.cyan}Managing Services:${colors.nc}
+    ${colors.bold}-s, --stop${colors.nc}            Stop all services
+    ${colors.bold}-s <group>${colors.nc}            Stop specific group (frontend, backends, observability, mocks)
+    ${colors.bold}--status${colors.nc}              Show status of all services
+    ${colors.bold}--health${colors.nc}              Check health of all running services
+    ${colors.bold}-l, --logs <service>${colors.nc}  Tail logs for a service (e.g., product-service)
+    ${colors.bold}--clean${colors.nc}               Stop all services and prune Docker resources
+    ${colors.bold}--clean -v${colors.nc}            Clean and also remove Docker volumes (database data)
 
-${colors.bold}Examples:${colors.nc}
-  ./powerstart -r product-service      Rebuild and restart product-service
-  ./powerstart -r peripheral-emulator  Rebuild and restart peripheral-emulator
-  ./powerstart -r kiosk-web            Rebuild and restart kiosk-web
-  ./powerstart -r                      Show interactive menu to select app
+  ${colors.cyan}Rebuilding Services:${colors.nc}
+    ${colors.bold}-r, --restart${colors.nc}         Interactive mode to select an app to rebuild
+    ${colors.bold}-r <app>${colors.nc}              Rebuild and restart specific app
+
+  ${colors.cyan}Other:${colors.nc}
+    ${colors.bold}--open${colors.nc}                Open home-portal in browser after startup
+    ${colors.bold}-h, --help${colors.nc}            Show this help message
+
+${colors.bold}PROFILES${colors.nc}
+  ${colors.cyan}full${colors.nc}       Everything: frontend, backends, observability, mocks
+  ${colors.cyan}dev${colors.nc}        Frontend + backends (same as default -i selection)
+  ${colors.cyan}backend${colors.nc}    Backend services only (no frontend)
+  ${colors.cyan}frontend${colors.nc}   Frontend only (requires backends already running)
+  ${colors.cyan}minimal${colors.nc}    Infrastructure only (PostgreSQL, Redis)
+
+${colors.bold}SERVICE GROUPS${colors.nc}
+  ${colors.cyan}frontend${colors.nc}       ecommerce-web (:3001), kiosk-web (:3002), home-portal (:3003)
+  ${colors.cyan}backends${colors.nc}       product-service, cart-service, customer-service, discount-service,
+                 fulfillment-service, audit-service, checkout-service, order-service,
+                 user-service, peripheral-emulator + PostgreSQL, Redis
+  ${colors.cyan}observability${colors.nc}  Grafana (:3000), Prometheus (:9090), Loki (:3100), Tempo (:3200)
+  ${colors.cyan}mocks${colors.nc}          WireMock (:8082)
+
+${colors.bold}EXAMPLES${colors.nc}
+
+  ${colors.dim}# Start everything (default)${colors.nc}
+  ./powerstart
+
+  ${colors.dim}# Interactive mode - choose what to start${colors.nc}
+  ./powerstart -i
+
+  ${colors.dim}# Quick start with profile${colors.nc}
+  ./powerstart --profile dev          ${colors.dim}# Frontend + backends${colors.nc}
+  ./powerstart --profile backend      ${colors.dim}# Just backends${colors.nc}
+  ./powerstart --profile minimal      ${colors.dim}# Just PostgreSQL + Redis${colors.nc}
+
+  ${colors.dim}# Start specific groups${colors.nc}
+  ./powerstart --backends --mocks     ${colors.dim}# Backends + WireMock, no frontend${colors.nc}
+  ./powerstart --no-observability     ${colors.dim}# Everything except Grafana stack${colors.nc}
+
+  ${colors.dim}# Check what's running${colors.nc}
+  ./powerstart --status
+  ./powerstart --health
+
+  ${colors.dim}# View logs${colors.nc}
+  ./powerstart -l product-service
+  ./powerstart -l grafana
+
+  ${colors.dim}# Rebuild a service after code changes${colors.nc}
+  ./powerstart -r product-service
+  ./powerstart -r                     ${colors.dim}# Interactive selection${colors.nc}
+
+  ${colors.dim}# Stop services${colors.nc}
+  ./powerstart -s                     ${colors.dim}# Stop everything${colors.nc}
+  ./powerstart -s frontend            ${colors.dim}# Stop just frontend${colors.nc}
+
+  ${colors.dim}# Clean up${colors.nc}
+  ./powerstart --clean                ${colors.dim}# Stop + prune Docker${colors.nc}
+  ./powerstart --clean -v             ${colors.dim}# Also remove volumes (reset databases)${colors.nc}
+
+  ${colors.dim}# Start and open browser${colors.nc}
+  ./powerstart --open
+
+${colors.bold}COMMON WORKFLOWS${colors.nc}
+
+  ${colors.cyan}Frontend development:${colors.nc}
+    ./powerstart --profile backend    ${colors.dim}# Start backends first${colors.nc}
+    cd apps/ecommerce-web && pnpm dev ${colors.dim}# Run frontend with HMR${colors.nc}
+
+  ${colors.cyan}Backend development:${colors.nc}
+    ./powerstart --profile minimal    ${colors.dim}# Start infra${colors.nc}
+    ./gradlew :apps:product-service:bootRun ${colors.dim}# Run service locally${colors.nc}
+
+  ${colors.cyan}Full stack testing:${colors.nc}
+    ./powerstart --profile full       ${colors.dim}# Everything including observability${colors.nc}
+    open http://localhost:3000        ${colors.dim}# Check Grafana dashboards${colors.nc}
+
+  ${colors.cyan}End of day:${colors.nc}
+    ./powerstart -s                   ${colors.dim}# Stop everything${colors.nc}
 `);
 }
 
@@ -795,6 +1227,388 @@ async function selectAppInteractively() {
       resolve(null);
     });
   });
+}
+
+// Interactive service group selection with toggles
+async function selectServiceGroupsInteractively() {
+  const groups = Object.keys(SERVICE_GROUPS);
+  const selected = {};
+
+  // Initialize with defaults
+  for (const group of groups) {
+    selected[group] = SERVICE_GROUPS[group].default;
+  }
+
+  // Clear screen helper
+  const clearLines = (count) => {
+    for (let i = 0; i < count; i++) {
+      process.stdout.write('\x1b[1A'); // Move up
+      process.stdout.write('\x1b[2K'); // Clear line
+    }
+  };
+
+  // Render the menu
+  const renderMenu = (cursorPos) => {
+    const lines = [];
+    lines.push('');
+    lines.push(`${colors.bold}Select service groups to start:${colors.nc}`);
+    lines.push(`${colors.cyan}Use number keys to toggle, Enter to confirm, q to cancel${colors.nc}`);
+    lines.push('');
+
+    groups.forEach((group, i) => {
+      const checkbox = selected[group] ? `${colors.green}[✓]${colors.nc}` : '[ ]';
+      const highlight = i === cursorPos ? `${colors.bold}${colors.cyan}>` : ' ';
+      const name = SERVICE_GROUPS[group].name;
+      const desc = SERVICE_GROUPS[group].description;
+      lines.push(`${highlight} ${i + 1}. ${checkbox} ${name}${colors.nc}`);
+      lines.push(`      ${colors.blue}${desc}${colors.nc}`);
+    });
+
+    lines.push('');
+    lines.push(`  ${colors.bold}Enter${colors.nc} - Start selected services`);
+    lines.push(`  ${colors.bold}q${colors.nc}     - Cancel`);
+    lines.push('');
+
+    return lines;
+  };
+
+  return new Promise((resolve) => {
+    let cursorPos = 0;
+    let menuLines = [];
+
+    // Initial render
+    menuLines = renderMenu(cursorPos);
+    menuLines.forEach(line => console.log(line));
+
+    // Enable raw mode for single keypress detection
+    if (process.stdin.isTTY) {
+      process.stdin.setRawMode(true);
+    }
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
+
+    const cleanup = () => {
+      if (process.stdin.isTTY) {
+        process.stdin.setRawMode(false);
+      }
+      process.stdin.pause();
+      process.stdin.removeAllListeners('data');
+    };
+
+    process.stdin.on('data', (key) => {
+      // Ctrl+C or q to cancel
+      if (key === '\u0003' || key === 'q' || key === 'Q') {
+        cleanup();
+        console.log('');
+        resolve(null);
+        return;
+      }
+
+      // Enter to confirm
+      if (key === '\r' || key === '\n') {
+        cleanup();
+        console.log('');
+        resolve(selected);
+        return;
+      }
+
+      // Number keys 1-4 to toggle
+      const num = parseInt(key, 10);
+      if (num >= 1 && num <= groups.length) {
+        const group = groups[num - 1];
+        selected[group] = !selected[group];
+
+        // Re-render
+        clearLines(menuLines.length);
+        menuLines = renderMenu(cursorPos);
+        menuLines.forEach(line => console.log(line));
+      }
+
+      // Arrow keys for navigation (optional visual cursor)
+      if (key === '\x1b[A' && cursorPos > 0) { // Up arrow
+        cursorPos--;
+        clearLines(menuLines.length);
+        menuLines = renderMenu(cursorPos);
+        menuLines.forEach(line => console.log(line));
+      } else if (key === '\x1b[B' && cursorPos < groups.length - 1) { // Down arrow
+        cursorPos++;
+        clearLines(menuLines.length);
+        menuLines = renderMenu(cursorPos);
+        menuLines.forEach(line => console.log(line));
+      }
+
+      // Space to toggle current selection
+      if (key === ' ') {
+        const group = groups[cursorPos];
+        selected[group] = !selected[group];
+        clearLines(menuLines.length);
+        menuLines = renderMenu(cursorPos);
+        menuLines.forEach(line => console.log(line));
+      }
+    });
+  });
+}
+
+// Start services based on selected groups
+async function startSelectedServices(selections) {
+  const startFrontendApps = selections.frontend;
+  const startBackends = selections.backends;
+  const startObservability = selections.observability;
+  const startMocks = selections.mocks;
+
+  // Build JARs only if backends are selected
+  if (startBackends) {
+    buildJars();
+  }
+
+  // Start infrastructure (postgres, redis) only if backends are selected
+  if (startBackends) {
+    await startInfrastructureOnly();
+  }
+
+  // Start mocks (WireMock) if selected
+  if (startMocks) {
+    await startMocksOnly();
+  }
+
+  // Start observability stack if selected
+  if (startObservability) {
+    await startObservability_();
+  }
+
+  // Start backend services if selected (includes peripheral-emulator)
+  if (startBackends) {
+    await startPeripheralEmulator();
+    await startBackendServices();
+  }
+
+  // Start frontend if selected
+  if (startFrontendApps) {
+    await startFrontend();
+  }
+
+  // Print appropriate summary
+  printSelectiveSummary(selections);
+}
+
+// Start only infrastructure (postgres, redis) without wiremock
+async function startInfrastructureOnly() {
+  logHeader('Starting Infrastructure Services');
+
+  const toStart = [];
+  if (!alreadyRunning.has('PostgreSQL')) toStart.push('postgres');
+  if (!alreadyRunning.has('Redis')) toStart.push('redis');
+
+  if (toStart.length === 0) {
+    logSuccess('Infrastructure services already running');
+    startedServices.push('postgres:5432', 'redis:6379');
+    return;
+  }
+
+  logStep(`Starting ${toStart.join(', ')}...`);
+  exec(`docker compose up -d ${toStart.join(' ')}`, { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  logSuccess('Infrastructure containers started');
+
+  logStep('Waiting for infrastructure to be healthy...');
+
+  // Wait for postgres
+  if (!alreadyRunning.has('PostgreSQL')) {
+    let ready = false;
+    for (let i = 0; i < 30; i++) {
+      try {
+        execSilent(`docker compose exec -T postgres pg_isready -U postgres`);
+        ready = true;
+        break;
+      } catch {
+        await sleep(1000);
+      }
+    }
+    if (ready) {
+      logSuccess('PostgreSQL is ready');
+      startedServices.push('postgres:5432');
+    } else {
+      logError('PostgreSQL failed to start');
+      failedServices.push('postgres');
+    }
+  } else {
+    startedServices.push('postgres:5432');
+  }
+
+  // Wait for redis
+  if (!alreadyRunning.has('Redis')) {
+    let ready = false;
+    for (let i = 0; i < 30; i++) {
+      try {
+        execSilent(`docker compose exec -T redis redis-cli ping`);
+        ready = true;
+        break;
+      } catch {
+        await sleep(1000);
+      }
+    }
+    if (ready) {
+      logSuccess('Redis is ready');
+      startedServices.push('redis:6379');
+    } else {
+      logError('Redis failed to start');
+      failedServices.push('redis');
+    }
+  } else {
+    startedServices.push('redis:6379');
+  }
+}
+
+// Start only mocks (WireMock)
+async function startMocksOnly() {
+  logHeader('Starting Mocks (WireMock)');
+
+  if (alreadyRunning.has('WireMock')) {
+    logSuccess('WireMock already running');
+    startedServices.push('wiremock:8082');
+    return;
+  }
+
+  logStep('Starting WireMock...');
+  exec('docker compose up -d wiremock', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+
+  logStep('Waiting for WireMock to be healthy...');
+  let ready = false;
+  for (let i = 0; i < 30; i++) {
+    if (await isHealthy(8082, '/__admin/mappings')) {
+      ready = true;
+      break;
+    }
+    await sleep(1000);
+  }
+  if (ready) {
+    logSuccess('WireMock is ready');
+    startedServices.push('wiremock:8082');
+  } else {
+    logError('WireMock failed to start');
+    failedServices.push('wiremock');
+  }
+}
+
+// Renamed to avoid conflict with existing function
+async function startObservability_() {
+  logHeader('Starting Observability Stack');
+
+  logStep('Starting Tempo, Loki, Prometheus, and Grafana...');
+  exec('docker compose up -d tempo loki prometheus grafana promtail redis-exporter', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+  logSuccess('Observability containers started');
+
+  logStep('Waiting for observability stack to be healthy...');
+
+  // Wait for grafana
+  let ready = false;
+  for (let i = 0; i < 60; i++) {
+    if (await isHealthy(3000, '/api/health')) {
+      ready = true;
+      break;
+    }
+    await sleep(2000);
+  }
+
+  if (ready) {
+    logSuccess('Grafana is ready');
+    startedServices.push('grafana:3000', 'prometheus:9090', 'loki:3100', 'tempo:3200');
+  } else {
+    logWarning('Grafana may not be fully ready yet');
+  }
+}
+
+// Print summary for selective startup
+function printSelectiveSummary(selections) {
+  logHeader('Startup Summary');
+
+  if (failedServices.length > 0) {
+    console.log(`${colors.red}Some services failed to start:${colors.nc}`);
+    for (const service of failedServices) {
+      console.log(`  ${colors.red}✗${colors.nc} ${service}`);
+    }
+    console.log('');
+  }
+
+  console.log(`${colors.green}${colors.bold}Services Running:${colors.nc}`);
+  console.log('');
+
+  // Infrastructure (only if backends selected)
+  if (selections.backends) {
+    console.log(`${colors.bold}Infrastructure:${colors.nc}`);
+    console.log(`  ${colors.cyan}PostgreSQL${colors.nc}        http://localhost:5432`);
+    console.log(`  ${colors.cyan}Redis${colors.nc}             http://localhost:6379`);
+    console.log('');
+  }
+
+  // Mocks
+  if (selections.mocks) {
+    console.log(`${colors.bold}Mocks:${colors.nc}`);
+    console.log(`  ${colors.cyan}WireMock${colors.nc}          http://localhost:8082`);
+    console.log('                     View mappings at: http://localhost:8082/__admin/mappings');
+    console.log('');
+  }
+
+  // Observability
+  if (selections.observability) {
+    console.log(`${colors.bold}Observability:${colors.nc}`);
+    console.log(`  ${colors.cyan}Grafana${colors.nc}           http://localhost:3000`);
+    console.log('                     Login with admin/admin');
+    console.log(`  ${colors.cyan}Prometheus${colors.nc}        http://localhost:9090`);
+    console.log(`  ${colors.cyan}Loki${colors.nc}              http://localhost:3100`);
+    console.log(`  ${colors.cyan}Tempo${colors.nc}             http://localhost:3200`);
+    console.log('');
+  }
+
+  // Backend Services
+  if (selections.backends) {
+    console.log(`${colors.bold}Backend Services:${colors.nc}`);
+    console.log(`  ${colors.cyan}product-service${colors.nc}   http://localhost:8090`);
+    console.log(`  ${colors.cyan}cart-service${colors.nc}      http://localhost:8081`);
+    console.log(`  ${colors.cyan}customer-service${colors.nc}  http://localhost:8083`);
+    console.log(`  ${colors.cyan}discount-service${colors.nc}  http://localhost:8084`);
+    console.log(`  ${colors.cyan}fulfillment-service${colors.nc} http://localhost:8085`);
+    console.log(`  ${colors.cyan}audit-service${colors.nc}     http://localhost:8086`);
+    console.log(`  ${colors.cyan}checkout-service${colors.nc}  http://localhost:8087`);
+    console.log(`  ${colors.cyan}order-service${colors.nc}     http://localhost:8088`);
+    console.log(`  ${colors.cyan}user-service${colors.nc}      http://localhost:8089`);
+    console.log('');
+
+    console.log(`${colors.bold}Peripheral Devices:${colors.nc}`);
+    console.log(`  ${colors.cyan}peripheral-emulator${colors.nc}`);
+    console.log(`                     WebSocket: ws://localhost:9100/stomp`);
+    console.log(`                     Dashboard: http://localhost:9101`);
+    console.log('');
+  }
+
+  // Frontend
+  if (selections.frontend) {
+    console.log(`${colors.bold}Frontend Applications:${colors.nc}`);
+    console.log(`  ${colors.cyan}home-portal${colors.nc}       http://localhost:3003`);
+    console.log('                     Platform landing page');
+    console.log(`  ${colors.cyan}ecommerce-web${colors.nc}     http://localhost:3001`);
+    console.log('                     Main e-commerce storefront');
+    console.log(`  ${colors.cyan}kiosk-web${colors.nc}         http://localhost:3002`);
+    console.log('                     Self-checkout kiosk');
+    console.log('');
+  }
+
+  // Quick commands
+  console.log(`${colors.bold}${colors.yellow}Quick Commands:${colors.nc}`);
+  console.log('');
+  console.log('  # View logs');
+  console.log('  docker compose -f docker/docker-compose.yml logs -f <service-name>');
+  console.log('');
+  console.log('  # Stop everything');
+  console.log('  docker compose -f docker/docker-compose.yml down');
+  console.log('');
+
+  console.log(`${colors.green}${colors.bold}Selected services are ready!${colors.nc}`);
+
+  if (selections.frontend) {
+    console.log(`  ${colors.bold}Home Portal:${colors.nc}     ${colors.cyan}http://localhost:3003${colors.nc}  ${colors.yellow}← Start here!${colors.nc}`);
+    console.log(`  E-commerce:      ${colors.cyan}http://localhost:3001${colors.nc}`);
+    console.log(`  Kiosk:           ${colors.cyan}http://localhost:3002${colors.nc}`);
+  }
 }
 
 // Kill process on a port
@@ -987,27 +1801,67 @@ async function rebuildApp(appName) {
   }
 }
 
+// Helper to get argument value
+function getArgValue(args, flag) {
+  const index = args.indexOf(flag);
+  if (index !== -1 && args[index + 1] && !args[index + 1].startsWith('-')) {
+    return args[index + 1];
+  }
+  return null;
+}
+
 // Main
 async function main() {
   const args = process.argv.slice(2);
+  const shouldOpenBrowser = args.includes('--open');
 
-  // Handle --help
+  // ==================== HELP ====================
   if (args.includes('--help') || args.includes('-h')) {
     showHelp();
     return;
   }
 
-  // Handle -r (rebuild/restart mode)
+  // ==================== STOP ====================
+  if (args.includes('-s') || args.includes('--stop')) {
+    const group = getArgValue(args, '-s') || getArgValue(args, '--stop');
+    await stopServices(group);
+    return;
+  }
+
+  // ==================== STATUS ====================
+  if (args.includes('--status')) {
+    await showStatus();
+    return;
+  }
+
+  // ==================== HEALTH ====================
+  if (args.includes('--health')) {
+    const allHealthy = await checkHealth();
+    process.exit(allHealthy ? 0 : 1);
+  }
+
+  // ==================== LOGS ====================
+  if (args.includes('-l') || args.includes('--logs')) {
+    const serviceName = getArgValue(args, '-l') || getArgValue(args, '--logs');
+    showLogs(serviceName);
+    return;
+  }
+
+  // ==================== CLEAN ====================
+  if (args.includes('--clean')) {
+    const removeVolumes = args.includes('-v') || args.includes('--volumes');
+    await cleanup(removeVolumes);
+    return;
+  }
+
+  // ==================== REBUILD/RESTART ====================
   if (args.includes('-r') || args.includes('--restart')) {
-    const rIndex = args.findIndex(a => a === '-r' || a === '--restart');
-    const appArg = args[rIndex + 1];
+    const appArg = getArgValue(args, '-r') || getArgValue(args, '--restart');
 
     let appName;
-    if (appArg && !appArg.startsWith('-')) {
-      // App name provided directly
+    if (appArg) {
       appName = appArg;
     } else {
-      // Interactive mode
       printBanner();
       appName = await selectAppInteractively();
     }
@@ -1021,7 +1875,115 @@ async function main() {
     process.exit(success ? 0 : 1);
   }
 
-  // Default: start everything
+  // ==================== INTERACTIVE MODE ====================
+  if (args.includes('-i') || args.includes('--interactive')) {
+    printBanner();
+    const selections = await selectServiceGroupsInteractively();
+
+    if (!selections) {
+      console.log('Cancelled.');
+      return;
+    }
+
+    const hasSelection = Object.values(selections).some(v => v);
+    if (!hasSelection) {
+      logWarning('No service groups selected. Nothing to start.');
+      return;
+    }
+
+    checkPrerequisites();
+    await checkPortConflicts();
+    await startSelectedServices(selections);
+
+    if (shouldOpenBrowser) {
+      openBrowser();
+    }
+    return;
+  }
+
+  // ==================== PROFILE MODE ====================
+  if (args.includes('--profile')) {
+    const profileName = getArgValue(args, '--profile');
+    if (!profileName || !PROFILES[profileName]) {
+      logError(`Unknown profile: ${profileName}`);
+      logInfo(`Available profiles: ${Object.keys(PROFILES).join(', ')}`);
+      process.exit(1);
+    }
+
+    const profile = PROFILES[profileName];
+    printBanner();
+    logInfo(`Using profile: ${profile.name} (${profile.description})`);
+
+    checkPrerequisites();
+    await checkPortConflicts();
+
+    if (profile.infraOnly) {
+      await startMinimalInfra();
+    } else {
+      await startSelectedServices(profile.selections);
+    }
+
+    if (shouldOpenBrowser && profile.selections.frontend) {
+      openBrowser();
+    }
+    return;
+  }
+
+  // ==================== GROUP FLAGS MODE ====================
+  const hasGroupFlags = args.some(a =>
+    ['--frontend', '--backends', '--observability', '--mocks',
+     '--no-frontend', '--no-backends', '--no-observability', '--no-mocks'].includes(a)
+  );
+
+  if (hasGroupFlags) {
+    // Start with defaults based on positive/negative flags
+    const hasPositiveFlags = args.some(a =>
+      ['--frontend', '--backends', '--observability', '--mocks'].includes(a)
+    );
+
+    let selections;
+    if (hasPositiveFlags) {
+      // If any positive flag is specified, start with nothing selected
+      selections = { frontend: false, backends: false, observability: false, mocks: false };
+      if (args.includes('--frontend')) selections.frontend = true;
+      if (args.includes('--backends')) selections.backends = true;
+      if (args.includes('--observability')) selections.observability = true;
+      if (args.includes('--mocks')) selections.mocks = true;
+    } else {
+      // If only negative flags, start with everything selected
+      selections = { frontend: true, backends: true, observability: true, mocks: true };
+    }
+
+    // Apply negative flags
+    if (args.includes('--no-frontend')) selections.frontend = false;
+    if (args.includes('--no-backends')) selections.backends = false;
+    if (args.includes('--no-observability')) selections.observability = false;
+    if (args.includes('--no-mocks')) selections.mocks = false;
+
+    const hasSelection = Object.values(selections).some(v => v);
+    if (!hasSelection) {
+      logWarning('No service groups selected. Nothing to start.');
+      return;
+    }
+
+    printBanner();
+    const selectedGroups = Object.entries(selections)
+      .filter(([_, v]) => v)
+      .map(([k, _]) => k)
+      .join(', ');
+    logInfo(`Starting: ${selectedGroups}`);
+
+    checkPrerequisites();
+    await checkPortConflicts();
+    await startSelectedServices(selections);
+
+    if (shouldOpenBrowser && selections.frontend) {
+      openBrowser();
+    }
+    return;
+  }
+
+  // ==================== DEFAULT: START EVERYTHING ====================
   printBanner();
   checkPrerequisites();
   await checkPortConflicts();
@@ -1032,6 +1994,10 @@ async function main() {
   await startBackendServices();
   await startFrontend();
   printSummary();
+
+  if (shouldOpenBrowser) {
+    openBrowser();
+  }
 }
 
 // Handle Ctrl+C

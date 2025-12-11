@@ -9,44 +9,93 @@ import {
   findOrdersByCustomer,
   searchOrders,
   mockOrders,
+  addOrder,
+  generateOrderNumber,
+  type MockOrder,
 } from '../data/orders';
 
 export const orderHandlers = [
-  // Get order by ID
-  http.get('*/api/orders/:id', async ({ params }) => {
-    await delay(100);
+  // Create order from completed transaction
+  http.post('*/api/orders', async ({ request }) => {
+    await delay(200);
 
-    const id = params.id as string;
-    const order = findOrderById(id);
+    const body = (await request.json()) as {
+      transactionId: string;
+      storeNumber: number;
+      employeeId: string;
+      employeeName?: string;
+      customerId?: string;
+      customerName: string;
+      items: Array<{
+        sku: string;
+        name: string;
+        quantity: number;
+        unitPrice: number;
+        lineTotal: number;
+        markdown?: {
+          type: string;
+          value: number;
+          reason: string;
+        };
+      }>;
+      payments: Array<{
+        method: string;
+        amount: number;
+        lastFour?: string;
+      }>;
+      subtotal: number;
+      taxTotal: number;
+      grandTotal: number;
+      fulfillmentType?: 'PICKUP' | 'DELIVERY';
+    };
 
-    if (!order) {
-      return HttpResponse.json(
-        { error: 'Order not found', code: 'ORDER_NOT_FOUND' },
-        { status: 404 }
-      );
-    }
+    const orderNumber = generateOrderNumber();
+    const now = new Date();
 
-    return HttpResponse.json(formatOrderResponse(order));
+    const newOrder: MockOrder = {
+      id: `order-${Date.now()}`,
+      orderNumber,
+      customerId: body.customerId,
+      customerName: body.customerName || 'Walk-in Customer',
+      storeNumber: body.storeNumber,
+      employeeId: body.employeeId,
+      status: 'DELIVERED',
+      items: body.items.map((item, idx) => ({
+        id: `item-${Date.now()}-${idx}`,
+        sku: item.sku,
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        lineTotal: item.lineTotal,
+        markdown: item.markdown,
+      })),
+      payments: body.payments.map((pay, idx) => ({
+        id: `pay-${Date.now()}-${idx}`,
+        method: pay.method as 'CARD' | 'CASH' | 'NET_TERMS' | 'GIFT_CARD',
+        amount: pay.amount,
+        status: 'CAPTURED' as const,
+        cardLast4: pay.lastFour,
+      })),
+      shipments: [],
+      subtotal: body.subtotal,
+      taxTotal: body.taxTotal,
+      grandTotal: body.grandTotal,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    addOrder(newOrder);
+
+    return HttpResponse.json({
+      id: newOrder.id,
+      orderNumber: newOrder.orderNumber,
+      status: 'DELIVERED',
+      createdAt: now.toISOString(),
+    }, { status: 201 });
   }),
 
-  // Get order by order number
-  http.get('*/api/orders/by-number/:orderNumber', async ({ params }) => {
-    await delay(100);
-
-    const orderNumber = params.orderNumber as string;
-    const order = findOrderByNumber(orderNumber);
-
-    if (!order) {
-      return HttpResponse.json(
-        { error: 'Order not found', code: 'ORDER_NOT_FOUND' },
-        { status: 404 }
-      );
-    }
-
-    return HttpResponse.json(formatOrderResponse(order));
-  }),
-
-  // Search orders
+  // IMPORTANT: Specific routes MUST come before parameterized routes
+  // Search orders - must be before /api/orders/:id to avoid :id matching "search"
   http.get('*/api/orders/search', async ({ request }) => {
     await delay(150);
 
@@ -81,6 +130,40 @@ export const orderHandlers = [
       page,
       totalPages,
     });
+  }),
+
+  // Get order by order number - must be before /api/orders/:id
+  http.get('*/api/orders/by-number/:orderNumber', async ({ params }) => {
+    await delay(100);
+
+    const orderNumber = params.orderNumber as string;
+    const order = findOrderByNumber(orderNumber);
+
+    if (!order) {
+      return HttpResponse.json(
+        { error: 'Order not found', code: 'ORDER_NOT_FOUND' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json(formatOrderResponse(order));
+  }),
+
+  // Get order by ID - catch-all for /api/orders/{id}
+  http.get('*/api/orders/:id', async ({ params }) => {
+    await delay(100);
+
+    const id = params.id as string;
+    const order = findOrderById(id);
+
+    if (!order) {
+      return HttpResponse.json(
+        { error: 'Order not found', code: 'ORDER_NOT_FOUND' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json(formatOrderResponse(order));
   }),
 
   // Get orders by customer

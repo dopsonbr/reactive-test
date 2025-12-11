@@ -20,17 +20,10 @@ import {
   CustomerDetailPage,
   CustomerFormPage,
 } from '../features/customer';
-
-function OrdersPage() {
-  return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Orders</h1>
-      <p className="text-muted-foreground">
-        Order management will be implemented in 045D_POS_TRANSACTION_FLOW.
-      </p>
-    </div>
-  );
-}
+import {
+  OrderSearchPage,
+  OrderDetailPage,
+} from '../features/orders';
 
 function ReportsPage() {
   return (
@@ -174,7 +167,7 @@ export const router = createBrowserRouter([
             path: '/orders',
             element: (
               <ProtectedRoute permission={Permission.ORDER_VIEW}>
-                <OrdersPage />
+                <OrderSearchPage />
               </ProtectedRoute>
             ),
           },
@@ -182,7 +175,7 @@ export const router = createBrowserRouter([
             path: '/orders/:orderId',
             element: (
               <ProtectedRoute permission={Permission.ORDER_VIEW}>
-                <OrdersPage />
+                <OrderDetailPage />
               </ProtectedRoute>
             ),
           },

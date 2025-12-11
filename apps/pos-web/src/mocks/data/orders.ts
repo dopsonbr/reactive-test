@@ -3,7 +3,10 @@
  * @see 045G_POS_E2E_TESTING.md - Test Data Strategy
  */
 
-import type { OrderStatus, ShipmentStatus } from '../../features/orders/types/order';
+// Use valid OrderStatus values from the frontend types
+// Valid statuses: PENDING, CONFIRMED, PROCESSING, PARTIALLY_SHIPPED, SHIPPED, DELIVERED, CANCELLED, RETURNED
+type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'PARTIALLY_SHIPPED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'RETURNED';
+type ShipmentStatus = 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'EXCEPTION';
 
 export interface MockOrderItem {
   id: string;
@@ -57,6 +60,7 @@ export interface MockOrder {
   updatedAt: Date;
 }
 
+// Mutable array - new orders can be added during session
 export const mockOrders: MockOrder[] = [
   // Completed in-store transaction
   {
@@ -66,7 +70,7 @@ export const mockOrders: MockOrder[] = [
     customerName: 'Jane Consumer',
     storeNumber: 1234,
     employeeId: 'EMP001',
-    status: 'COMPLETE',
+    status: 'DELIVERED',
     items: [
       {
         id: 'item-001',
@@ -199,7 +203,7 @@ export const mockOrders: MockOrder[] = [
     customerName: 'Walk-in Customer',
     storeNumber: 1234,
     employeeId: 'EMP001',
-    status: 'COMPLETE',
+    status: 'DELIVERED',
     items: [
       {
         id: 'item-005',
@@ -239,7 +243,7 @@ export const mockOrders: MockOrder[] = [
     customerName: 'Jane Consumer',
     storeNumber: 1234,
     employeeId: 'EMP001',
-    status: 'COMPLETE',
+    status: 'DELIVERED',
     items: [
       {
         id: 'item-006',
@@ -285,7 +289,7 @@ export const mockOrders: MockOrder[] = [
     customerName: 'Walk-in Customer',
     storeNumber: 1234,
     employeeId: 'EMP001',
-    status: 'PARTIAL_REFUND',
+    status: 'RETURNED',
     items: [
       {
         id: 'item-007',
@@ -350,4 +354,18 @@ export function searchOrders(query: string): MockOrder[] {
       o.customerName.toLowerCase().includes(lowerQuery) ||
       o.poNumber?.toLowerCase().includes(lowerQuery)
   );
+}
+
+// Add a new order (for transaction completion)
+export function addOrder(order: MockOrder): MockOrder {
+  mockOrders.unshift(order); // Add at beginning (newest first)
+  return order;
+}
+
+// Generate a new order number
+export function generateOrderNumber(): string {
+  const date = new Date();
+  const year = date.getFullYear();
+  const seq = String(mockOrders.length + 1).padStart(6, '0');
+  return `POS-${year}-${seq}`;
 }

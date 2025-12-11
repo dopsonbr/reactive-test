@@ -443,3 +443,29 @@ E2E_BASE_URL=http://localhost:3004 pnpm exec playwright test apps/pos-web-e2e/sp
 ```
 
 **Blocked By**: WireMock failing to start (needs investigation)
+
+### Transaction → Order Flow Fix (2024-12-11)
+
+**Problem**: Completed transactions were not appearing in the Orders page. After completing a full checkout flow (add items → fulfillment → payment → complete), navigating to Orders showed only the 6 initial mock orders, not the newly created order.
+
+**Root Causes**:
+1. **Disconnected systems** - `useOrderLookup` had inline mock data while `completeTransaction` never called any API to create orders
+2. **React Query cache** - 5-minute `staleTime` configuration prevented fresh data from appearing without manual refresh
+
+**Solution**:
+1. Added `queryClient.invalidateQueries({ queryKey: ['orders'] })` after successful order creation in `TransactionProvider.tsx`
+2. Fixed TypeScript type mismatches in `useOrderLookup.ts`:
+   - `customerId` type casting to satisfy required string field
+   - Added missing `fulfillmentGroupId` to placeholder items
+3. Fixed `customerName` construction to use `firstName`/`lastName` from `CustomerSummary` type
+
+**Files Changed**:
+- `apps/pos-web/src/features/transaction/context/TransactionProvider.tsx` - Added useQueryClient import and cache invalidation
+- `apps/pos-web/src/features/orders/hooks/useOrderLookup.ts` - Fixed TypeScript errors
+
+**Verification**:
+- Started with 6 orders in Orders list
+- Created new transaction (Widget Standard $79.99 + tax = $86.39)
+- Completed checkout with Cash payment
+- Orders page shows 7 orders with new order POS-2025-000007 at top
+- Transaction → Order flow is now fully functional with MSW mocking

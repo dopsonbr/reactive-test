@@ -1,5 +1,6 @@
 import { useReducer, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { TransactionContext, type TransactionContextValue } from './TransactionContext';
 import { transactionReducer, initialTransaction } from './transactionReducer';
 import { useAuth } from '../../auth';
@@ -102,6 +103,7 @@ export function TransactionProvider({ children }: TransactionProviderProps) {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user, storeNumber } = useAuth();
+  const queryClient = useQueryClient();
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -303,17 +305,62 @@ export function TransactionProvider({ children }: TransactionProviderProps) {
   const completeTransaction = useCallback(async (): Promise<TransactionReceipt> => {
     setIsLoading(true);
     try {
-      // In production, would submit to backend
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Create order from completed transaction via API (MSW intercepts)
+      const orderPayload = {
+        transactionId: state.id,
+        storeNumber: state.storeNumber,
+        employeeId: state.employeeId,
+        employeeName: state.employeeName,
+        customerId: state.customer?.id,
+        customerName: state.customer ? `${state.customer.firstName} ${state.customer.lastName}` : 'Walk-in Customer',
+        items: state.items.map((item) => ({
+          sku: item.sku,
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          lineTotal: item.lineTotal,
+          markdown: item.markdown ? {
+            type: item.markdown.type,
+            value: item.markdown.value,
+            reason: item.markdown.reason,
+          } : undefined,
+        })),
+        payments: state.payments.map((pay) => ({
+          method: pay.method,
+          amount: pay.amount,
+          lastFour: pay.lastFour,
+        })),
+        subtotal: state.subtotal,
+        taxTotal: state.taxTotal,
+        grandTotal: state.grandTotal,
+        fulfillmentType: state.fulfillment?.type,
+      };
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderPayload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create order');
+      }
+
+      const orderResult = await response.json();
+
+      // Invalidate orders cache so new order appears in list
+      await queryClient.invalidateQueries({ queryKey: ['orders'] });
 
       dispatch({ type: 'COMPLETE_TRANSACTION' });
 
-      // Build receipt
+      // Build receipt using order number from API
       const receipt: TransactionReceipt = {
         ...state,
         status: 'COMPLETE',
         completedAt: new Date(),
-        receiptNumber: `R${Date.now()}`,
+        receiptNumber: orderResult.orderNumber || `R${Date.now()}`,
         storeName: `Store #${state.storeNumber}`,
         storeAddress: {
           street1: '123 Main St',
@@ -332,7 +379,7 @@ export function TransactionProvider({ children }: TransactionProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [state, navigate]);
+  }, [state, navigate, queryClient]);
 
   const value: TransactionContextValue = useMemo(
     () => ({

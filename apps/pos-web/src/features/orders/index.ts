@@ -34,3 +34,4 @@ export { ReturnDialog } from './components/Returns';
 
 // Pages
 export { OrderDetailPage } from './pages/OrderDetailPage';
+export { OrderSearchPage } from './pages/OrderSearchPage';

@@ -145,7 +145,14 @@
       "Bash(go test:*)",
       "Bash(brew list:*)",
       "Bash(go build:*)",
-      "Skill(superpowers:finishing-a-development-branch)"
+      "Skill(superpowers:finishing-a-development-branch)",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__new_page",
+      "Bash(open -a \"Google Chrome\" http://localhost:5173)",
+      "WebFetch(domain:localhost)",
+      "Bash(pnpm docs:dev:*)",
+      "Bash(open -a \"Google Chrome\" \"http://localhost:5174/\")"
     ],
     "deny": [],
     "ask": [

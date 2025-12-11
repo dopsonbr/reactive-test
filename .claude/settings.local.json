@@ -145,7 +145,13 @@
       "Bash(go test:*)",
       "Bash(brew list:*)",
       "Bash(go build:*)",
-      "Skill(superpowers:finishing-a-development-branch)"
+      "Skill(superpowers:finishing-a-development-branch)",
+      "Bash(go fmt:*)",
+      "Bash(ps:*)",
+      "Bash(go mod verify:*)",
+      "Bash(go vet:*)",
+      "Bash(./offline-pos)",
+      "Bash(npx playwright test:*)"
     ],
     "deny": [],
     "ask": [

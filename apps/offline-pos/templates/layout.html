@@ -1,0 +1,37 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline POS - {{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/pico.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <header class="container">
+        <nav>
+            <strong>OFFLINE POS</strong>
+            <span class="store-id">Store #{{.StoreNumber}}</span>
+            {{if .Operator}}
+            <span class="operator">{{.Operator.Name}}</span>
+            <form action="/logout" method="POST" style="display: inline;">
+                <button type="submit" class="outline secondary">Logout</button>
+            </form>
+            {{end}}
+        </nav>
+        <div id="status-banner" class="banner hidden"></div>
+    </header>
+
+    <main class="container">
+        {{template "content" .}}
+    </main>
+
+    <script type="module">
+        import { pollStatus } from '/static/js/status.js';
+        pollStatus();
+    </script>
+    {{block "scripts" .}}{{end}}
+</body>
+</html>
+{{end}}

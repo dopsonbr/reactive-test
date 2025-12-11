@@ -1,0 +1,10 @@
+{
+  "name": "offline-pos-tools",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Development tools for offline POS",
+  "private": true,
+  "dependencies": {
+    "ws": "^8.14.2"
+  }
+}

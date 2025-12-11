@@ -1,0 +1,28 @@
+{{define "content"}}
+<div class="transaction-complete">
+    <h1>Transaction Complete</h1>
+    <p>Transaction ID:</p>
+    <div class="transaction-id">{{.TransactionID}}</div>
+    <p>Total: ${{formatPrice .Total}}</p>
+
+    <div class="actions">
+        <a href="/scan" role="button">New Transaction</a>
+        <form method="POST" action="/logout" style="display:inline;">
+            <button type="submit" class="secondary">Sign Out</button>
+        </form>
+    </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script type="module">
+    import { printReceipt } from '/static/js/peripheral.js';
+
+    // Attempt receipt print
+    printReceipt({
+        transactionId: '{{.TransactionID}}',
+        total: {{.Total}},
+        items: {{.ItemsJSON}}
+    });
+</script>
+{{end}}

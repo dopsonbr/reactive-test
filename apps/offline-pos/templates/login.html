@@ -1,0 +1,22 @@
+{{define "content"}}
+<article>
+    <h1>Operator Login</h1>
+    <form method="POST" action="/login">
+        <label for="pin">Enter PIN</label>
+        <input type="password"
+               id="pin"
+               name="pin"
+               class="pin-input"
+               maxlength="6"
+               pattern="[0-9]{4,6}"
+               inputmode="numeric"
+               autocomplete="off"
+               autofocus
+               required>
+        {{if .Error}}
+        <small class="error">{{.Error}}</small>
+        {{end}}
+        <button type="submit">Sign In</button>
+    </form>
+</article>
+{{end}}

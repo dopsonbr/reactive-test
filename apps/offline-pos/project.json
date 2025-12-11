@@ -1,0 +1,49 @@
+{
+  "name": "offline-pos",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/offline-pos",
+  "tags": ["type:app", "platform:go"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "go build -ldflags=\"-s -w\" -o dist/apps/offline-pos/offline-pos .",
+        "cwd": "apps/offline-pos"
+      },
+      "outputs": ["{workspaceRoot}/dist/apps/offline-pos"]
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "go run .",
+        "cwd": "apps/offline-pos"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "go test ./...",
+        "cwd": "apps/offline-pos"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "go vet ./...",
+          "go fmt ./..."
+        ],
+        "cwd": "apps/offline-pos",
+        "parallel": false
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "air",
+        "cwd": "apps/offline-pos"
+      }
+    }
+  }
+}

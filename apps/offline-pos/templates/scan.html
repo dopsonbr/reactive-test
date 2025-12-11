@@ -1,0 +1,130 @@
+{{define "content"}}
+<div class="scan-area" id="scan-area">
+    <span>Scan barcode or search below</span>
+</div>
+
+<div id="scan-feedback" class="scan-feedback hidden"></div>
+
+<form id="search-form">
+    <input type="search"
+           name="q"
+           id="search-input"
+           placeholder="Search by name or UPC..."
+           autocomplete="off"
+           autofocus>
+</form>
+
+<div id="search-results" class="search-results"></div>
+
+<div class="actions">
+    <a href="/cart" role="button" class="primary">
+        View Cart
+        <span id="cart-count">({{.CartCount}})</span>
+    </a>
+    <a href="/payment" role="button" class="secondary">Proceed to Checkout</a>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script type="module">
+    import { connectPeripherals, onScan } from '/static/js/peripheral.js';
+    import { addToCart, updateCartCount } from '/static/js/cart.js';
+
+    const searchInput = document.getElementById('search-input');
+    const searchForm = document.getElementById('search-form');
+    const resultsDiv = document.getElementById('search-results');
+
+    // Peripheral scanner integration
+    connectPeripherals('ws://localhost:9100/peripherals');
+
+    onScan(async (barcode) => {
+        searchInput.value = barcode;
+        await performSearch(barcode);
+    });
+
+    // Search form handling - prevent navigation, search inline
+    searchForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const query = searchInput.value.trim();
+        if (query) {
+            await performSearch(query);
+        }
+    });
+
+    // Also search as user types (debounced)
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const query = searchInput.value.trim();
+        if (query.length >= 2) {
+            searchTimeout = setTimeout(() => performSearch(query), 300);
+        } else {
+            resultsDiv.innerHTML = '';
+        }
+    });
+
+    async function performSearch(query) {
+        try {
+            const resp = await fetch(`/api/products/search?q=${encodeURIComponent(query)}`);
+            const products = await resp.json();
+            displayResults(products, query);
+        } catch (err) {
+            resultsDiv.innerHTML = '<p class="error">Search failed</p>';
+        }
+    }
+
+    function displayResults(products, query) {
+        if (!products || products.length === 0) {
+            resultsDiv.innerHTML = `<p>No products found for "${query}"</p>`;
+            return;
+        }
+
+        resultsDiv.innerHTML = products.map(p => `
+            <article class="product-card" data-upc="${p.UPC}">
+                <header>
+                    <strong>${p.Name}</strong>
+                    <span class="price">$${(p.PriceCents / 100).toFixed(2)}</span>
+                </header>
+                <footer>
+                    <small>${p.Department} | UPC: ${p.UPC}</small>
+                    <button class="add-btn" data-upc="${p.UPC}" data-name="${p.Name}">Add to Cart</button>
+                </footer>
+            </article>
+        `).join('');
+
+        // Attach click handlers to add buttons
+        resultsDiv.querySelectorAll('.add-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const upc = btn.dataset.upc;
+                const name = btn.dataset.name;
+                await handleAddToCart(upc, name);
+            });
+        });
+    }
+
+    async function handleAddToCart(upc, name) {
+        try {
+            await addToCart(upc);
+            showFeedback(true, `Added: ${name}`);
+            await updateCartCount();
+            // Clear search after adding
+            searchInput.value = '';
+            resultsDiv.innerHTML = '';
+            searchInput.focus();
+        } catch (err) {
+            showFeedback(false, 'Failed to add item');
+        }
+    }
+
+    function showFeedback(success, message) {
+        const el = document.getElementById('scan-feedback');
+        el.textContent = message;
+        el.classList.remove('hidden', 'success', 'error');
+        el.classList.add(success ? 'success' : 'error');
+        setTimeout(() => el.classList.add('hidden'), 2000);
+    }
+
+    // Initialize cart count on load
+    updateCartCount();
+</script>
+{{end}}

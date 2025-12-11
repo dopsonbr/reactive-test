@@ -1,0 +1,50 @@
+{{define "content"}}
+<h1>Cart</h1>
+
+{{if .Cart}}
+<div class="cart-items">
+    {{range .Cart}}
+    <div class="cart-item" data-upc="{{.UPC}}">
+        <span class="name">{{.Name}}</span>
+        <div class="qty-controls">
+            <button type="button" onclick="updateQty('{{.UPC}}', -1)">-</button>
+            <span class="qty">{{.Quantity}}</span>
+            <button type="button" onclick="updateQty('{{.UPC}}', 1)">+</button>
+        </div>
+        <span class="price">${{formatPrice .PriceCents}}</span>
+        <button type="button" class="secondary" onclick="removeItem('{{.UPC}}')">×</button>
+    </div>
+    {{end}}
+</div>
+
+<div class="cart-totals">
+    <div>Subtotal: ${{formatPrice .Subtotal}}</div>
+    <div>Tax: ${{formatPrice .Tax}}</div>
+    <div><strong>Total: ${{formatPrice .Total}}</strong></div>
+</div>
+
+<div class="actions">
+    <a href="/scan" role="button" class="secondary">Add More Items</a>
+    <a href="/payment" role="button">Pay</a>
+</div>
+{{else}}
+<p>Cart is empty</p>
+<a href="/scan" role="button">Start Scanning</a>
+{{end}}
+{{end}}
+
+{{define "scripts"}}
+<script type="module">
+    import { updateCartItem, removeCartItem } from '/static/js/cart.js';
+
+    window.updateQty = async (upc, delta) => {
+        await updateCartItem(upc, delta);
+        location.reload();
+    };
+
+    window.removeItem = async (upc) => {
+        await removeCartItem(upc);
+        location.reload();
+    };
+</script>
+{{end}}

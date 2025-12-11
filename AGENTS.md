@@ -521,6 +521,7 @@ environment:
 | checkout-service    | 8087 | Order checkout and payment   |
 | order-service       | 8088 | Order viewing and management |
 | user-service        | 8089 | User/auth service (JWT)      |
+| peripheral-emulator | 9100 (WS) / 9101 (HTTP) | Peripheral device emulator   |
 | redis               | 6379 | Cache backend                |
 | postgres            | 5432 | Database                     |
 | grafana             | 3000 | Dashboards (admin/admin)     |

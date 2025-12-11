@@ -23,10 +23,10 @@ AI-native codebase experiment that uses a realistic, multi-service retail system
 ```mermaid
 graph LR
   subgraph Frontend
-    FE1[ecommerce-web (React/Vite)]
-    FE2[Merchant Portal (React/Vite) - planned]
-    FE3[Offline POS (Go/SQLite)]
-    FE4[Self-Checkout Kiosk Web - planned]
+    FE1["ecommerce-web (React/Vite)"]
+    FE2["Merchant Portal (React/Vite) - planned"]
+    FE3["Offline POS (Go/SQLite)"]
+    FE4["Self-Checkout Kiosk Web - planned"]
   end
 
   subgraph Core Services
@@ -93,13 +93,13 @@ graph LR
 **Product data services + merchant portal (planned)**
 ```mermaid
 graph TD
-  portal[Merchant Portal (React/Vite)]
-  merch[merchandise-service :8091]
-  price[price-service :8092]
-  inventory[inventory-service :8093]
-  product[product-service]
-  web[ecommerce-web]
-  pg[(PostgreSQL: merchandise | price | inventory schemas)]
+  portal["Merchant Portal (React/Vite)"]
+  merch["merchandise-service :8091"]
+  price["price-service :8092"]
+  inventory["inventory-service :8093"]
+  product["product-service"]
+  web["ecommerce-web"]
+  pg[("PostgreSQL: merchandise | price | inventory schemas")]
 
   portal --> merch
   portal --> price
@@ -119,12 +119,12 @@ graph TD
 **Offline POS (disaster recovery)**
 ```mermaid
 graph TD
-  browser[Browser (HTML/vanilla JS)]
-  pos[Offline POS Binary (Go)]
-  sqlite[(SQLite WAL)]
-  sync[Background Sync (catalog refresh, tx upload)]
-  central[Central Systems (product/cart/checkout)]
-  peripheral[Peripheral Bridge :9100]
+  browser["Browser (HTML/vanilla JS)"]
+  pos["Offline POS Binary (Go)"]
+  sqlite[("SQLite WAL")]
+  sync["Background Sync (catalog refresh, tx upload)"]
+  central["Central Systems (product/cart/checkout)"]
+  peripheral["Peripheral Bridge :9100"]
 
   browser -->|"HTTP :3000"| pos
   pos --> sqlite
@@ -136,13 +136,13 @@ graph TD
 **Self-checkout kiosk web (planned)**
 ```mermaid
 graph TD
-  kioskUI[Self-Checkout Kiosk Web (React/Vite)]
-  cartSvc[cart-service]
-  checkoutSvc[checkout-service]
-  productSvc[product-service]
-  discountSvc[discount-service]
-  fulfillmentSvc[fulfillment-service]
-  auditSvc[audit-service]
+  kioskUI["Self-Checkout Kiosk Web (React/Vite)"]
+  cartSvc["cart-service"]
+  checkoutSvc["checkout-service"]
+  productSvc["product-service"]
+  discountSvc["discount-service"]
+  fulfillmentSvc["fulfillment-service"]
+  auditSvc["audit-service"]
 
   kioskUI --> cartSvc
   kioskUI --> checkoutSvc
@@ -155,12 +155,12 @@ graph TD
 **Order + fulfillment flow**
 ```mermaid
 graph LR
-  rest[REST client] --> orderSvc[order-service]
-  gql[GraphQL client] --> orderSvc
-  orderSvc --> checkoutdb[(checkoutdb.orders)]
-  checkoutSvc[checkout-service] --> checkoutdb
-  checkoutSvc --> fulfillmentSvc[fulfillment-service]
-  cartSvc[cart-service] --> fulfillmentSvc
+  rest["REST client"] --> orderSvc["order-service"]
+  gql["GraphQL client"] --> orderSvc
+  orderSvc --> checkoutdb[("checkoutdb.orders")]
+  checkoutSvc["checkout-service"] --> checkoutdb
+  checkoutSvc --> fulfillmentSvc["fulfillment-service"]
+  cartSvc["cart-service"] --> fulfillmentSvc
 ```
 
 ## Documentation & Design Principles

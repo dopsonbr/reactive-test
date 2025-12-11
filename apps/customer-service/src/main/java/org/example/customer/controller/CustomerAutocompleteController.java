@@ -47,7 +47,7 @@ public class CustomerAutocompleteController {
       return Flux.empty();
     }
 
-    int effectiveLimit = Math.min(limit, 20);
+    int effectiveLimit = Math.max(1, Math.min(limit, 20));
     RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
 
     return customerService

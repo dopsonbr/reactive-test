@@ -5,5 +5,9 @@ public enum Permission {
   READ,
   WRITE,
   ADMIN,
-  CUSTOMER_SEARCH
+  CUSTOMER_SEARCH,
+  // Merchant portal permissions
+  MERCHANT,
+  PRICING_SPECIALIST,
+  INVENTORY_SPECIALIST
 }

@@ -131,7 +131,8 @@
     "workerDirectory": [
       "public",
       "apps/ecommerce-web/public",
-      "apps/kiosk-web/public"
+      "apps/kiosk-web/public",
+      "apps/merchant-portal/public"
     ]
   }
 }

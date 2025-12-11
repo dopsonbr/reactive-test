@@ -33,11 +33,11 @@ app:
 # External service URLs (Docker network)
 services:
   merchandise:
-    base-url: http://wiremock:8080
+    base-url: http://merchandise-service:8091
   price:
-    base-url: http://wiremock:8080
+    base-url: http://price-service:8092
   inventory:
-    base-url: http://wiremock:8080
+    base-url: http://inventory-service:8093
   catalog:
     base-url: http://wiremock:8080
 

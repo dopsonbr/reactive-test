@@ -574,12 +574,16 @@ async function checkPortConflicts() {
     { port: 8087, service: 'checkout-service' },
     { port: 8088, service: 'order-service' },
     { port: 8089, service: 'user-service' },
+    { port: 8091, service: 'merchandise-service' },
+    { port: 8092, service: 'price-service' },
+    { port: 8093, service: 'inventory-service' },
     { port: 9100, service: 'peripheral-emulator (WebSocket)' },
     { port: 9101, service: 'peripheral-emulator (HTTP)' },
     { port: 3000, service: 'Grafana' },
     { port: 3001, service: 'ecommerce-web' },
     { port: 3002, service: 'kiosk-web' },
     { port: 3003, service: 'home-portal' },
+    { port: 3010, service: 'merchant-portal' },
   ];
 
   const conflicts = [];
@@ -802,15 +806,20 @@ async function startBackendServices() {
   logHeader('Starting Backend Services');
 
   const services = [
-    { name: 'product-service', port: 8090 },
+    // Core services (no service dependencies, just infra)
+    { name: 'merchandise-service', port: 8091 },
+    { name: 'price-service', port: 8092 },
+    { name: 'inventory-service', port: 8093 },
     { name: 'customer-service', port: 8083 },
     { name: 'discount-service', port: 8084 },
     { name: 'fulfillment-service', port: 8085 },
     { name: 'audit-service', port: 8086 },
+    { name: 'user-service', port: 8089 },
+    // Aggregation services (depend on core services)
+    { name: 'product-service', port: 8090 },
     { name: 'cart-service', port: 8081 },
     { name: 'checkout-service', port: 8087 },
     { name: 'order-service', port: 8088 },
-    { name: 'user-service', port: 8089 },
   ];
 
   const toStart = services.filter(s => !alreadyRunning.has(s.name)).map(s => s.name);
@@ -845,7 +854,7 @@ async function startBackendServices() {
 async function startFrontend() {
   logHeader('Starting Frontend Applications');
 
-  // Start ecommerce-web
+  // Start ecommerce-web (Docker)
   if (alreadyRunning.has('ecommerce-web')) {
     logSuccess('ecommerce-web already running');
     startedServices.push('ecommerce-web:3001');
@@ -870,6 +879,33 @@ async function startFrontend() {
       logWarning('ecommerce-web may not be fully ready yet');
     }
     startedServices.push('ecommerce-web:3001');
+  }
+
+  // Start merchant-portal (Docker)
+  if (alreadyRunning.has('merchant-portal')) {
+    logSuccess('merchant-portal already running');
+    startedServices.push('merchant-portal:3010');
+  } else {
+    logStep('Starting merchant-portal...');
+    exec('docker compose up -d merchant-portal', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+    logSuccess('merchant-portal container started');
+
+    logStep('Waiting for merchant-portal to be healthy...');
+    let ready = false;
+    for (let i = 0; i < 60; i++) {
+      if (await isHealthy(3010, '/health') || await isHealthy(3010, '/')) {
+        ready = true;
+        break;
+      }
+      await sleep(2000);
+    }
+
+    if (ready) {
+      logSuccess('merchant-portal is ready');
+    } else {
+      logWarning('merchant-portal may not be fully ready yet');
+    }
+    startedServices.push('merchant-portal:3010');
   }
 
   // Start kiosk-web (self-checkout kiosk application)
@@ -980,6 +1016,9 @@ function printSummary() {
 
   // Backend Services
   console.log(`${colors.bold}Backend Services:${colors.nc}`);
+  console.log(`  ${colors.cyan}merchandise-service${colors.nc} http://localhost:8091`);
+  console.log(`  ${colors.cyan}price-service${colors.nc}     http://localhost:8092`);
+  console.log(`  ${colors.cyan}inventory-service${colors.nc} http://localhost:8093`);
   console.log(`  ${colors.cyan}product-service${colors.nc}   http://localhost:8090`);
   console.log(`  ${colors.cyan}cart-service${colors.nc}      http://localhost:8081`);
   console.log(`  ${colors.cyan}customer-service${colors.nc}  http://localhost:8083`);
@@ -998,7 +1037,7 @@ function printSummary() {
   console.log(`                     Dashboard: http://localhost:9101`);
   console.log('');
 
-  // Frontend
+  // Frontend Applications
   console.log(`${colors.bold}Frontend Applications:${colors.nc}`);
   console.log(`  ${colors.cyan}home-portal${colors.nc}       http://localhost:3003`);
   console.log('                     Platform landing page (start here!)');
@@ -1008,6 +1047,9 @@ function printSummary() {
   console.log('');
   console.log(`  ${colors.cyan}kiosk-web${colors.nc}         http://localhost:3002`);
   console.log('                     Self-checkout kiosk application');
+  console.log('');
+  console.log(`  ${colors.cyan}merchant-portal${colors.nc}   http://localhost:3010`);
+  console.log('                     Merchant data management portal');
   console.log('');
 
   // Quick commands

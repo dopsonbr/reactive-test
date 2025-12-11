@@ -25,6 +25,21 @@ CREATE DATABASE checkoutdb;
 CREATE USER checkout_user WITH ENCRYPTED PASSWORD 'checkout_pass';
 GRANT ALL PRIVILEGES ON DATABASE checkoutdb TO checkout_user;
 
+-- Merchandise Service Database
+CREATE DATABASE merchandisedb;
+CREATE USER merchandise_user WITH ENCRYPTED PASSWORD 'merchandise_pass';
+GRANT ALL PRIVILEGES ON DATABASE merchandisedb TO merchandise_user;
+
+-- Price Service Database
+CREATE DATABASE pricedb;
+CREATE USER price_user WITH ENCRYPTED PASSWORD 'price_pass';
+GRANT ALL PRIVILEGES ON DATABASE pricedb TO price_user;
+
+-- Inventory Service Database
+CREATE DATABASE inventorydb;
+CREATE USER inventory_user WITH ENCRYPTED PASSWORD 'inventory_pass';
+GRANT ALL PRIVILEGES ON DATABASE inventorydb TO inventory_user;
+
 -- Grant schema permissions
 \c cartdb
 GRANT ALL ON SCHEMA public TO cart_user;
@@ -40,3 +55,12 @@ GRANT ALL ON SCHEMA public TO audit;
 
 \c checkoutdb
 GRANT ALL ON SCHEMA public TO checkout_user;
+
+\c merchandisedb
+GRANT ALL ON SCHEMA public TO merchandise_user;
+
+\c pricedb
+GRANT ALL ON SCHEMA public TO price_user;
+
+\c inventorydb
+GRANT ALL ON SCHEMA public TO inventory_user;

@@ -1,6 +1,7 @@
 package org.example.product.repository.inventory;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -28,9 +29,7 @@ class InventoryRepositoryCacheTest {
 
   @Mock private WebClient webClient;
 
-  @Mock private WebClient.RequestBodyUriSpec requestBodyUriSpec;
-
-  @Mock private WebClient.RequestBodySpec requestBodySpec;
+  @Mock private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
 
   @Mock private WebClient.RequestHeadersSpec requestHeadersSpec;
 
@@ -67,9 +66,8 @@ class InventoryRepositoryCacheTest {
     InventoryResponse httpResponse = new InventoryResponse(50);
 
     // HTTP call setup - this should ALWAYS be called (fallback-only pattern)
-    when(webClient.post()).thenReturn(requestBodyUriSpec);
-    when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-    when(requestBodySpec.bodyValue(any(InventoryRequest.class))).thenReturn(requestHeadersSpec);
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), anyLong())).thenReturn(requestHeadersSpec);
     when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     when(responseSpec.bodyToMono(InventoryResponse.class)).thenReturn(Mono.just(httpResponse));
 
@@ -85,7 +83,7 @@ class InventoryRepositoryCacheTest {
     StepVerifier.create(repository.getAvailability(sku)).expectNext(httpResponse).verifyComplete();
 
     // Verify HTTP call was made
-    verify(webClient).post();
+    verify(webClient).get();
 
     // Verify cache was updated with fresh data
     verify(cacheService).put(eq(cacheKey), eq(httpResponse), any(Duration.class));
@@ -103,9 +101,8 @@ class InventoryRepositoryCacheTest {
     InventoryResponse cachedResponse = new InventoryResponse(25);
 
     // HTTP call setup
-    when(webClient.post()).thenReturn(requestBodyUriSpec);
-    when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-    when(requestBodySpec.bodyValue(any(InventoryRequest.class))).thenReturn(requestHeadersSpec);
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), anyLong())).thenReturn(requestHeadersSpec);
     when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     when(responseSpec.bodyToMono(InventoryResponse.class))
         .thenReturn(Mono.just(new InventoryResponse(0)));
@@ -138,9 +135,8 @@ class InventoryRepositoryCacheTest {
     String cacheKey = "inventory:sku:" + sku;
 
     // HTTP call setup
-    when(webClient.post()).thenReturn(requestBodyUriSpec);
-    when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-    when(requestBodySpec.bodyValue(any(InventoryRequest.class))).thenReturn(requestHeadersSpec);
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), anyLong())).thenReturn(requestHeadersSpec);
     when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     when(responseSpec.bodyToMono(InventoryResponse.class))
         .thenReturn(Mono.just(new InventoryResponse(0)));
@@ -170,9 +166,8 @@ class InventoryRepositoryCacheTest {
     InventoryResponse httpResponse = new InventoryResponse(100);
 
     // HTTP call setup
-    when(webClient.post()).thenReturn(requestBodyUriSpec);
-    when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-    when(requestBodySpec.bodyValue(any(InventoryRequest.class))).thenReturn(requestHeadersSpec);
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), anyLong())).thenReturn(requestHeadersSpec);
     when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     when(responseSpec.bodyToMono(InventoryResponse.class)).thenReturn(Mono.just(httpResponse));
 
@@ -200,9 +195,8 @@ class InventoryRepositoryCacheTest {
     InventoryResponse httpResponse = new InventoryResponse(75);
 
     // HTTP call setup
-    when(webClient.post()).thenReturn(requestBodyUriSpec);
-    when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-    when(requestBodySpec.bodyValue(any(InventoryRequest.class))).thenReturn(requestHeadersSpec);
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), anyLong())).thenReturn(requestHeadersSpec);
     when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     when(responseSpec.bodyToMono(InventoryResponse.class)).thenReturn(Mono.just(httpResponse));
 
@@ -226,9 +220,8 @@ class InventoryRepositoryCacheTest {
     String cacheKey = "inventory:sku:" + sku;
 
     // HTTP call setup
-    when(webClient.post()).thenReturn(requestBodyUriSpec);
-    when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-    when(requestBodySpec.bodyValue(any(InventoryRequest.class))).thenReturn(requestHeadersSpec);
+    when(webClient.get()).thenReturn(requestHeadersUriSpec);
+    when(requestHeadersUriSpec.uri(anyString(), anyLong())).thenReturn(requestHeadersSpec);
     when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
     when(responseSpec.bodyToMono(InventoryResponse.class))
         .thenReturn(Mono.just(new InventoryResponse(0)));

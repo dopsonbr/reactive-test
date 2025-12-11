@@ -199,6 +199,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      merchandise-service:
+        condition: service_healthy
+      price-service:
+        condition: service_healthy
+      inventory-service:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
       interval: 10s
@@ -549,6 +555,129 @@ services:
     networks:
       - observability
 
+  merchandise-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.merchandise-service
+    container_name: merchandise-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/merchandisedb
+      - SPRING_R2DBC_USERNAME=merchandise_user
+      - SPRING_R2DBC_PASSWORD=merchandise_pass
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/merchandisedb
+      - SPRING_DATASOURCE_USERNAME=merchandise_user
+      - SPRING_DATASOURCE_PASSWORD=merchandise_pass
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/merchandisedb
+      - SPRING_FLYWAY_USER=merchandise_user
+      - SPRING_FLYWAY_PASSWORD=merchandise_pass
+      - OTEL_SERVICE_NAME=merchandise-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_PROPAGATORS=tracecontext,baggage
+    volumes:
+      - app-logs:/app/logs
+    ports:
+      - "8091:8091"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8091/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
+  price-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.price-service
+    container_name: price-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/pricedb
+      - SPRING_R2DBC_USERNAME=price_user
+      - SPRING_R2DBC_PASSWORD=price_pass
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/pricedb
+      - SPRING_DATASOURCE_USERNAME=price_user
+      - SPRING_DATASOURCE_PASSWORD=price_pass
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/pricedb
+      - SPRING_FLYWAY_USER=price_user
+      - SPRING_FLYWAY_PASSWORD=price_pass
+      - OTEL_SERVICE_NAME=price-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_PROPAGATORS=tracecontext,baggage
+    volumes:
+      - app-logs:/app/logs
+    ports:
+      - "8092:8092"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8092/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
+  inventory-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.inventory-service
+    container_name: inventory-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/inventorydb
+      - SPRING_R2DBC_USERNAME=inventory_user
+      - SPRING_R2DBC_PASSWORD=inventory_pass
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/inventorydb
+      - SPRING_DATASOURCE_USERNAME=inventory_user
+      - SPRING_DATASOURCE_PASSWORD=inventory_pass
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres:5432/inventorydb
+      - SPRING_FLYWAY_USER=inventory_user
+      - SPRING_FLYWAY_PASSWORD=inventory_pass
+      - OTEL_SERVICE_NAME=inventory-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_PROPAGATORS=tracecontext,baggage
+    volumes:
+      - app-logs:/app/logs
+    ports:
+      - "8093:8093"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8093/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - observability
+
   # === Frontend Applications ===
   ecommerce-web:
     build:
@@ -589,6 +718,31 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    networks:
+      - observability
+
+  merchant-portal:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.merchant-portal
+    container_name: merchant-portal
+    ports:
+      - "3010:80"
+    depends_on:
+      merchandise-service:
+        condition: service_healthy
+      price-service:
+        condition: service_healthy
+      inventory-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
     networks:
       - observability
 

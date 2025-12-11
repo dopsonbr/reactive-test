@@ -43,9 +43,8 @@ public class InventoryRepository {
     // Use cache only on errors after retry exhaustion
     Mono<InventoryResponse> call =
         inventoryWebClient
-            .post()
-            .uri("/inventory")
-            .bodyValue(new InventoryRequest(sku))
+            .get()
+            .uri("/inventory/{sku}", sku)
             .retrieve()
             .bodyToMono(InventoryResponse.class);
 

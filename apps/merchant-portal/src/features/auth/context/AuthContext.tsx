@@ -66,7 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasPermission = useCallback((permission: string) => {
     if (!user) return false;
-    return user.permissions.includes(permission) || user.permissions.includes('admin');
+    const normalizedPermission = permission.toUpperCase();
+    return user.permissions.some(p => p.toUpperCase() === normalizedPermission)
+      || user.permissions.some(p => p.toUpperCase() === 'ADMIN');
   }, [user]);
 
   return (

@@ -1,9 +1,9 @@
 export interface Product {
   sku: number;
   name: string;
-  description: string;
-  imageUrl: string;
-  category: string;
+  description: string | null;
+  imageUrl: string | null;
+  category: string | null;
   suggestedRetailPrice: number;
   currency: string;
   createdAt: string;

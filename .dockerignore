@@ -15,9 +15,10 @@ out/
 .git/
 .gitignore
 
-# Docker (avoid recursive copy, but allow nginx config)
+# Docker (avoid recursive copy, but allow nginx configs)
 docker/*
 !docker/nginx-frontend.conf
+!docker/nginx-merchant-portal.conf
 
 # Test outputs and data
 logs/

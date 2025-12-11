@@ -1,43 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../auth';
-import type {
-  InventoryItem,
-  UpdateInventoryRequest,
-  InventoryFilters,
-  InventoryAdjustment,
-} from '../types';
+import type { InventoryItem, UpdateInventoryRequest } from '../types';
 
-export function useInventoryItems(filters: InventoryFilters = {}, page = 0, size = 20) {
-  const { token, user } = useAuth();
-  const storeNumber = filters.storeNumber || user?.storeNumber || 1;
+export function useInventoryItems(page = 0, size = 20) {
+  const { token } = useAuth();
 
   return useQuery({
-    queryKey: ['inventory', storeNumber, filters, page, size],
+    queryKey: ['inventory', page, size],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        size: size.toString(),
+      const response = await fetch(`/api/inventory?page=${page}&size=${size}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (filters.lowStock !== undefined) {
-        params.append('lowStock', filters.lowStock.toString());
-      }
-      if (filters.outOfStock !== undefined) {
-        params.append('outOfStock', filters.outOfStock.toString());
-      }
-      if (filters.minQuantity !== undefined) {
-        params.append('minQuantity', filters.minQuantity.toString());
-      }
-      if (filters.maxQuantity !== undefined) {
-        params.append('maxQuantity', filters.maxQuantity.toString());
-      }
-
-      const response = await fetch(
-        `/api/inventory/store/${storeNumber}?${params.toString()}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
       if (!response.ok) throw new Error('Failed to fetch inventory');
       return response.json() as Promise<InventoryItem[]>;
     },
@@ -45,14 +18,13 @@ export function useInventoryItems(filters: InventoryFilters = {}, page = 0, size
   });
 }
 
-export function useInventoryItem(sku: number, storeNumber?: number) {
-  const { token, user } = useAuth();
-  const store = storeNumber || user?.storeNumber || 1;
+export function useInventoryItem(sku: number) {
+  const { token } = useAuth();
 
   return useQuery({
-    queryKey: ['inventory', store, sku],
+    queryKey: ['inventory', sku],
     queryFn: async () => {
-      const response = await fetch(`/api/inventory/store/${store}/sku/${sku}`, {
+      const response = await fetch(`/api/inventory/${sku}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch inventory item');
@@ -62,24 +34,15 @@ export function useInventoryItem(sku: number, storeNumber?: number) {
   });
 }
 
-export function useLowStockItems(storeNumber?: number, page = 0, size = 20) {
-  const { token, user } = useAuth();
-  const store = storeNumber || user?.storeNumber || 1;
+export function useLowStockItems(threshold = 10) {
+  const { token } = useAuth();
 
   return useQuery({
-    queryKey: ['inventory', 'low-stock', store, page, size],
+    queryKey: ['inventory', 'low-stock', threshold],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        size: size.toString(),
+      const response = await fetch(`/api/inventory/low-stock?threshold=${threshold}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      const response = await fetch(
-        `/api/inventory/store/${store}/low-stock?${params.toString()}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
       if (!response.ok) throw new Error('Failed to fetch low stock items');
       return response.json() as Promise<InventoryItem[]>;
     },
@@ -87,14 +50,13 @@ export function useLowStockItems(storeNumber?: number, page = 0, size = 20) {
   });
 }
 
-export function useUpdateInventory(sku: number, storeNumber?: number) {
-  const { token, user } = useAuth();
+export function useUpdateInventory(sku: number) {
+  const { token } = useAuth();
   const queryClient = useQueryClient();
-  const store = storeNumber || user?.storeNumber || 1;
 
   return useMutation({
     mutationFn: async (data: UpdateInventoryRequest) => {
-      const response = await fetch(`/api/inventory/store/${store}/sku/${sku}`, {
+      const response = await fetch(`/api/inventory/${sku}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -104,56 +66,6 @@ export function useUpdateInventory(sku: number, storeNumber?: number) {
       });
       if (!response.ok) throw new Error('Failed to update inventory');
       return response.json() as Promise<InventoryItem>;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory', store, sku] });
-    },
-  });
-}
-
-export function useAdjustInventory(storeNumber?: number) {
-  const { token, user } = useAuth();
-  const queryClient = useQueryClient();
-  const store = storeNumber || user?.storeNumber || 1;
-
-  return useMutation({
-    mutationFn: async (adjustment: InventoryAdjustment) => {
-      const response = await fetch(`/api/inventory/store/${store}/adjust`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(adjustment),
-      });
-      if (!response.ok) throw new Error('Failed to adjust inventory');
-      return response.json() as Promise<InventoryItem>;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory', store, variables.sku] });
-    },
-  });
-}
-
-export function useBulkUpdateInventory(storeNumber?: number) {
-  const { token, user } = useAuth();
-  const queryClient = useQueryClient();
-  const store = storeNumber || user?.storeNumber || 1;
-
-  return useMutation({
-    mutationFn: async (updates: Array<{ sku: number; data: UpdateInventoryRequest }>) => {
-      const response = await fetch(`/api/inventory/store/${store}/bulk`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updates),
-      });
-      if (!response.ok) throw new Error('Failed to update inventory');
-      return response.json() as Promise<InventoryItem[]>;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });

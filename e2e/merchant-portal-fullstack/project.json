@@ -1,0 +1,17 @@
+{
+  "name": "merchant-portal-fullstack-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "e2e/merchant-portal-fullstack",
+  "projectType": "application",
+  "tags": ["scope:merchant-portal", "type:e2e", "platform:fullstack"],
+  "implicitDependencies": ["merchant-portal", "merchandise-service", "price-service", "inventory-service", "user-service"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "options": {
+        "config": "e2e/merchant-portal-fullstack/playwright.config.ts"
+      },
+      "outputs": ["{workspaceRoot}/e2e/merchant-portal-fullstack/playwright-report"]
+    }
+  }
+}

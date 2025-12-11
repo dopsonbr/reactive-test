@@ -92,5 +92,15 @@ export default withMermaid(
     mermaid: {
       theme: 'dark',
     },
+
+    // Vite configuration for mermaid plugin
+    vite: {
+      optimizeDeps: {
+        include: ['mermaid'],
+      },
+      ssr: {
+        noExternal: ['mermaid'],
+      },
+    },
   })
 );

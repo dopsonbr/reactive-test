@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress';
 import { generateSidebar } from 'vitepress-sidebar';
+import { withMermaid } from 'vitepress-plugin-mermaid';
 import { generateRepoExplorerSidebar } from '../../tools/docs-explorer/generate-sidebar.js';
 
 // Generate sidebars for non-repo-explorer sections
@@ -59,30 +60,37 @@ const sidebar = {
   ...repoExplorerSidebar,
 };
 
-export default defineConfig({
-  title: 'Reactive Platform',
-  description: 'Platform documentation for developers and AI agents',
-  srcExclude: ['**/archive/**'],
+export default withMermaid(
+  defineConfig({
+    title: 'Reactive Platform',
+    description: 'Platform documentation for developers and AI agents',
+    srcExclude: ['**/archive/**'],
 
-  themeConfig: {
-    nav: [
-      { text: 'Standards', link: '/standards/' },
-      { text: 'Plans', link: '/plans/completed/' },
-      { text: 'ADRs', link: '/ADRs/' },
-      { text: 'Guides', link: '/end-user-guides/' },
-      { text: 'Repo Explorer', link: '/repo-explorer/' },
-    ],
+    themeConfig: {
+      nav: [
+        { text: 'Standards', link: '/standards/' },
+        { text: 'Plans', link: '/plans/completed/' },
+        { text: 'ADRs', link: '/ADRs/' },
+        { text: 'Guides', link: '/end-user-guides/' },
+        { text: 'Repo Explorer', link: '/repo-explorer/' },
+      ],
 
-    sidebar,
+      sidebar,
 
-    search: {
-      provider: 'local',
+      search: {
+        provider: 'local',
+      },
+
+      outline: {
+        level: [2, 3],
+      },
     },
 
-    outline: {
-      level: [2, 3],
-    },
-  },
+    ignoreDeadLinks: true,
 
-  ignoreDeadLinks: true,
-});
+    // Mermaid configuration
+    mermaid: {
+      theme: 'dark',
+    },
+  })
+);

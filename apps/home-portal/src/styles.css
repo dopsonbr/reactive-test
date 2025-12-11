@@ -1,0 +1,20 @@
+/* Import design tokens from shared library */
+@import '@reactive-platform/shared-design-tokens';
+
+/* Import Tailwind base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles */
+@layer base {
+  html,
+  body,
+  #root {
+    @apply h-full w-full;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}

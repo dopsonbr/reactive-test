@@ -60,13 +60,14 @@ public class ProductSearchController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size,
       @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader(value = "x-order-number", required = false) String orderNumber,
       @RequestHeader("x-userid") String userId,
       @RequestHeader("x-sessionid") String sessionId,
       @AuthenticationPrincipal Jwt jwt,
       ServerHttpRequest request) {
 
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata =
+        new RequestMetadata(storeNumber, orderNumber != null ? orderNumber : "", userId, sessionId);
     SearchCriteria criteria =
         new SearchCriteria(
             q,
@@ -119,13 +120,14 @@ public class ProductSearchController {
       @RequestParam String prefix,
       @RequestParam(defaultValue = "10") int limit,
       @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
+      @RequestHeader(value = "x-order-number", required = false) String orderNumber,
       @RequestHeader("x-userid") String userId,
       @RequestHeader("x-sessionid") String sessionId,
       @AuthenticationPrincipal Jwt jwt,
       ServerHttpRequest request) {
 
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata =
+        new RequestMetadata(storeNumber, orderNumber != null ? orderNumber : "", userId, sessionId);
 
     return Mono.deferContextual(
             ctx -> {

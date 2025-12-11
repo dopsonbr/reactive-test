@@ -32,7 +32,13 @@ public class GraphQLInputValidator {
   private static final Pattern UUID_PATTERN =
       Pattern.compile(
           "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-  private static final Pattern USER_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9]{6}$");
+  // User ID: 6 alphanumeric chars (human users) OR 1-50 alphanumeric with hyphens (service
+  // accounts)
+  private static final Pattern USER_ID_PATTERN =
+      Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9_-]{0,49}$");
+  // Session ID: UUID OR kiosk-style identifier (e.g., KIOSK-001)
+  private static final Pattern SESSION_ID_PATTERN =
+      Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9_-]{0,49}$");
   private static final Pattern EMAIL_PATTERN =
       Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
 
@@ -67,18 +73,23 @@ public class GraphQLInputValidator {
       errors.add(new ValidationError("x-order-number", "Must be a valid UUID"));
     }
 
-    // x-userid: required, 6 alphanumeric characters
+    // x-userid: required, 1-50 alphanumeric characters (hyphens/underscores allowed)
     if (metadata.userId() == null
         || metadata.userId().isBlank()
         || !USER_ID_PATTERN.matcher(metadata.userId()).matches()) {
-      errors.add(new ValidationError("x-userid", "Must be 6 alphanumeric characters"));
+      errors.add(
+          new ValidationError(
+              "x-userid", "Must be 1-50 alphanumeric characters (hyphens/underscores allowed)"));
     }
 
-    // x-sessionid: required, UUID format
+    // x-sessionid: required, UUID or kiosk-style identifier
     if (metadata.sessionId() == null
         || metadata.sessionId().isBlank()
-        || !UUID_PATTERN.matcher(metadata.sessionId()).matches()) {
-      errors.add(new ValidationError("x-sessionid", "Must be a valid UUID"));
+        || (!UUID_PATTERN.matcher(metadata.sessionId()).matches()
+            && !SESSION_ID_PATTERN.matcher(metadata.sessionId()).matches())) {
+      errors.add(
+          new ValidationError(
+              "x-sessionid", "Must be a valid UUID or identifier (1-50 alphanumeric chars)"));
     }
 
     return toMono(errors);

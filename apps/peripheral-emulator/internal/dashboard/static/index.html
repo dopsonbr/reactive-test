@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peripheral Emulator Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Peripheral Emulator</h1>
+    <div id="connection-status" class="status disconnected">Disconnected</div>
+  </header>
+
+  <nav>
+    <button class="tab-btn active" data-tab="control">Control Panel</button>
+    <button class="tab-btn" data-tab="messages">Message Log</button>
+    <button class="tab-btn" data-tab="tryit">Try It</button>
+  </nav>
+
+  <main>
+    <!-- Control Panel Tab -->
+    <section id="tab-control" class="tab-content active">
+      <div class="panel">
+        <h2>Device State</h2>
+        <div id="device-state">Loading...</div>
+      </div>
+
+      <div class="panel">
+        <h2>Scanner</h2>
+        <div class="control-row">
+          <button id="scanner-enable" class="btn">Enable</button>
+          <button id="scanner-disable" class="btn">Disable</button>
+        </div>
+        <div class="control-row">
+          <input type="text" id="scan-barcode" placeholder="Barcode (default: 0012345678905)">
+          <select id="scan-symbology">
+            <option value="ean13">EAN-13</option>
+            <option value="upc-a">UPC-A</option>
+            <option value="qr">QR Code</option>
+            <option value="pdf417">PDF417</option>
+          </select>
+          <button id="trigger-scan" class="btn primary">Trigger Scan</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Payment</h2>
+        <div class="control-row">
+          <select id="payment-method">
+            <option value="chip">Chip</option>
+            <option value="contactless">Contactless</option>
+            <option value="swipe">Swipe</option>
+          </select>
+          <button id="payment-insert" class="btn">Insert Card</button>
+        </div>
+        <div class="control-row">
+          <button id="payment-approve" class="btn success">Force Approve</button>
+          <button id="payment-decline" class="btn danger">Force Decline</button>
+        </div>
+        <div id="payment-state" class="state-indicator">State: idle</div>
+      </div>
+    </section>
+
+    <!-- Message Log Tab -->
+    <section id="tab-messages" class="tab-content">
+      <div class="panel">
+        <div class="log-controls">
+          <button id="clear-log" class="btn">Clear Log</button>
+          <label>
+            <input type="checkbox" id="auto-scroll" checked> Auto-scroll
+          </label>
+        </div>
+        <div id="message-log" class="log-container"></div>
+      </div>
+    </section>
+
+    <!-- Try It Tab -->
+    <section id="tab-tryit" class="tab-content">
+      <div class="panel tryit-panel">
+        <h2>Mini Checkout Demo</h2>
+        <p class="instructions">This demo connects to the emulator via WebSocket and demonstrates the SDK flow.</p>
+
+        <div class="demo-layout">
+          <div class="demo-ui">
+            <div id="demo-cart">
+              <h3>Cart</h3>
+              <div id="cart-items">No items scanned</div>
+              <div id="cart-total">Total: $0.00</div>
+            </div>
+            <button id="demo-pay" class="btn primary large" disabled>Pay Now</button>
+            <div id="demo-status"></div>
+          </div>
+
+          <div class="demo-code">
+            <h3>SDK Code</h3>
+            <pre id="code-display"><code>// Connect to emulator
+const client = new PeripheralClient('ws://localhost:9100/stomp');
+await client.connect();
+
+// Listen for scans
+client.scanner.onScan((event) => {
+  console.log('Scanned:', event.barcode);
+});
+
+// Collect payment
+const result = await client.payment.collect({
+  amount: 4750,
+  currency: 'USD'
+});
+</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -301,8 +301,10 @@ class CartRequestValidatorTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "abc12", "abc1234", "abc12!"})
+    @ValueSource(strings = {"", "abc12!"})
     void invalidUserId_fails(String userId) {
+      // Note: With relaxed patterns, only empty or special chars fail
+      // "abc12" and "abc1234" are now valid (1-50 alphanumeric with hyphens/underscores)
       StepVerifier.create(
               validator.validateGetCart(VALID_UUID, VALID_STORE, VALID_UUID, userId, VALID_UUID))
           .expectErrorSatisfies(
@@ -314,11 +316,23 @@ class CartRequestValidatorTest {
           .verify();
     }
 
-    @Test
-    void invalidSessionId_fails() {
+    @ParameterizedTest
+    @ValueSource(strings = {"abc12", "abc1234", "KIOSK-001", "service-account-123"})
+    void validUserId_succeeds(String userId) {
+      // Relaxed pattern: 1-50 alphanumeric characters with hyphens/underscores
+      StepVerifier.create(
+              validator.validateGetCart(VALID_UUID, VALID_STORE, VALID_UUID, userId, VALID_UUID))
+          .verifyComplete();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "invalid!chars", "has spaces"})
+    void invalidSessionId_fails(String sessionId) {
+      // Note: With relaxed patterns, "not-uuid" is now valid (matches kiosk-style identifier)
+      // Only empty or special chars fail
       StepVerifier.create(
               validator.validateGetCart(
-                  VALID_UUID, VALID_STORE, VALID_UUID, VALID_USER_ID, "not-uuid"))
+                  VALID_UUID, VALID_STORE, VALID_UUID, VALID_USER_ID, sessionId))
           .expectErrorSatisfies(
               error -> {
                 assertThat(error).isInstanceOf(ValidationException.class);
@@ -328,6 +342,16 @@ class CartRequestValidatorTest {
           .verify();
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"not-uuid", "KIOSK-001", "session-123"})
+    void validSessionId_kioskStyle_succeeds(String sessionId) {
+      // Relaxed pattern: UUID OR 1-50 alphanumeric characters with hyphens/underscores
+      StepVerifier.create(
+              validator.validateGetCart(
+                  VALID_UUID, VALID_STORE, VALID_UUID, VALID_USER_ID, sessionId))
+          .verifyComplete();
+    }
+
     @Test
     void multipleInvalidFields_returnsAllErrors() {
       StepVerifier.create(
@@ -335,13 +359,13 @@ class CartRequestValidatorTest {
                   "not-a-uuid", // invalid cartId
                   0, // invalid store
                   "not-uuid", // invalid order number
-                  "x", // invalid user id
-                  "not-uuid")) // invalid session
+                  "", // invalid user id (empty)
+                  "invalid!chars")) // invalid session (special chars)
           .expectErrorSatisfies(
               error -> {
                 assertThat(error).isInstanceOf(ValidationException.class);
                 ValidationException ve = (ValidationException) error;
-                // Should have errors for all fields
+                // Should have errors for all fields: cartId, store, order, userId, sessionId
                 assertThat(ve.getErrors()).hasSizeGreaterThanOrEqualTo(5);
               })
           .verify();

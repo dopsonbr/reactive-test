@@ -23,7 +23,13 @@ public class CustomerRequestValidator {
   private static final Pattern UUID_PATTERN =
       Pattern.compile(
           "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-  private static final Pattern USER_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9]{6}$");
+  // User ID: 6 alphanumeric chars (human users) OR 1-50 alphanumeric with hyphens (service
+  // accounts)
+  private static final Pattern USER_ID_PATTERN =
+      Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9_-]{0,49}$");
+  // Session ID: UUID OR kiosk-style identifier (e.g., KIOSK-001)
+  private static final Pattern SESSION_ID_PATTERN =
+      Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9_-]{0,49}$");
 
   public Mono<Void> validateCreateRequest(
       CreateCustomerRequest request,
@@ -139,10 +145,17 @@ public class CustomerRequestValidator {
       errors.add(new ValidationError("x-order-number", "Must be a valid UUID"));
     }
     if (userId == null || !USER_ID_PATTERN.matcher(userId).matches()) {
-      errors.add(new ValidationError("x-userid", "Must be 6 alphanumeric characters"));
+      errors.add(
+          new ValidationError(
+              "x-userid", "Must be 1-50 alphanumeric characters (hyphens/underscores allowed)"));
     }
-    if (sessionId == null || !UUID_PATTERN.matcher(sessionId).matches()) {
-      errors.add(new ValidationError("x-sessionid", "Must be a valid UUID"));
+    // Session ID can be UUID or kiosk-style identifier
+    if (sessionId == null
+        || (!UUID_PATTERN.matcher(sessionId).matches()
+            && !SESSION_ID_PATTERN.matcher(sessionId).matches())) {
+      errors.add(
+          new ValidationError(
+              "x-sessionid", "Must be a valid UUID or identifier (1-50 alphanumeric chars)"));
     }
   }
 }

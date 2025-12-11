@@ -18,16 +18,23 @@ const ROOT = path.join(__dirname, '..', '..');
 const OUTPUT = path.join(ROOT, 'docs', 'repo-explorer');
 
 const INCLUDE_PATTERNS = [
-  'apps/**/README.md',
-  'apps/**/AGENTS.md',
-  'apps/**/CONTENTS.md',
-  'apps/**/PACKAGES.md',
-  'libs/**/README.md',
-  'libs/**/AGENTS.md',
-  'libs/**/CONTENTS.md',
-  'libs/**/PACKAGES.md',
+  // Apps and libs - all markdown files
+  'apps/**/*.md',
+  'libs/**/*.md',
+  // Docker infrastructure docs
+  'docker/**/*.md',
+  // CI/CD docs
+  'ci/**/*.md',
+  // E2E test docs
+  'e2e/**/*.md',
+  // Tools docs
+  'tools/**/*.md',
+  // Root documentation files
   'CLAUDE.md',
   'README.md',
+  // Root plan files (sub-plans like 045A, 045B, etc.)
+  '[0-9][0-9][0-9]*.md',
+  // Claude configuration
   '.claude/**/*',
   '.mcp.json',
 ];
@@ -39,6 +46,7 @@ const EXCLUDE_PATTERNS = [
   '**/build/**',
   '**/dist/**',
   '**/target/**',
+  '**/bin/**',
 ];
 
 async function clean() {

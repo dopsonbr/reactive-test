@@ -1,0 +1,9 @@
+{
+  "name": "mock-handlers",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/shared-testing/mock-handlers/src",
+  "projectType": "library",
+  "tags": ["type:test", "scope:shared"],
+  "// targets": "to see all targets run: nx show project mock-handlers --web",
+  "targets": {}
+}

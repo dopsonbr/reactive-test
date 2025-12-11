@@ -27,7 +27,10 @@ public class DiscountRequestValidator {
   private static final Pattern UUID_PATTERN =
       Pattern.compile(
           "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-  private static final Pattern USER_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9]{6}$");
+  // User ID: 6 alphanumeric chars (human users) OR 1-50 alphanumeric with hyphens (service
+  // accounts)
+  private static final Pattern USER_ID_PATTERN =
+      Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9_-]{0,49}$");
 
   // ==================== Discount Validation ====================
 
@@ -195,7 +198,10 @@ public class DiscountRequestValidator {
     if (userId == null || userId.isBlank()) {
       errors.add(new ValidationError("x-userid", "User ID header is required"));
     } else if (!USER_ID_PATTERN.matcher(userId).matches()) {
-      errors.add(new ValidationError("x-userid", "User ID must be 6 alphanumeric characters"));
+      errors.add(
+          new ValidationError(
+              "x-userid",
+              "User ID must be 1-50 alphanumeric characters (hyphens/underscores allowed)"));
     }
   }
 

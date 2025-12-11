@@ -1,4 +1,63 @@
 import { defineConfig } from 'vitepress';
+import { generateSidebar } from 'vitepress-sidebar';
+import { generateRepoExplorerSidebar } from '../../tools/docs-explorer/generate-sidebar.js';
+
+// Generate sidebars for non-repo-explorer sections
+const baseSidebar = generateSidebar([
+  {
+    documentRootPath: '/docs',
+    scanStartPath: 'standards',
+    resolvePath: '/standards/',
+    useTitleFromFileHeading: true,
+    useFolderTitleFromIndexFile: true,
+    useFolderLinkFromIndexFile: true,
+    sortMenusByFrontmatterOrder: true,
+    collapsed: false,
+  },
+  {
+    documentRootPath: '/docs',
+    scanStartPath: 'plans/active',
+    resolvePath: '/plans/active/',
+    useTitleFromFileHeading: true,
+    useFolderTitleFromIndexFile: true,
+    sortMenusByName: true,
+  },
+  {
+    documentRootPath: '/docs',
+    scanStartPath: 'plans/completed',
+    resolvePath: '/plans/completed/',
+    useTitleFromFileHeading: true,
+    useFolderTitleFromIndexFile: true,
+    sortMenusByName: true,
+    collapsed: true,
+  },
+  {
+    documentRootPath: '/docs',
+    scanStartPath: 'ADRs',
+    resolvePath: '/ADRs/',
+    useTitleFromFileHeading: true,
+    useFolderTitleFromIndexFile: true,
+    sortMenusByName: true,
+  },
+  {
+    documentRootPath: '/docs',
+    scanStartPath: 'end-user-guides',
+    resolvePath: '/end-user-guides/',
+    useTitleFromFileHeading: true,
+    useFolderTitleFromIndexFile: true,
+    useFolderLinkFromIndexFile: true,
+    collapsed: false,
+  },
+]);
+
+// Custom sidebar for repo-explorer with collapsed paths
+const repoExplorerSidebar = await generateRepoExplorerSidebar();
+
+// Merge all sidebars
+const sidebar = {
+  ...baseSidebar,
+  ...repoExplorerSidebar,
+};
 
 export default defineConfig({
   title: 'Reactive Platform',
@@ -14,74 +73,7 @@ export default defineConfig({
       { text: 'Repo Explorer', link: '/repo-explorer/' },
     ],
 
-    sidebar: {
-      '/standards/': [
-        {
-          text: 'Standards',
-          items: [
-            { text: 'Overview', link: '/standards/' },
-            { text: 'Code Style', link: '/standards/code-style' },
-            { text: 'Documentation', link: '/standards/documentation' },
-            {
-              text: 'Backend',
-              collapsed: false,
-              items: [
-                { text: 'Architecture', link: '/standards/backend/architecture' },
-                { text: 'Caching', link: '/standards/backend/caching' },
-                { text: 'Error Handling', link: '/standards/backend/error-handling' },
-                { text: 'Models', link: '/standards/backend/models' },
-                { text: 'Security', link: '/standards/backend/security' },
-                { text: 'Validation', link: '/standards/backend/validation' },
-              ],
-            },
-            {
-              text: 'Frontend',
-              collapsed: false,
-              items: [
-                { text: 'Architecture', link: '/standards/frontend/architecture' },
-                { text: 'Components', link: '/standards/frontend/components' },
-                { text: 'State Management', link: '/standards/frontend/state-management' },
-                { text: 'Testing', link: '/standards/frontend/testing' },
-              ],
-            },
-          ],
-        },
-      ],
-      '/plans/': [
-        {
-          text: 'Plans',
-          items: [
-            { text: 'Active', link: '/plans/active/' },
-            { text: 'Completed', link: '/plans/completed/' },
-          ],
-        },
-      ],
-      '/ADRs/': [
-        {
-          text: 'ADRs',
-          items: [
-            { text: 'Index', link: '/ADRs/' },
-          ],
-        },
-      ],
-      '/end-user-guides/': [
-        {
-          text: 'Guides',
-          items: [
-            { text: 'POS System', link: '/end-user-guides/pos-system/' },
-            { text: 'Self-Checkout Kiosk', link: '/end-user-guides/self-checkout-kiosk/' },
-          ],
-        },
-      ],
-      '/repo-explorer/': [
-        {
-          text: 'Repository',
-          items: [
-            { text: 'Overview', link: '/repo-explorer/' },
-          ],
-        },
-      ],
-    },
+    sidebar,
 
     search: {
       provider: 'local',

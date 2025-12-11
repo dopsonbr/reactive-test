@@ -60,8 +60,6 @@
       "Bash(source:*)",
       "Bash(sdk list:*)",
       "Bash(/usr/libexec/java_home:*)",
-      "Bash(JAVA_HOME=~/.sdkman/candidates/java/21.0.5-tem ./gradlew:*)",
-      "Bash(JAVA_HOME=/Users/BXD5017/Library/Java/JavaVirtualMachines/corretto-21.0.9/Contents/Home ./gradlew:*)",
       "Bash(done)",
       "Bash(for svc in checkout-service customer-service discount-service fulfillment-service audit-service cart-service order-service product-service)",
       "Bash(do echo:*)",
@@ -122,7 +120,11 @@
       "Skill(superpowers:using-git-worktrees)",
       "Skill(superpowers:writing-plans)",
       "mcp__nx-mcp__nx_project_details",
-      "Skill(superpowers:subagent-driven-development)"
+      "Skill(superpowers:subagent-driven-development)",
+      "Skill(superpowers:receiving-code-review)",
+      "Bash(docker build:*)",
+      "Bash(E2E_BASE_URL=http://localhost:3010 pnpm exec playwright test:*)",
+      "Bash(do)"
     ],
     "deny": [],
     "ask": [

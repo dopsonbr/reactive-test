@@ -427,6 +427,35 @@ test.beforeEach(async ({ page }) => {
 - **Main branch**: Run both `e2e-mocked` and `e2e-fullstack`
 - **Nightly**: Full regression with `e2e-fullstack`
 
+## E2E Test Organization
+
+### Two-Track System
+
+| Track | Location | Purpose | CI Trigger |
+|-------|----------|---------|------------|
+| **Mocked** | `apps/{app}-e2e/` | UI logic with MSW mocks | Every PR |
+| **Full-Stack** | `e2e/{app}-fullstack/` | Real service integration | Main + nightly |
+
+### Full-Stack E2E Projects
+
+| Project | Port | Services |
+|---------|------|----------|
+| `ecommerce-fullstack-e2e` | 3001 | product, cart, checkout |
+| `merchant-portal-fullstack-e2e` | 3010 | merchandise, price, inventory |
+| `pos-fullstack-e2e` | 3004 | product, cart, checkout, order |
+| `kiosk-fullstack-e2e` | 3002 | product, cart, checkout |
+
+### Running Full-Stack E2E
+
+```bash
+# Start services
+./powerstart
+
+# Run specific fullstack suite
+pnpm nx e2e pos-fullstack-e2e
+pnpm nx e2e kiosk-fullstack-e2e
+```
+
 ## Package Naming
 
 | Type               | Package Pattern                     |

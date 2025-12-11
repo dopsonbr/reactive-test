@@ -124,6 +124,6 @@ Initiatives are broken into independently-mergeable sub-plans:
 
 ---
 
-::: tip Looking for completed plans?
-Browse the [Completed Plans](/plans/completed/) archive for historical reference.
+::: tip Browse the archive
+See [Completed Plans](/plans/completed/) for 70+ historical implementation plans.
 :::

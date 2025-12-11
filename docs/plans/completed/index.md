@@ -105,6 +105,10 @@ Historical archive of 70+ implementation plans preserved for reference. Plans do
 
 ---
 
+::: tip Current Work
+See [Active Plans](/plans/active/) for work in progress.
+:::
+
 ::: info Plan Numbering
 Plans use sequential numbering (000-0XX). Sub-plans use letter suffixes (021A, 021B). Gaps in numbering indicate abandoned or merged plans.
 :::

@@ -12,8 +12,8 @@ hero:
       text: Browse Standards
       link: /standards/
     - theme: alt
-      text: View Active Plans
-      link: /plans/active/
+      text: View Plans
+      link: /plans/completed/
 features:
   - icon: 🏗️
     title: Multi-Service Architecture
@@ -33,8 +33,8 @@ features:
   - icon: 🤖
     title: AI-Native Development
     details: AGENTS.md files guide AI assistants through the codebase. Implementation plans document every feature's design and progress.
-    link: /plans/active/
-    linkText: Active Work
+    link: /plans/completed/
+    linkText: View Plans
 ---
 
 <style>

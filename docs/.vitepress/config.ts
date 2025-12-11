@@ -16,20 +16,20 @@ const baseSidebar = generateSidebar([
   },
   {
     documentRootPath: '/docs',
-    scanStartPath: 'plans/active',
-    resolvePath: '/plans/active/',
-    useTitleFromFileHeading: true,
-    useFolderTitleFromIndexFile: true,
-    sortMenusByName: true,
-  },
-  {
-    documentRootPath: '/docs',
     scanStartPath: 'plans/completed',
     resolvePath: '/plans/completed/',
     useTitleFromFileHeading: true,
     useFolderTitleFromIndexFile: true,
     sortMenusByName: true,
     collapsed: true,
+  },
+  {
+    documentRootPath: '/docs',
+    scanStartPath: 'plans/active',
+    resolvePath: '/plans/active/',
+    useTitleFromFileHeading: true,
+    useFolderTitleFromIndexFile: true,
+    sortMenusByName: true,
   },
   {
     documentRootPath: '/docs',
@@ -67,7 +67,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Standards', link: '/standards/' },
-      { text: 'Plans', link: '/plans/active/' },
+      { text: 'Plans', link: '/plans/completed/' },
       { text: 'ADRs', link: '/ADRs/' },
       { text: 'Guides', link: '/end-user-guides/' },
       { text: 'Repo Explorer', link: '/repo-explorer/' },

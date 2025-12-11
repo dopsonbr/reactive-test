@@ -64,6 +64,7 @@ export default withMermaid(
   defineConfig({
     title: 'Reactive Platform',
     description: 'Platform documentation for developers and AI agents',
+    base: '/reactive-test/',
     srcExclude: ['**/archive/**'],
 
     themeConfig: {

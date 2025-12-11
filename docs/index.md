@@ -18,12 +18,12 @@ features:
   - icon: 🏗️
     title: Multi-Service Architecture
     details: 9 reactive backend services (product, cart, checkout, orders) with shared platform libraries for logging, caching, and resilience.
-    link: /repo-explorer/apps/
+    link: /repo-explorer/apps/README
     linkText: Explore Services
   - icon: 🎨
     title: Modern Frontend Stack
     details: React + Vite frontends including e-commerce web, self-checkout kiosk, and merchant portal. Shared UI components with Tailwind CSS.
-    link: /repo-explorer/libs/frontend/
+    link: /repo-explorer/libs/frontend/README
     linkText: View Frontend Libs
   - icon: 📊
     title: Full Observability

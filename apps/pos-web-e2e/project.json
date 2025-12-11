@@ -4,7 +4,7 @@
   "projectType": "application",
   "sourceRoot": "apps/pos-web-e2e",
   "implicitDependencies": ["pos-web"],
-  "tags": ["type:e2e", "scope:pos", "platform:web"],
+  "tags": ["type:e2e", "scope:pos", "platform:mocked"],
   "targets": {
     "e2e": {
       "executor": "@nx/playwright:playwright",

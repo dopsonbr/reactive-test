@@ -5,13 +5,8 @@ const baseURL = process.env['E2E_BASE_URL'] || 'http://localhost:3004';
 /**
  * POS Web E2E Test Configuration
  *
- * Two modes of operation:
- * 1. Mocked (default): Uses MSW for API mocking, runs fast
- *    - Run with: pnpm nx e2e pos-web-e2e
- *
- * 2. Full-stack: Uses real backend services, requires ./powerstart
- *    - Run with: E2E_BASE_URL=http://localhost:3004 pnpm nx e2e pos-web-e2e --project=fullstack
- *    - Requires: ./powerstart to have all services running
+ * Mocked tests using MSW for API mocking.
+ * For full-stack tests, see: e2e/pos-fullstack/
  */
 export default defineConfig({
   testDir: './specs',
@@ -50,13 +45,6 @@ export default defineConfig({
       name: 'accessibility',
       testMatch: /accessibility\/.+\.spec\.ts/,
       dependencies: ['sanity'],
-      use: { ...devices['Desktop Chrome'] },
-    },
-    // Full-stack tests (no MSW mocks - requires real backend)
-    // Run with: E2E_BASE_URL=http://localhost:3004 pnpm nx e2e pos-web-e2e --project=fullstack
-    {
-      name: 'fullstack',
-      testMatch: /fullstack\/.+\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
   ],

@@ -1,0 +1,24 @@
+{
+  "name": "pos-fullstack-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "e2e/pos-fullstack",
+  "projectType": "application",
+  "tags": ["scope:pos", "type:e2e", "platform:fullstack"],
+  "implicitDependencies": ["pos-web", "cart-service", "product-service", "checkout-service", "order-service"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "options": {
+        "config": "e2e/pos-fullstack/playwright.config.ts"
+      },
+      "outputs": ["{workspaceRoot}/e2e/pos-fullstack/playwright-report"]
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "e2e/pos-fullstack",
+        "command": "npx tsx fixtures/seed-data.ts"
+      }
+    }
+  }
+}

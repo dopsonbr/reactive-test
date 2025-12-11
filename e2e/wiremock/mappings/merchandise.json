@@ -1,7 +1,277 @@
 {
   "mappings": [
     {
-      "name": "merchandise-success",
+      "name": "merchandise-100001-headphones",
+      "priority": 1,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPath": "/merchandise/100001"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "name": "Wireless Headphones",
+          "description": "Premium Noise Canceling wireless headphones with 30-hour battery life.",
+          "imageUrl": "https://picsum.photos/seed/headphones/400/400",
+          "category": "Electronics"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "merchandise-100002-smartwatch",
+      "priority": 1,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPath": "/merchandise/100002"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "name": "Smart Watch",
+          "description": "Fitness Tracker smartwatch with heart rate monitor and GPS.",
+          "imageUrl": "https://picsum.photos/seed/smartwatch/400/400",
+          "category": "Electronics"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "merchandise-100003-laptopstand",
+      "priority": 1,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPath": "/merchandise/100003"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "name": "Laptop Stand",
+          "description": "Ergonomic Aluminum laptop stand with adjustable height.",
+          "imageUrl": "https://picsum.photos/seed/laptopstand/400/400",
+          "category": "Electronics"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "merchandise-100004-keyboard",
+      "priority": 1,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPath": "/merchandise/100004"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "name": "Mechanical Keyboard",
+          "description": "RGB Cherry MX mechanical keyboard with programmable macros.",
+          "imageUrl": "https://picsum.photos/seed/keyboard/400/400",
+          "category": "Electronics"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "merchandise-100005-shoes",
+      "priority": 1,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPath": "/merchandise/100005"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "name": "Running Shoes",
+          "description": "Lightweight Mesh running shoes with responsive cushioning.",
+          "imageUrl": "https://picsum.photos/seed/shoes/400/400",
+          "category": "Sports"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "merchandise-100006-yogamat",
+      "priority": 1,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPath": "/merchandise/100006"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "name": "Yoga Mat",
+          "description": "Premium Non-Slip yoga mat with extra cushioning.",
+          "imageUrl": "https://picsum.photos/seed/yogamat/400/400",
+          "category": "Sports"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "merchandise-100007-tshirt",
+      "priority": 1,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPath": "/merchandise/100007"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "name": "Cotton T-Shirt",
+          "description": "Organic Classic Fit 100% cotton t-shirt.",
+          "imageUrl": "https://picsum.photos/seed/tshirt/400/400",
+          "category": "Clothing"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "merchandise-100008-jacket",
+      "priority": 1,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPath": "/merchandise/100008"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "name": "Denim Jacket",
+          "description": "Vintage Wash classic denim jacket with button closure.",
+          "imageUrl": "https://picsum.photos/seed/jacket/400/400",
+          "category": "Clothing"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "merchandise-100009-planter",
+      "priority": 1,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPath": "/merchandise/100009"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "name": "Ceramic Planter",
+          "description": "Hand Crafted ceramic planter perfect for indoor plants.",
+          "imageUrl": "https://picsum.photos/seed/planter/400/400",
+          "category": "Home"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "merchandise-100010-blanket",
+      "priority": 1,
+      "scenarioName": "merchandise-chaos",
+      "requiredScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPath": "/merchandise/100010"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "name": "Throw Blanket",
+          "description": "Cozy Knitted throw blanket in neutral tones.",
+          "imageUrl": "https://picsum.photos/seed/blanket/400/400",
+          "category": "Home"
+        },
+        "delayDistribution": {
+          "type": "lognormal",
+          "median": 30,
+          "sigma": 0.4
+        }
+      }
+    },
+    {
+      "name": "merchandise-fallback",
       "priority": 10,
       "scenarioName": "merchandise-chaos",
       "requiredScenarioState": "Started",

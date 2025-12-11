@@ -36,6 +36,7 @@ const ALL_APPS = {
   'ecommerce-web': { port: 3001, type: 'frontend', docker: 'ecommerce-web' },
   'kiosk-web': { port: 3002, type: 'frontend', docker: null }, // runs locally via nx serve
   'home-portal': { port: 3003, type: 'frontend', docker: null }, // runs locally via nx serve
+  'pos-web': { port: 3004, type: 'frontend', docker: null }, // runs locally via nx serve
 };
 
 // ANSI colors
@@ -226,6 +227,7 @@ async function checkPortConflicts() {
     { port: 3001, service: 'ecommerce-web' },
     { port: 3002, service: 'kiosk-web' },
     { port: 3003, service: 'home-portal' },
+    { port: 3004, service: 'pos-web' },
   ];
 
   const conflicts = [];
@@ -562,6 +564,39 @@ async function startFrontend() {
     }
     startedServices.push('home-portal:3003');
   }
+
+  // Start pos-web (point of sale application)
+  if (alreadyRunning.has('pos-web')) {
+    logSuccess('pos-web already running');
+    startedServices.push('pos-web:3004');
+  } else {
+    logStep('Starting pos-web (point of sale)...');
+    // pos-web runs via nx serve, not Docker - spawn it in the background
+    const posProcess = spawn('pnpm', ['nx', 'serve', 'pos-web'], {
+      cwd: __dirname,
+      stdio: 'ignore',
+      detached: true,
+    });
+    posProcess.unref();
+    logSuccess('pos-web process started');
+
+    logStep('Waiting for pos-web to be healthy...');
+    let ready = false;
+    for (let i = 0; i < 60; i++) {
+      if (await isHealthy(3004, '/')) {
+        ready = true;
+        break;
+      }
+      await sleep(2000);
+    }
+
+    if (ready) {
+      logSuccess('pos-web is ready');
+    } else {
+      logWarning('pos-web may not be fully ready yet');
+    }
+    startedServices.push('pos-web:3004');
+  }
 }
 
 // Print summary
@@ -621,6 +656,9 @@ function printSummary() {
   console.log(`  ${colors.cyan}home-portal${colors.nc}       http://localhost:3003`);
   console.log('                     Platform landing page (start here!)');
   console.log('');
+  console.log(`  ${colors.cyan}pos-web${colors.nc}           http://localhost:3004`);
+  console.log('                     Point of Sale application for in-store employees');
+  console.log('');
   console.log(`  ${colors.cyan}ecommerce-web${colors.nc}     http://localhost:3001`);
   console.log('                     Main e-commerce storefront');
   console.log('');
@@ -673,7 +711,7 @@ ${colors.bold}Available apps:${colors.nc}
     fulfillment-service, audit-service, checkout-service, order-service, user-service
 
   ${colors.cyan}Frontend:${colors.nc}
-    ecommerce-web, kiosk-web, home-portal
+    ecommerce-web, kiosk-web, home-portal, pos-web
 
 ${colors.bold}Examples:${colors.nc}
   ./powerstart -r product-service    Rebuild and restart product-service
@@ -856,7 +894,7 @@ async function rebuildFrontendApp(appName) {
       return true;
     }
   } else {
-    // Local dev server (kiosk-web, home-portal)
+    // Local dev server (kiosk-web, home-portal, pos-web)
 
     // Kill existing process on the port
     killProcessOnPort(app.port);

@@ -9,6 +9,7 @@ import type {
   PaymentMethod,
   TransactionReceipt,
   MarkdownInfo,
+  Product,
 } from '../types/transaction';
 
 export interface TransactionContextValue {
@@ -25,6 +26,7 @@ export interface TransactionContextValue {
 
   // Item operations
   addItem: (sku: string, quantity?: number) => Promise<void>;
+  addItemWithProduct: (product: Product, quantity?: number) => void;
   updateItemQuantity: (lineId: string, quantity: number) => void;
   removeItem: (lineId: string) => void;
   applyItemMarkdown: (lineId: string, markdown: Omit<MarkdownInfo, 'markdownId'>) => Promise<void>;

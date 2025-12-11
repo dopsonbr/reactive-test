@@ -1,17 +1,20 @@
 import { defineConfig, devices } from '@playwright/test';
-import { nxE2EPreset } from '@nx/playwright/preset';
-import { workspaceRoot } from '@nx/devkit';
 
 const baseURL = process.env['E2E_BASE_URL'] || 'http://localhost:3004';
 
 /**
  * POS Web E2E Test Configuration
  *
- * Tests run against MSW-mocked APIs by default.
- * Set VITE_MSW_ENABLED=true when starting the dev server.
+ * Two modes of operation:
+ * 1. Mocked (default): Uses MSW for API mocking, runs fast
+ *    - Run with: pnpm nx e2e pos-web-e2e
+ *
+ * 2. Full-stack: Uses real backend services, requires ./powerstart
+ *    - Run with: E2E_BASE_URL=http://localhost:3004 pnpm nx e2e pos-web-e2e --project=fullstack
+ *    - Requires: ./powerstart to have all services running
  */
 export default defineConfig({
-  ...nxE2EPreset(__filename, { testDir: './specs' }),
+  testDir: './specs',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -49,21 +52,18 @@ export default defineConfig({
       dependencies: ['sanity'],
       use: { ...devices['Desktop Chrome'] },
     },
-    // Uncomment for additional browser coverage
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
+    // Full-stack tests (no MSW mocks - requires real backend)
+    // Run with: E2E_BASE_URL=http://localhost:3004 pnpm nx e2e pos-web-e2e --project=fullstack
+    {
+      name: 'fullstack',
+      testMatch: /fullstack\/.+\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
   ],
   webServer: {
     command: 'VITE_MSW_ENABLED=true pnpm nx serve pos-web',
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
-    cwd: workspaceRoot,
   },
 });

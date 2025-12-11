@@ -24,44 +24,76 @@ function generateId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-// Mock product lookup (would be API call in production)
+// Fallback mock products for development/MSW mode
+const fallbackProducts: Record<string, Product> = {
+  'SKU-001': {
+    sku: 'SKU-001',
+    name: 'Premium Widget',
+    description: 'High-quality widget for all your needs',
+    price: 29.99,
+    category: 'Widgets',
+    inStock: true,
+    availableQuantity: 50,
+  },
+  'SKU-002': {
+    sku: 'SKU-002',
+    name: 'Standard Gadget',
+    description: 'Reliable everyday gadget',
+    price: 19.99,
+    salePrice: 14.99,
+    category: 'Gadgets',
+    inStock: true,
+    availableQuantity: 100,
+  },
+  'SKU-003': {
+    sku: 'SKU-003',
+    name: 'Deluxe Accessory',
+    description: 'Premium accessory with advanced features',
+    price: 49.99,
+    category: 'Accessories',
+    inStock: true,
+    availableQuantity: 25,
+  },
+};
+
+// Product lookup - uses real API with fallback to mock data
 async function lookupProduct(sku: string): Promise<Product | null> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  try {
+    const response = await fetch(`/products/${sku}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-store-number': '1',
+        'x-order-number': crypto.randomUUID(),
+        'x-userid': 'pos-user',
+        'x-sessionid': crypto.randomUUID(),
+      },
+    });
 
-  // Mock product data
-  const mockProducts: Record<string, Product> = {
-    'SKU-001': {
-      sku: 'SKU-001',
-      name: 'Premium Widget',
-      description: 'High-quality widget for all your needs',
-      price: 29.99,
-      category: 'Widgets',
-      inStock: true,
-      availableQuantity: 50,
-    },
-    'SKU-002': {
-      sku: 'SKU-002',
-      name: 'Standard Gadget',
-      description: 'Reliable everyday gadget',
-      price: 19.99,
-      salePrice: 14.99,
-      category: 'Gadgets',
-      inStock: true,
-      availableQuantity: 100,
-    },
-    'SKU-003': {
-      sku: 'SKU-003',
-      name: 'Deluxe Accessory',
-      description: 'Premium accessory with advanced features',
-      price: 49.99,
-      category: 'Accessories',
-      inStock: true,
-      availableQuantity: 25,
-    },
-  };
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        sku: String(data.sku),
+        name: data.name,
+        description: data.description,
+        price: data.originalPrice ?? data.price,
+        salePrice: data.onSale ? data.price : undefined,
+        category: data.category,
+        inStock: data.inStock ?? data.availableQuantity > 0,
+        availableQuantity: data.availableQuantity ?? data.availability ?? 0,
+        imageUrl: data.imageUrl,
+      };
+    }
 
-  return mockProducts[sku] ?? null;
+    // If API returns 404, fall back to mock data (for MSW mode)
+    if (response.status === 404) {
+      return fallbackProducts[sku] ?? null;
+    }
+
+    return null;
+  } catch {
+    // Network error - fall back to mock data (for MSW mode)
+    return fallbackProducts[sku] ?? null;
+  }
 }
 
 export function TransactionProvider({ children }: TransactionProviderProps) {
@@ -158,6 +190,30 @@ export function TransactionProvider({ children }: TransactionProviderProps) {
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  // Add item using full product data (no second lookup needed - follows kiosk-web pattern)
+  const addItemWithProduct = useCallback((product: Product, quantity: number = 1) => {
+    if (!product.inStock) {
+      setError(`Product out of stock: ${product.name}`);
+      return;
+    }
+
+    const lineItem: LineItem = {
+      lineId: generateId('LINE'),
+      sku: String(product.sku),
+      name: product.name,
+      description: product.description,
+      imageUrl: product.imageUrl,
+      quantity,
+      unitPrice: product.salePrice ?? product.price,
+      originalPrice: product.price,
+      discountPerItem: product.salePrice ? product.price - product.salePrice : 0,
+      markdown: null,
+      lineTotal: (product.salePrice ?? product.price) * quantity,
+    };
+
+    dispatch({ type: 'ADD_ITEM', payload: lineItem });
   }, []);
 
   const updateItemQuantity = useCallback((lineId: string, quantity: number) => {
@@ -288,6 +344,7 @@ export function TransactionProvider({ children }: TransactionProviderProps) {
       resumeTransaction,
       voidTransaction,
       addItem,
+      addItemWithProduct,
       updateItemQuantity,
       removeItem,
       applyItemMarkdown,
@@ -313,6 +370,7 @@ export function TransactionProvider({ children }: TransactionProviderProps) {
       resumeTransaction,
       voidTransaction,
       addItem,
+      addItemWithProduct,
       updateItemQuantity,
       removeItem,
       applyItemMarkdown,

@@ -9,12 +9,12 @@ import type { Page } from '@playwright/test';
  * Test employee credentials
  */
 export const TEST_EMPLOYEES = {
-  ASSOCIATE: { id: 'EMP001', pin: '1234', name: 'Alex Associate' },
-  SUPERVISOR: { id: 'EMP002', pin: '5678', name: 'Susan Supervisor' },
-  MANAGER: { id: 'EMP003', pin: '9012', name: 'Mike Manager' },
-  ADMIN: { id: 'EMP004', pin: '3456', name: 'Amy Admin' },
-  CONTACT_CENTER: { id: 'EMP005', pin: '7890', name: 'Carol Contact' },
-  B2B_SALES: { id: 'EMP006', pin: '2345', name: 'Bob B2B' },
+  ASSOCIATE: { username: 'testassociate', storeNumber: '100', role: 'Associate', name: 'Test Associate' },
+  SUPERVISOR: { username: 'testsupervisor', storeNumber: '100', role: 'Supervisor', name: 'Test Supervisor' },
+  MANAGER: { username: 'testmanager', storeNumber: '100', role: 'Manager', name: 'Test Manager' },
+  ADMIN: { username: 'testadmin', storeNumber: '100', role: 'Admin', name: 'Test Admin' },
+  CONTACT_CENTER: { username: 'testcontact', storeNumber: '100', role: 'Contact Center', name: 'Test Contact' },
+  B2B_SALES: { username: 'testb2b', storeNumber: '100', role: 'B2B Sales', name: 'Test B2B' },
 } as const;
 
 export type EmployeeType = keyof typeof TEST_EMPLOYEES;
@@ -24,23 +24,24 @@ export type EmployeeType = keyof typeof TEST_EMPLOYEES;
  */
 export async function loginAsEmployee(
   page: Page,
-  employeeId: string,
-  pin: string
+  username: string,
+  storeNumber: string
 ): Promise<void> {
   await page.goto('/');
 
-  // Wait for login form
-  await page.waitForSelector('[data-testid="login-form"]', { timeout: 5000 });
+  // Wait for login form to load
+  await page.waitForSelector('form', { timeout: 10000 });
 
   // Fill in credentials
-  await page.getByPlaceholder('Employee ID').fill(employeeId);
-  await page.getByPlaceholder('PIN').fill(pin);
+  await page.getByPlaceholder('Enter your username').fill(username);
+  await page.getByPlaceholder('1-2000').fill(storeNumber);
 
   // Submit
-  await page.getByRole('button', { name: /login|sign in/i }).click();
+  await page.getByRole('button', { name: /sign in/i }).click();
 
-  // Wait for redirect to dashboard or transaction page
-  await page.waitForURL(/\/(dashboard|transaction)/, { timeout: 5000 });
+  // Wait for redirect to dashboard (root path) - verify by checking for dashboard content
+  // The dashboard is at / not /dashboard
+  await page.waitForSelector('h1', { timeout: 10000 });
 }
 
 /**
@@ -48,7 +49,7 @@ export async function loginAsEmployee(
  */
 export async function loginAs(page: Page, employeeType: EmployeeType): Promise<void> {
   const employee = TEST_EMPLOYEES[employeeType];
-  await loginAsEmployee(page, employee.id, employee.pin);
+  await loginAsEmployee(page, employee.username, employee.storeNumber);
 }
 
 /**

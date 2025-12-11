@@ -16,7 +16,7 @@ interface ItemEntryProps {
 }
 
 export function ItemEntry({ onItemAdded, autoFocus = true }: ItemEntryProps) {
-  const { addItem, isLoading, error, clearError } = useTransaction();
+  const { addItem, addItemWithProduct, isLoading, error, clearError } = useTransaction();
   const [searchOpen, setSearchOpen] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -57,16 +57,14 @@ export function ItemEntry({ onItemAdded, autoFocus = true }: ItemEntryProps) {
     setLocalError(`Invalid SKU: ${sku} (minimum 3 characters)`);
   };
 
-  const handleProductSelect = async (product: Product, quantity: number) => {
+  const handleProductSelect = (product: Product, quantity: number) => {
     clearError();
     setLocalError(null);
 
-    try {
-      await addItem(product.sku, quantity);
-      onItemAdded?.();
-    } catch {
-      setLocalError(`Failed to add product: ${product.name}`);
-    }
+    // Use addItemWithProduct to pass full product data (follows kiosk-web pattern)
+    // This avoids a second API lookup that could return different data
+    addItemWithProduct(product, quantity);
+    onItemAdded?.();
   };
 
   const displayError = error || localError;

@@ -62,22 +62,31 @@ require (
 )
 ```
 
-### 1.2 Entry Point
+### 1.2 Entry Point with Embedded Assets
 
 **Files:**
 - CREATE: `apps/offline-pos/main.go`
 
 **Implementation:**
 
+Note: Go's `embed` directive cannot use relative paths that traverse up directories. The embed directives must be in the same package as the embedded files or a parent. We place them in `main.go` at the project root and pass the filesystems to the server.
+
 ```go
 package main
 
 import (
+    "embed"
     "log"
     "os"
 
     "github.com/example/offline-pos/internal/server"
 )
+
+//go:embed templates/*
+var templatesFS embed.FS
+
+//go:embed static/*
+var staticFS embed.FS
 
 func main() {
     port := os.Getenv("PORT")
@@ -85,7 +94,7 @@ func main() {
         port = "3000"
     }
 
-    srv := server.New(port)
+    srv := server.New(port, templatesFS, staticFS)
     log.Printf("Starting Offline POS on :%s", port)
     if err := srv.Run(); err != nil {
         log.Fatal(err)
@@ -116,19 +125,20 @@ import (
     "net/http"
 )
 
-//go:embed all:../../templates
-var templatesFS embed.FS
-
-//go:embed all:../../static
-var staticFS embed.FS
-
 type Server struct {
-    port   string
-    router *http.ServeMux
+    port        string
+    router      *http.ServeMux
+    templatesFS embed.FS
+    staticFS    embed.FS
 }
 
-func New(port string) *Server {
-    s := &Server{port: port, router: http.NewServeMux()}
+func New(port string, templatesFS, staticFS embed.FS) *Server {
+    s := &Server{
+        port:        port,
+        router:      http.NewServeMux(),
+        templatesFS: templatesFS,
+        staticFS:    staticFS,
+    }
     s.registerRoutes()
     return s
 }
@@ -146,18 +156,20 @@ func (s *Server) Run() error {
 package server
 
 import (
+    "io/fs"
     "net/http"
 
     "github.com/example/offline-pos/internal/handlers"
 )
 
 func (s *Server) registerRoutes() {
-    // Static assets
+    // Static assets - strip "static" prefix from embedded FS
+    staticContent, _ := fs.Sub(s.staticFS, "static")
     s.router.Handle("GET /static/", http.StripPrefix("/static/",
-        http.FileServer(http.FS(staticFS))))
+        http.FileServer(http.FS(staticContent))))
 
     // Pages
-    pages := handlers.NewPageHandlers(templatesFS)
+    pages := handlers.NewPageHandlers(s.templatesFS)
     s.router.HandleFunc("GET /", pages.Login)
     s.router.HandleFunc("POST /login", pages.HandleLogin)
     s.router.HandleFunc("GET /scan", pages.Scan)
@@ -346,31 +358,66 @@ Minimal stubs to verify template loading works. Full implementation in 048D.
 
 ---
 
-## Phase 5: Development Tooling
+## Phase 5: Nx Integration
 
 **Prereqs:** All phases complete
 **Blockers:** None
 
-### 5.1 Makefile
+### 5.1 Nx Project Configuration
 
 **Files:**
-- CREATE: `apps/offline-pos/Makefile`
+- CREATE: `apps/offline-pos/project.json`
 
-```makefile
-.PHONY: run build test
-
-run:
-	go run .
-
-build:
-	go build -ldflags="-s -w" -o bin/offline-pos .
-
-test:
-	go test ./...
-
-dev:
-	which air > /dev/null || go install github.com/air-verse/air@latest
-	air
+```json
+{
+  "name": "offline-pos",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/offline-pos",
+  "tags": ["type:app", "platform:go"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "go build -ldflags=\"-s -w\" -o dist/apps/offline-pos/offline-pos .",
+        "cwd": "apps/offline-pos"
+      },
+      "outputs": ["{workspaceRoot}/dist/apps/offline-pos"]
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "go run .",
+        "cwd": "apps/offline-pos"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "go test ./...",
+        "cwd": "apps/offline-pos"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "go vet ./...",
+          "go fmt ./..."
+        ],
+        "cwd": "apps/offline-pos",
+        "parallel": false
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "air",
+        "cwd": "apps/offline-pos"
+      }
+    }
+  }
+}
 ```
 
 ### 5.2 Air Config (optional live reload)
@@ -379,10 +426,40 @@ dev:
 - CREATE: `apps/offline-pos/.air.toml`
 
 ```toml
+root = "."
+tmp_dir = "tmp"
+
 [build]
 cmd = "go build -o ./tmp/main ."
 bin = "./tmp/main"
 include_ext = ["go", "html", "css", "js"]
+exclude_dir = ["tmp", "dist"]
+delay = 1000
+
+[log]
+time = false
+
+[misc]
+clean_on_exit = true
+```
+
+### 5.3 Usage
+
+```bash
+# Build (production)
+pnpm nx build offline-pos
+
+# Run development server
+pnpm nx serve offline-pos
+
+# Run with live reload (requires air: go install github.com/air-verse/air@latest)
+pnpm nx dev offline-pos
+
+# Run tests
+pnpm nx test offline-pos
+
+# Lint
+pnpm nx lint offline-pos
 ```
 
 ---
@@ -392,35 +469,41 @@ include_ext = ["go", "html", "css", "js"]
 | Action | File | Purpose |
 |--------|------|---------|
 | CREATE | `apps/offline-pos/go.mod` | Go module definition |
-| CREATE | `apps/offline-pos/main.go` | Application entry point |
+| CREATE | `apps/offline-pos/main.go` | Application entry point with embedded assets |
+| CREATE | `apps/offline-pos/project.json` | Nx project configuration |
 | CREATE | `apps/offline-pos/internal/server/server.go` | HTTP server |
 | CREATE | `apps/offline-pos/internal/server/routes.go` | Route registration |
 | CREATE | `apps/offline-pos/internal/server/middleware.go` | Logging middleware |
 | CREATE | `apps/offline-pos/internal/handlers/pages.go` | HTML page handlers |
 | CREATE | `apps/offline-pos/internal/handlers/api.go` | JSON API handlers |
 | CREATE | `apps/offline-pos/templates/*.html` | HTML template stubs |
-| CREATE | `apps/offline-pos/Makefile` | Build commands |
+| CREATE | `apps/offline-pos/.air.toml` | Live reload config (optional) |
 
 ## Testing Strategy
 
 ```bash
 # Verify build
-cd apps/offline-pos && go build .
+pnpm nx build offline-pos
 
 # Verify server starts
-./offline-pos &
+pnpm nx serve offline-pos &
+sleep 2
 curl http://localhost:3000/
 curl http://localhost:3000/api/status
 
 # Verify static serving
 curl http://localhost:3000/static/css/styles.css
+
+# Run Go tests
+pnpm nx test offline-pos
 ```
 
 ## Checklist
 
 - [ ] Go module initialized
-- [ ] HTTP server starts on :3000
+- [ ] Nx project.json configured
+- [ ] HTTP server starts on :3000 (`pnpm nx serve offline-pos`)
 - [ ] All page routes return HTML
 - [ ] All API routes return JSON
 - [ ] Static assets served correctly
-- [ ] Live reload working (optional)
+- [ ] Build produces binary in dist/ (`pnpm nx build offline-pos`)

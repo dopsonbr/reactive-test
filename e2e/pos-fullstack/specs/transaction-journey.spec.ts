@@ -1,25 +1,19 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, TEST_EMPLOYEE, TEST_PRODUCTS } from '../fixtures';
 
 /**
  * Full-Stack Transaction Journey Test
  *
  * This test runs against REAL backend services (no MSW mocks).
  * It navigates through the entire transaction flow like a real user:
- * Login → Add Items → Checkout → Fulfillment → Payment → Complete
+ * Login -> Add Items -> Checkout -> Fulfillment -> Payment -> Complete
  *
  * Prerequisites:
  * - All backend services must be running (use ./powerstart)
- * - Frontend must be started WITHOUT MSW: pnpm nx serve pos-web
+ * - Frontend must be started WITHOUT MSW
  *
  * Run with:
- *   E2E_BASE_URL=http://localhost:3004 pnpm nx e2e pos-web-e2e --project=fullstack
+ *   pnpm nx e2e pos-fullstack-e2e
  */
-
-// Test employee credentials that work with real backend
-const TEST_EMPLOYEE = {
-  username: 'testassociate',
-  storeNumber: '100',
-};
 
 test.describe('Full-Stack Transaction Journey', () => {
   test.beforeEach(async ({ page }) => {
@@ -45,11 +39,9 @@ test.describe('Full-Stack Transaction Journey', () => {
     await expect(page.getByPlaceholder('Scan or enter SKU...')).toBeVisible();
 
     // 3. ADD ITEMS TO CART
-    // Add first item using Quick Add
     await page.getByRole('button', { name: /SKU-001/i }).click();
     await expect(page.getByText(/1 item/i)).toBeVisible();
 
-    // Add second item
     await page.getByRole('button', { name: /SKU-002/i }).click();
     await expect(page.getByText(/2 items/i)).toBeVisible();
 
@@ -86,8 +78,6 @@ test.describe('Full-Stack Transaction Journey', () => {
 
     // 10. VERIFY COMPLETION
     await expect(page.getByRole('heading', { name: /transaction complete/i })).toBeVisible();
-
-    // Should have option to start new transaction
     await expect(page.getByRole('button', { name: /new transaction/i })).toBeVisible();
   });
 
@@ -107,20 +97,18 @@ test.describe('Full-Stack Transaction Journey', () => {
     await page.getByRole('button', { name: 'Search F3' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
 
-    // 4. SEARCH FOR HEADPHONES (type-to-search, no submit button)
+    // 4. SEARCH FOR HEADPHONES
     await page.getByPlaceholder(/search by sku/i).fill('headphones');
 
-    // 5. WAIT FOR SEARCH RESULTS (shows after typing 2+ characters)
+    // 5. WAIT FOR SEARCH RESULTS
     await expect(page.getByText(/wireless headphones/i)).toBeVisible({ timeout: 10000 });
 
-    // 6. ADD HEADPHONES TO CART (click "Add" button on the product row)
+    // 6. ADD HEADPHONES TO CART
     await page.getByRole('button', { name: 'Add' }).first().click();
 
     // 7. VERIFY DIALOG CLOSED AND ITEM ADDED
     await expect(page.getByRole('dialog')).not.toBeVisible();
     await expect(page.getByText(/1 item/i)).toBeVisible();
-
-    // 8. VERIFY HEADPHONES IN CART
     await expect(page.getByText(/headphones/i)).toBeVisible();
   });
 

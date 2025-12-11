@@ -83,11 +83,6 @@ graph LR
 
   product -.-> wiremock
   cart -.-> wiremock
-
-  Core Services --> grafana
-  Core Services --> prom
-  Core Services --> loki
-  Core Services --> tempo
 ```
 
 **Product data services + merchant portal (planned)**

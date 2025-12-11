@@ -103,6 +103,7 @@
     "vite": "^7.0.0",
     "vite-plugin-dts": "^4.5.4",
     "vitepress": "^1.6.4",
+    "vitepress-sidebar": "^1.33.1",
     "vitest": "^4.0.0",
     "vitest-axe": "^0.1.0",
     "yaml": "^2.8.2"

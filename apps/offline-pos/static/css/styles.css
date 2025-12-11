@@ -1,0 +1,128 @@
+/* Offline POS Custom Styles */
+
+:root {
+    --offline-banner: #ffc107;
+    --online-banner: #28a745;
+    --error-banner: #dc3545;
+}
+
+/* Header */
+header nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.store-id, .operator {
+    font-size: 0.875rem;
+    color: var(--muted-color);
+}
+
+/* Status Banner */
+.banner {
+    padding: 0.5rem 1rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.banner.offline {
+    background: var(--offline-banner);
+    color: #000;
+}
+
+.banner.online {
+    background: var(--online-banner);
+    color: #fff;
+}
+
+.banner.hidden {
+    display: none;
+}
+
+/* Login */
+.pin-input {
+    font-size: 2rem;
+    text-align: center;
+    letter-spacing: 0.5rem;
+    max-width: 200px;
+}
+
+/* Scan Screen */
+.scan-area {
+    min-height: 200px;
+    border: 2px dashed var(--muted-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.scan-feedback {
+    padding: 1rem;
+    background: var(--card-background-color);
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+/* Cart */
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--muted-border-color);
+}
+
+.cart-item .name {
+    flex: 1;
+}
+
+.cart-item .qty-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.cart-item .qty-controls button {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+}
+
+.cart-totals {
+    margin-top: 1rem;
+    text-align: right;
+}
+
+/* Payment */
+.payment-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.payment-buttons button {
+    flex: 1;
+    padding: 2rem;
+    font-size: 1.5rem;
+}
+
+.payment-status {
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.25rem;
+}
+
+/* Complete */
+.transaction-complete {
+    text-align: center;
+    padding: 2rem;
+}
+
+.transaction-id {
+    font-family: monospace;
+    font-size: 1.25rem;
+    background: var(--card-background-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}

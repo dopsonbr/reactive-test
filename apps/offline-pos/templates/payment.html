@@ -1,0 +1,62 @@
+{{define "content"}}
+<h1>Payment</h1>
+
+<div class="payment-amount">
+    <h2>Total: ${{formatPrice .Total}}</h2>
+</div>
+
+<div id="payment-status" class="payment-status hidden"></div>
+
+<div class="payment-buttons" id="payment-options">
+    <button type="button" id="btn-card" onclick="payWithCard()">
+        Pay with Card
+    </button>
+    <button type="button" id="btn-cash" class="secondary" onclick="payWithCash()">
+        Pay with Cash
+    </button>
+</div>
+
+<form id="receipt-form" class="hidden">
+    <label>Email for receipt (optional)</label>
+    <input type="email" name="email" id="customer-email">
+    <label>Phone for receipt (optional)</label>
+    <input type="tel" name="phone" id="customer-phone">
+</form>
+
+<a href="/cart" class="secondary">Back to Cart</a>
+{{end}}
+
+{{define "scripts"}}
+<script type="module">
+    import { collectPayment, onPaymentResult } from '/static/js/peripheral.js';
+    import { completeTransaction } from '/static/js/cart.js';
+
+    const total = {{.Total}};
+
+    window.payWithCard = async () => {
+        showStatus('Insert or tap card...');
+        collectPayment(total);
+    };
+
+    window.payWithCash = async () => {
+        await completeTransaction('cash', null);
+        location.href = '/complete';
+    };
+
+    onPaymentResult(async (result) => {
+        if (result.status === 'approved') {
+            await completeTransaction('card', result.authCode);
+            location.href = '/complete';
+        } else {
+            showStatus(`Payment declined: ${result.reason}`, true);
+        }
+    });
+
+    function showStatus(msg, isError = false) {
+        const el = document.getElementById('payment-status');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+        el.style.color = isError ? 'var(--error-banner)' : 'inherit';
+    }
+</script>
+{{end}}

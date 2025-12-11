@@ -1,0 +1,11 @@
+# Compiled binary
+offline-pos
+
+# SQLite database and journal files
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+
+# Air hot reload temp directory
+tmp/

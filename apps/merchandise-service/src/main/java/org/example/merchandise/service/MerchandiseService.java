@@ -7,6 +7,7 @@ import org.example.merchandise.dto.UpdateProductRequest;
 import org.example.merchandise.repository.ProductEntity;
 import org.example.merchandise.repository.ProductR2dbcRepository;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -15,9 +16,11 @@ import reactor.core.publisher.Mono;
 public class MerchandiseService {
 
   private final ProductR2dbcRepository repository;
+  private final R2dbcEntityTemplate template;
 
-  public MerchandiseService(ProductR2dbcRepository repository) {
+  public MerchandiseService(ProductR2dbcRepository repository, R2dbcEntityTemplate template) {
     this.repository = repository;
+    this.template = template;
   }
 
   public Mono<MerchandiseResponse> getProduct(Long sku) {
@@ -41,7 +44,9 @@ public class MerchandiseService {
             request.currency() != null ? request.currency() : "USD",
             now,
             now);
-    return repository.save(entity);
+    // Use template.insert() instead of repository.save() because R2DBC treats
+    // non-null @Id as existing entity and issues UPDATE instead of INSERT
+    return template.insert(entity);
   }
 
   public Mono<ProductEntity> updateProduct(Long sku, UpdateProductRequest request) {

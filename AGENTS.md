@@ -636,3 +636,4 @@ All completed implementation plans are stored in `docs/plans/completed/`:
 <!-- nx configuration end-->
 
 - ALWAYS use nx commands for invoking tasks like build, lint, test
+- Use java 25. never use java 21

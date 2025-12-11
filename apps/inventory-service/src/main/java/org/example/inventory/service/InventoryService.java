@@ -6,6 +6,7 @@ import org.example.inventory.dto.UpdateInventoryRequest;
 import org.example.inventory.repository.StockEntity;
 import org.example.inventory.repository.StockR2dbcRepository;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,9 +15,11 @@ import reactor.core.publisher.Mono;
 public class InventoryService {
 
   private final StockR2dbcRepository repository;
+  private final R2dbcEntityTemplate template;
 
-  public InventoryService(StockR2dbcRepository repository) {
+  public InventoryService(StockR2dbcRepository repository, R2dbcEntityTemplate template) {
     this.repository = repository;
+    this.template = template;
   }
 
   public Mono<InventoryResponse> getInventory(Long sku) {
@@ -46,7 +49,9 @@ public class InventoryService {
 
   private Mono<StockEntity> createNew(Long sku, UpdateInventoryRequest request) {
     StockEntity entity = new StockEntity(sku, request.availableQuantity(), Instant.now());
-    return repository.save(entity);
+    // Use template.insert() instead of repository.save() because R2DBC treats
+    // non-null @Id as existing entity and issues UPDATE instead of INSERT
+    return template.insert(entity);
   }
 
   private InventoryResponse toResponse(StockEntity entity) {

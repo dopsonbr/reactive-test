@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { router } from './routes';
 import { AuthProvider } from '../features/auth';
+import { ErrorBoundary } from '../shared/components';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,10 +20,12 @@ const queryClient = new QueryClient({
 
 export function Providers() {
   return (
-    <AuthProvider>
+    <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
       </QueryClientProvider>
-    </AuthProvider>
+    </ErrorBoundary>
   );
 }

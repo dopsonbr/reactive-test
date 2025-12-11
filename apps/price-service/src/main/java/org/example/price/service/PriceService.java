@@ -6,6 +6,7 @@ import org.example.price.dto.UpdatePriceRequest;
 import org.example.price.repository.PriceEntity;
 import org.example.price.repository.PriceR2dbcRepository;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,9 +15,11 @@ import reactor.core.publisher.Mono;
 public class PriceService {
 
   private final PriceR2dbcRepository repository;
+  private final R2dbcEntityTemplate template;
 
-  public PriceService(PriceR2dbcRepository repository) {
+  public PriceService(PriceR2dbcRepository repository, R2dbcEntityTemplate template) {
     this.repository = repository;
+    this.template = template;
   }
 
   public Mono<PriceResponse> getPrice(Long sku) {
@@ -53,7 +56,9 @@ public class PriceService {
             request.originalPrice(),
             request.currency() != null ? request.currency() : "USD",
             Instant.now());
-    return repository.save(entity);
+    // Use template.insert() instead of repository.save() because R2DBC treats
+    // non-null @Id as existing entity and issues UPDATE instead of INSERT
+    return template.insert(entity);
   }
 
   private PriceResponse toResponse(PriceEntity entity) {

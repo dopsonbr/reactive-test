@@ -6,3 +6,4 @@ Product-facing documentation for store operators and customers. Use these guides
 
 - [POS System](./pos-system/) — cashier-centric workflows, tendering, returns, and device setup.
 - [Self-Checkout Kiosk](./self-checkout-kiosk/) — customer journeys, kiosk operations, and exception handling.
+- [Merchant Portal](./merchant-portal/) — product catalog, pricing, and inventory management for merchants.

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { getAuthConfig, AuthConfig } from '../config';
+import { useLogin } from '../api';
 
 interface User {
   id: string;
@@ -19,7 +20,7 @@ interface AuthContextValue {
   hasPermission: (permission: string) => boolean;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 function parseTokenClaims(token: string): User | null {
   try {
@@ -44,30 +45,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const stored = sessionStorage.getItem('authToken');
     return stored ? parseTokenClaims(stored) : null;
   });
-  const [isLoading, setIsLoading] = useState(false);
+
+  const loginMutation = useLogin(authConfig.authUrl);
 
   const login = useCallback(async (username: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${authConfig.authUrl}/token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, userType: 'EMPLOYEE', storeNumber: 1234 }),
-      });
+    const data = await loginMutation.mutateAsync({ username });
+    const accessToken = data.access_token;
+    const claims = parseTokenClaims(accessToken);
 
-      if (!response.ok) throw new Error('Login failed');
-
-      const data = await response.json();
-      const accessToken = data.access_token;
-      const claims = parseTokenClaims(accessToken);
-
-      sessionStorage.setItem('authToken', accessToken);
-      setToken(accessToken);
-      setUser(claims);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [authConfig]);
+    sessionStorage.setItem('authToken', accessToken);
+    setToken(accessToken);
+    setUser(claims);
+  }, [loginMutation]);
 
   const logout = useCallback(() => {
     sessionStorage.removeItem('authToken');
@@ -89,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         authConfig,
         login,
         logout,
-        isLoading,
+        isLoading: loginMutation.isPending,
         hasPermission,
       }}
     >

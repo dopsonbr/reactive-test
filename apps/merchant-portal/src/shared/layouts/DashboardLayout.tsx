@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from '@tanstack/react-router';
 import { Package, DollarSign, Boxes, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuth } from '../../features/auth';
 import { Button } from '@reactive-platform/shared-ui-components';
+import { ErrorBoundary } from '../components';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, permission: null },
@@ -74,7 +75,9 @@ export function DashboardLayout() {
 
       {/* Main content */}
       <main className="flex-1 overflow-auto p-8">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   );

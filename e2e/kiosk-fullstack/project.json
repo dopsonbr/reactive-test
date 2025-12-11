@@ -1,0 +1,24 @@
+{
+  "name": "kiosk-fullstack-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "e2e/kiosk-fullstack",
+  "projectType": "application",
+  "tags": ["scope:kiosk", "type:e2e", "platform:fullstack"],
+  "implicitDependencies": ["kiosk-web", "cart-service", "product-service", "checkout-service"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "options": {
+        "config": "e2e/kiosk-fullstack/playwright.config.ts"
+      },
+      "outputs": ["{workspaceRoot}/e2e/kiosk-fullstack/playwright-report"]
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "e2e/kiosk-fullstack",
+        "command": "npx tsx fixtures/seed-data.ts"
+      }
+    }
+  }
+}

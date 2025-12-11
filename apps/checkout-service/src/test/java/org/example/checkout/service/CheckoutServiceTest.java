@@ -194,8 +194,14 @@ class CheckoutServiceTest {
     void shouldFailWhenFulfillmentReservationFails() {
       // Given
       CartDetails cart = createValidCart();
+      // Use WILL_CALL to trigger actual fulfillment reservation (IMMEDIATE skips reservation)
       InitiateCheckoutRequest request =
-          new InitiateCheckoutRequest(CART_ID, FulfillmentType.IMMEDIATE, null, null, null);
+          new InitiateCheckoutRequest(
+              CART_ID,
+              FulfillmentType.WILL_CALL,
+              Instant.now().plus(1, java.time.temporal.ChronoUnit.DAYS),
+              null,
+              null);
 
       when(cartServiceClient.getCart(CART_ID, STORE_NUMBER)).thenReturn(Mono.just(cart));
       when(cartValidator.validateForCheckout(cart, STORE_NUMBER)).thenReturn(Mono.empty());

@@ -44,7 +44,7 @@ public class CartValidator {
 
     // Validate cart has products
     if (cart.products() == null || cart.products().isEmpty()) {
-      errors.add(new ValidationError("cart.products", "Cart must have at least one item"));
+      errors.add(new ValidationError("cart.items", "Cart must have at least one item"));
     } else {
       validateCartItems(cart.products(), errors);
     }

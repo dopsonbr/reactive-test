@@ -178,7 +178,9 @@
       "Bash(docker info:*)",
       "Bash(docker events:*)",
       "Bash(do)",
-      "Bash(do docker exec postgres psql -U postgres -d $db -c \"ALTER SCHEMA public OWNER TO postgres; GRANT CREATE ON SCHEMA public TO PUBLIC;\")"
+      "Bash(do docker exec postgres psql -U postgres -d $db -c \"ALTER SCHEMA public OWNER TO postgres; GRANT CREATE ON SCHEMA public TO PUBLIC;\")",
+      "Bash(/Users/briandopson/github/dopsonbr/reactive-test/gradlew :apps:product-service:spotlessApply)",
+      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25.0.1-tem ./powerstart:*)"
     ],
     "deny": [],
     "ask": [

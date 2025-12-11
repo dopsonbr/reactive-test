@@ -41,8 +41,7 @@ public class CartServiceClient {
         ctx -> {
           RequestMetadata metadata = ctx.getOrDefault(ContextKeys.METADATA, null);
 
-          WebClient.RequestHeadersSpec<?> spec =
-              webClient.get().uri("/carts/{cartId}", cartId);
+          WebClient.RequestHeadersSpec<?> spec = webClient.get().uri("/carts/{cartId}", cartId);
 
           // Add required headers - propagate from context if available
           spec = spec.header("x-store-number", String.valueOf(storeNumber));

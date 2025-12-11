@@ -35,6 +35,7 @@ const ALL_APPS = {
   'kiosk-web': { port: 3002, type: 'frontend', docker: null }, // runs locally via nx serve
   'home-portal': { port: 3003, type: 'frontend', docker: null }, // runs locally via nx serve
   'pos-web': { port: 3004, type: 'frontend', docker: null }, // runs locally via nx serve
+  'offline-pos': { port: 3005, type: 'frontend', docker: 'offline-pos' }, // Go app in Docker
 };
 
 // Service groups for interactive mode
@@ -360,6 +361,72 @@ async function cleanup(removeVolumes = false) {
   logSuccess('Orphaned containers removed');
 
   logSuccess('Cleanup complete');
+}
+
+// ============================================================================
+// HARD REBUILD - Full rebuild of all apps and Docker images
+// ============================================================================
+
+async function hardRebuild() {
+  logHeader('Hard Rebuild - Full Clean Rebuild');
+
+  // Step 1: Stop all services
+  logStep('Stopping all running services...');
+  exec('docker compose down --remove-orphans', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+
+  // Kill local processes (kiosk-web, home-portal, pos-web on their ports)
+  const localPorts = [3002, 3003, 3004];
+  for (const port of localPorts) {
+    const pid = execSilent(`lsof -i :${port} -t`).trim().split('\n')[0];
+    if (pid) {
+      try {
+        execSync(`kill ${pid}`, { stdio: 'pipe' });
+      } catch {
+        // Process may have already stopped
+      }
+    }
+  }
+  logSuccess('All services stopped');
+
+  // Step 2: Clean Gradle build
+  logStep('Cleaning Gradle build...');
+  try {
+    exec('./gradlew clean -q', { cwd: __dirname });
+    logSuccess('Gradle build cleaned');
+  } catch {
+    logWarning('Gradle clean had issues, continuing...');
+  }
+
+  // Step 3: Build all backend JARs fresh
+  logStep('Building all backend JARs (this may take several minutes)...');
+  try {
+    exec('./gradlew bootJar --parallel -q', { cwd: __dirname });
+    logSuccess('All backend JARs built successfully');
+  } catch {
+    logError('JAR build failed');
+    process.exit(1);
+  }
+
+  // Step 4: Build frontend apps
+  logStep('Building frontend apps...');
+  try {
+    exec('pnpm nx run-many -t build --projects=ecommerce-web,merchant-portal -q', { cwd: __dirname });
+    logSuccess('Frontend apps built successfully');
+  } catch {
+    logWarning('Frontend build had issues, continuing...');
+  }
+
+  // Step 5: Rebuild all Docker images with no cache
+  logStep('Rebuilding all Docker images (no cache)...');
+  try {
+    exec('docker compose build --no-cache', { cwd: DOCKER_DIR });
+    logSuccess('All Docker images rebuilt');
+  } catch {
+    logError('Docker image rebuild failed');
+    process.exit(1);
+  }
+
+  logSuccess('Hard rebuild complete - all apps and images rebuilt from scratch');
 }
 
 // ============================================================================
@@ -1130,6 +1197,7 @@ ${colors.bold}COMMANDS${colors.nc}
 
 ${colors.cyan}Starting Services:${colors.nc}
     ${colors.bold}(default)${colors.nc}              Start everything (frontend + backends + observability + mocks)
+    ${colors.bold}--hard${colors.nc}                 Full rebuild: clean rebuild all apps and Docker images (no cache)
     ${colors.bold}-i, --interactive${colors.nc}     Interactive mode with checkboxes to select service groups
     ${colors.bold}--profile <name>${colors.nc}      Start services using a predefined profile
     ${colors.bold}--frontend${colors.nc}            Start frontend apps only
@@ -1178,6 +1246,9 @@ ${colors.bold}EXAMPLES${colors.nc}
 
   ${colors.dim}# Start everything (default)${colors.nc}
   ./powerstart
+
+  ${colors.dim}# Full rebuild - clean rebuild all apps and Docker images${colors.nc}
+  ./powerstart --hard
 
   ${colors.dim}# Interactive mode - choose what to start${colors.nc}
   ./powerstart -i
@@ -1934,6 +2005,27 @@ async function main() {
   if (args.includes('--clean')) {
     const removeVolumes = args.includes('-v') || args.includes('--volumes');
     await cleanup(removeVolumes);
+    return;
+  }
+
+  // ==================== HARD REBUILD ====================
+  const isHardRebuild = args.includes('--hard');
+  if (isHardRebuild) {
+    printBanner();
+    checkPrerequisites();
+    await hardRebuild();
+    // After hard rebuild, continue with normal startup
+    await checkPortConflicts();
+    await startInfrastructure();
+    await startObservability();
+    await startPeripheralEmulator();
+    await startBackendServices();
+    await startFrontend();
+    printSummary();
+
+    if (shouldOpenBrowser) {
+      openBrowser();
+    }
     return;
   }
 

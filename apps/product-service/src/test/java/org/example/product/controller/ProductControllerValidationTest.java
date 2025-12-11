@@ -116,8 +116,9 @@ class ProductControllerValidationTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"abc12", "abc1234", "abc12!"})
+  @ValueSource(strings = {"", "abc12!", "abc 12", "ABC12@"})
   void invalidUserId_returns400(String userId) {
+    // Invalid: empty, contains special chars (!, @), contains spaces
     webTestClient
         .get()
         .uri("/products/123456")
@@ -142,8 +143,10 @@ class ProductControllerValidationTest {
             });
   }
 
-  @Test
-  void invalidSessionId_returns400() {
+  @ParameterizedTest
+  @ValueSource(strings = {"", "has space", "has@special"})
+  void invalidSessionId_returns400(String sessionId) {
+    // Invalid: empty, contains spaces, contains special chars
     webTestClient
         .get()
         .uri("/products/123456")
@@ -151,7 +154,7 @@ class ProductControllerValidationTest {
         .header("x-store-number", "100")
         .header("x-order-number", VALID_ORDER_NUMBER)
         .header("x-userid", VALID_USER_ID)
-        .header("x-sessionid", "not-a-uuid")
+        .header("x-sessionid", sessionId)
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus()
@@ -170,14 +173,15 @@ class ProductControllerValidationTest {
 
   @Test
   void multipleInvalidFields_returnsAllErrors() {
+    // Use truly invalid values: "!" contains special char, "!" contains special char
     webTestClient
         .get()
         .uri("/products/99999")
         .header("Authorization", SecurityTestUtils.bearerAuth(VALID_TOKEN))
         .header("x-store-number", "0")
         .header("x-order-number", "invalid")
-        .header("x-userid", "bad")
-        .header("x-sessionid", "invalid")
+        .header("x-userid", "!")
+        .header("x-sessionid", "!")
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus()

@@ -1,0 +1,60 @@
+# Build stage
+FROM golang:1.22-alpine AS builder
+
+# Install build dependencies (ca-certificates for HTTPS and tzdata for timezone support)
+RUN apk add --no-cache ca-certificates tzdata
+
+WORKDIR /build
+
+# Copy dependency files
+COPY apps/offline-pos/go.mod apps/offline-pos/go.sum ./
+
+# Download dependencies
+RUN go mod download && go mod verify
+
+# Copy source code
+COPY apps/offline-pos/ .
+
+# Build the application
+# CGO_ENABLED=0: Build a static binary (works with modernc.org/sqlite pure Go driver)
+# -ldflags="-s -w": Strip debug info and symbol table for smaller binary
+# -trimpath: Remove file system paths from binary for reproducibility
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags="-s -w" \
+    -trimpath \
+    -o offline-pos \
+    .
+
+# Runtime stage - using alpine for health checks and minimal overhead
+FROM alpine:latest
+
+# Install runtime dependencies
+RUN apk add --no-cache ca-certificates tzdata wget
+
+# Create non-root user
+RUN addgroup -g 1000 appuser && \
+    adduser -D -u 1000 -G appuser appuser
+
+# Create data directory
+RUN mkdir -p /data && chown appuser:appuser /data
+
+# Copy the binary from builder
+COPY --from=builder /build/offline-pos /usr/local/bin/offline-pos
+
+# Switch to non-root user
+USER appuser
+
+# Environment variables
+ENV PORT=3005
+ENV DB_PATH=/data/offline-pos.db
+ENV CENTRAL_URL=http://cart-service:8080
+
+# Expose the application port
+EXPOSE 3005
+
+# Health check using the /api/status endpoint
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3005/api/status || exit 1
+
+# Run the application
+ENTRYPOINT ["/usr/local/bin/offline-pos"]

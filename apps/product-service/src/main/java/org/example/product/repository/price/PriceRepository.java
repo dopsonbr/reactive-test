@@ -47,11 +47,7 @@ public class PriceRepository {
 
   private Mono<PriceResponse> fetchAndCache(long sku, String cacheKey) {
     Mono<PriceResponse> call =
-        priceWebClient
-            .get()
-            .uri("/price/{sku}", sku)
-            .retrieve()
-            .bodyToMono(PriceResponse.class);
+        priceWebClient.get().uri("/price/{sku}", sku).retrieve().bodyToMono(PriceResponse.class);
 
     return resilience
         .decorate(RESILIENCE_NAME, call)

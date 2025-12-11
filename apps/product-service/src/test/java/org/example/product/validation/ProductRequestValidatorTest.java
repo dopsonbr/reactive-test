@@ -121,7 +121,7 @@ class ProductRequestValidatorTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"", "not-a-uuid", "12345", "550e8400-e29b-41d4-a716"})
+  @ValueSource(strings = {"not-a-uuid", "550e8400-e29b-41d4-a716"})
   void invalidOrderNumber_fails(String orderNumber) {
     StepVerifier.create(
             validator.validateProductRequest(
@@ -137,23 +137,27 @@ class ProductRequestValidatorTest {
   }
 
   @Test
-  void nullOrderNumber_fails() {
+  void nullOrderNumber_succeeds() {
+    // Order number is optional - null is valid
     StepVerifier.create(
             validator.validateProductRequest(
                 VALID_SKU, VALID_STORE_NUMBER, null, VALID_USER_ID, VALID_SESSION_ID))
-        .expectErrorSatisfies(
-            error -> {
-              assertThat(error).isInstanceOf(ValidationException.class);
-              ValidationException ex = (ValidationException) error;
-              assertThat(ex.getErrors()).hasSize(1);
-              assertThat(ex.getErrors().get(0).field()).isEqualTo("x-order-number");
-            })
-        .verify();
+        .verifyComplete();
+  }
+
+  @Test
+  void emptyOrderNumber_succeeds() {
+    // Order number is optional - empty string is valid
+    StepVerifier.create(
+            validator.validateProductRequest(
+                VALID_SKU, VALID_STORE_NUMBER, "", VALID_USER_ID, VALID_SESSION_ID))
+        .verifyComplete();
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"", "abc12", "abc1234", "abc12!", "abc 12", "ABC12@"})
+  @ValueSource(strings = {"", "abc12!", "abc 12", "ABC12@"})
   void invalidUserId_fails(String userId) {
+    // Invalid: empty, contains special chars (!, @), contains spaces
     StepVerifier.create(
             validator.validateProductRequest(
                 VALID_SKU, VALID_STORE_NUMBER, VALID_ORDER_NUMBER, userId, VALID_SESSION_ID))
@@ -165,6 +169,16 @@ class ProductRequestValidatorTest {
               assertThat(ex.getErrors().get(0).field()).isEqualTo("x-userid");
             })
         .verify();
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"a", "abc12", "abc1234", "user_name", "service-account"})
+  void validUserId_variousLengths_succeeds(String userId) {
+    // Valid: 1-50 alphanumeric chars with underscores/hyphens allowed
+    StepVerifier.create(
+            validator.validateProductRequest(
+                VALID_SKU, VALID_STORE_NUMBER, VALID_ORDER_NUMBER, userId, VALID_SESSION_ID))
+        .verifyComplete();
   }
 
   @Test
@@ -191,8 +205,9 @@ class ProductRequestValidatorTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"", "not-a-uuid", "12345", "660e8400-e29b-41d4-a716"})
+  @ValueSource(strings = {"", "has space", "has@special"})
   void invalidSessionId_fails(String sessionId) {
+    // Invalid: empty, contains spaces, contains special chars
     StepVerifier.create(
             validator.validateProductRequest(
                 VALID_SKU, VALID_STORE_NUMBER, VALID_ORDER_NUMBER, VALID_USER_ID, sessionId))
@@ -204,6 +219,16 @@ class ProductRequestValidatorTest {
               assertThat(ex.getErrors().get(0).field()).isEqualTo("x-sessionid");
             })
         .verify();
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"KIOSK-001", "POS-123", "12345", "session_id"})
+  void validSessionId_kioskStyle_succeeds(String sessionId) {
+    // Valid: kiosk-style identifiers (1-50 alphanumeric chars with hyphens/underscores)
+    StepVerifier.create(
+            validator.validateProductRequest(
+                VALID_SKU, VALID_STORE_NUMBER, VALID_ORDER_NUMBER, VALID_USER_ID, sessionId))
+        .verifyComplete();
   }
 
   @Test
@@ -223,7 +248,9 @@ class ProductRequestValidatorTest {
 
   @Test
   void multipleInvalidFields_returnsAllErrors() {
-    StepVerifier.create(validator.validateProductRequest(0L, 0, "invalid", "bad", "invalid"))
+    // userId "!" is invalid (special char), sessionId "!" is invalid
+    // orderNumber "invalid" triggers validation error (not empty/null, but not UUID)
+    StepVerifier.create(validator.validateProductRequest(0L, 0, "invalid", "!", "!"))
         .expectErrorSatisfies(
             error -> {
               assertThat(error).isInstanceOf(ValidationException.class);

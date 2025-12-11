@@ -35,6 +35,7 @@ import reactor.core.publisher.Mono;
 /** Security tests for CheckoutController. Verifies OAuth2 authentication and authorization. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestSecurityConfig.class)
+@org.springframework.test.context.TestPropertySource(properties = "app.security.enabled=true")
 class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
 
   private static final String VALID_CART_ID = "550e8400-e29b-41d4-a716-446655440000";

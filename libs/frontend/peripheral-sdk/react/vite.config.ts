@@ -4,6 +4,9 @@ import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 import { resolve } from 'path';
 
+// Resolve workspace root (4 levels up from this file)
+const workspaceRoot = resolve(__dirname, '../../../../');
+
 export default defineConfig({
   resolve: {
     alias: {
@@ -21,6 +24,7 @@ export default defineConfig({
     }),
   ],
   build: {
+    outDir: resolve(workspaceRoot, 'dist/libs/frontend/peripheral-sdk/react'),
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       formats: ['es'],

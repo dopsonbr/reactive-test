@@ -1,6 +1,6 @@
 # 045E_POS_CUSTOMER_MANAGEMENT
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 

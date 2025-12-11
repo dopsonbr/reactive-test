@@ -7,8 +7,10 @@ package org.example.model.fulfillment;
 public enum FulfillmentType {
   /** Home delivery */
   DELIVERY,
-  /** Store pickup */
+  /** Store pickup (same day or scheduled) */
   PICKUP,
+  /** Hold for customer with scheduled pickup window */
+  WILL_CALL,
   /** Professional installation service */
   INSTALLATION
 }

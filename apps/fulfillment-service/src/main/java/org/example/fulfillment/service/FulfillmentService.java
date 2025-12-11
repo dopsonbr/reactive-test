@@ -31,6 +31,7 @@ public class FulfillmentService {
         switch (request.type()) {
           case DELIVERY -> new BigDecimal("9.99");
           case PICKUP -> BigDecimal.ZERO;
+          case WILL_CALL -> BigDecimal.ZERO;
           case INSTALLATION -> new BigDecimal("49.99");
         };
     logger.logMessage(

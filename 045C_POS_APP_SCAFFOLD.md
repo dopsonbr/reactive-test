@@ -1,6 +1,6 @@
 # 045C_POS_APP_SCAFFOLD
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 

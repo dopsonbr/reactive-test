@@ -1,0 +1,159 @@
+{
+  "mappings": [
+    {
+      "name": "fulfillment-slots-pickup",
+      "priority": 10,
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/fulfillments/slots",
+        "queryParameters": {
+          "type": {
+            "equalTo": "PICKUP"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "type": "PICKUP",
+          "storeNumber": 1234,
+          "slots": [
+            {
+              "date": "{{now offset='+1 days' format='yyyy-MM-dd'}}",
+              "startTime": "09:00",
+              "endTime": "11:00",
+              "capacityRemaining": 10,
+              "isAvailable": true
+            },
+            {
+              "date": "{{now offset='+1 days' format='yyyy-MM-dd'}}",
+              "startTime": "11:00",
+              "endTime": "13:00",
+              "capacityRemaining": 8,
+              "isAvailable": true
+            },
+            {
+              "date": "{{now offset='+1 days' format='yyyy-MM-dd'}}",
+              "startTime": "13:00",
+              "endTime": "15:00",
+              "capacityRemaining": 5,
+              "isAvailable": true
+            },
+            {
+              "date": "{{now offset='+2 days' format='yyyy-MM-dd'}}",
+              "startTime": "09:00",
+              "endTime": "11:00",
+              "capacityRemaining": 10,
+              "isAvailable": true
+            }
+          ]
+        },
+        "transformers": ["response-template"]
+      }
+    },
+    {
+      "name": "fulfillment-slots-will-call",
+      "priority": 10,
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/fulfillments/slots",
+        "queryParameters": {
+          "type": {
+            "equalTo": "WILL_CALL"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "type": "WILL_CALL",
+          "storeNumber": 1234,
+          "slots": [
+            {
+              "date": "{{now offset='+1 days' format='yyyy-MM-dd'}}",
+              "startTime": "09:00",
+              "endTime": "17:00",
+              "capacityRemaining": 20,
+              "isAvailable": true
+            },
+            {
+              "date": "{{now offset='+2 days' format='yyyy-MM-dd'}}",
+              "startTime": "09:00",
+              "endTime": "17:00",
+              "capacityRemaining": 20,
+              "isAvailable": true
+            },
+            {
+              "date": "{{now offset='+3 days' format='yyyy-MM-dd'}}",
+              "startTime": "09:00",
+              "endTime": "17:00",
+              "capacityRemaining": 15,
+              "isAvailable": true
+            }
+          ]
+        },
+        "transformers": ["response-template"]
+      }
+    },
+    {
+      "name": "fulfillment-slots-delivery",
+      "priority": 10,
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/fulfillments/slots",
+        "queryParameters": {
+          "type": {
+            "equalTo": "DELIVERY"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "type": "DELIVERY",
+          "storeNumber": 1234,
+          "slots": [
+            {
+              "date": "{{now offset='+2 days' format='yyyy-MM-dd'}}",
+              "startTime": "09:00",
+              "endTime": "12:00",
+              "capacityRemaining": 5,
+              "isAvailable": true
+            },
+            {
+              "date": "{{now offset='+2 days' format='yyyy-MM-dd'}}",
+              "startTime": "12:00",
+              "endTime": "15:00",
+              "capacityRemaining": 5,
+              "isAvailable": true
+            },
+            {
+              "date": "{{now offset='+2 days' format='yyyy-MM-dd'}}",
+              "startTime": "15:00",
+              "endTime": "18:00",
+              "capacityRemaining": 3,
+              "isAvailable": true
+            },
+            {
+              "date": "{{now offset='+3 days' format='yyyy-MM-dd'}}",
+              "startTime": "09:00",
+              "endTime": "12:00",
+              "capacityRemaining": 5,
+              "isAvailable": true
+            }
+          ]
+        },
+        "transformers": ["response-template"]
+      }
+    }
+  ]
+}

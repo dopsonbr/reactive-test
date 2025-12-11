@@ -1,6 +1,6 @@
 # 045B_POS_UI_COMPONENTS
 
-**Status: DRAFT**
+**Status: COMPLETE**
 
 ---
 

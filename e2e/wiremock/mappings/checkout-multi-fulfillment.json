@@ -1,0 +1,159 @@
+{
+  "mappings": [
+    {
+      "name": "checkout-initiate-multi-fulfillment",
+      "priority": 10,
+      "request": {
+        "method": "POST",
+        "urlPath": "/checkout/initiate",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$.fulfillmentGroups"
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "checkoutSessionId": "{{randomValue type='UUID'}}",
+          "cartId": "{{jsonPath request.body '$.cartId'}}",
+          "status": "INITIATED",
+          "totalAmount": 459.99,
+          "taxAmount": 38.50,
+          "fulfillmentGroups": [
+            {
+              "id": "FG-001",
+              "type": "DELIVERY",
+              "scheduledDate": "{{now offset='+3 days' format='yyyy-MM-dd'}}",
+              "startTime": "09:00",
+              "endTime": "12:00",
+              "itemCount": 2,
+              "fulfillmentCost": 9.99
+            },
+            {
+              "id": "FG-002",
+              "type": "PICKUP",
+              "scheduledDate": "{{now offset='+1 days' format='yyyy-MM-dd'}}",
+              "startTime": "13:00",
+              "endTime": "15:00",
+              "itemCount": 1,
+              "fulfillmentCost": 0.00
+            }
+          ],
+          "createdAt": "{{now format='yyyy-MM-dd'T'HH:mm:ss'Z'}}"
+        },
+        "transformers": ["response-template"]
+      }
+    },
+    {
+      "name": "checkout-complete-polymorphic-payment",
+      "priority": 10,
+      "request": {
+        "method": "POST",
+        "urlPath": "/checkout/complete",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$.checkoutSessionId"
+          },
+          {
+            "matchesJsonPath": "$.paymentMethod"
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "orderId": "{{randomValue type='UUID'}}",
+          "checkoutSessionId": "{{jsonPath request.body '$.checkoutSessionId'}}",
+          "status": "COMPLETED",
+          "paymentStatus": "CAPTURED",
+          "totalAmount": 459.99,
+          "receiptNumber": "RCP-{{randomValue type='NUMERIC' length=8}}",
+          "createdAt": "{{now format='yyyy-MM-dd'T'HH:mm:ss'Z'}}"
+        },
+        "transformers": ["response-template"]
+      }
+    },
+    {
+      "name": "checkout-split-payment",
+      "priority": 15,
+      "request": {
+        "method": "POST",
+        "urlPath": "/checkout/complete",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$.paymentMethod.type",
+            "equalTo": "SPLIT"
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "orderId": "{{randomValue type='UUID'}}",
+          "checkoutSessionId": "{{jsonPath request.body '$.checkoutSessionId'}}",
+          "status": "COMPLETED",
+          "paymentStatus": "CAPTURED",
+          "totalAmount": 459.99,
+          "payments": [
+            {
+              "type": "CARD",
+              "amount": 300.00,
+              "status": "CAPTURED"
+            },
+            {
+              "type": "GIFT_CARD",
+              "amount": 159.99,
+              "status": "CAPTURED"
+            }
+          ],
+          "receiptNumber": "RCP-{{randomValue type='NUMERIC' length=8}}",
+          "createdAt": "{{now format='yyyy-MM-dd'T'HH:mm:ss'Z'}}"
+        },
+        "transformers": ["response-template"]
+      }
+    },
+    {
+      "name": "checkout-net-terms-payment",
+      "priority": 15,
+      "request": {
+        "method": "POST",
+        "urlPath": "/checkout/complete",
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$.paymentMethod.type",
+            "equalTo": "NET_TERMS"
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "orderId": "{{randomValue type='UUID'}}",
+          "checkoutSessionId": "{{jsonPath request.body '$.checkoutSessionId'}}",
+          "status": "COMPLETED",
+          "paymentStatus": "INVOICED",
+          "totalAmount": 2500.00,
+          "invoiceNumber": "INV-{{randomValue type='NUMERIC' length=8}}",
+          "purchaseOrderNumber": "{{jsonPath request.body '$.paymentMethod.purchaseOrderNumber'}}",
+          "terms": "{{jsonPath request.body '$.paymentMethod.terms'}}",
+          "dueDate": "{{now offset='+30 days' format='yyyy-MM-dd'}}",
+          "createdAt": "{{now format='yyyy-MM-dd'T'HH:mm:ss'Z'}}"
+        },
+        "transformers": ["response-template"]
+      }
+    }
+  ]
+}

@@ -47,16 +47,35 @@ public class UserRepository {
     if (userId.startsWith("emp")) {
       return Mono.just(
           new UserContext(
+              userId,
+              "Employee " + userId,
               UserType.EMPLOYEE,
+              "ASSOCIATE",
               Set.of(
                   Permission.READ, Permission.WRITE, Permission.ADMIN, Permission.CUSTOMER_SEARCH),
-              1234));
+              1234,
+              "1234")); // Mock PIN
     } else if (userId.startsWith("svc")) {
-      return Mono.just(new UserContext(UserType.SERVICE_ACCOUNT, Set.of(Permission.READ), null));
+      return Mono.just(
+          new UserContext(
+              userId,
+              "Service Account",
+              UserType.SERVICE_ACCOUNT,
+              "SERVICE",
+              Set.of(Permission.READ),
+              null,
+              null));
     }
 
     // Default: Customer
     return Mono.just(
-        new UserContext(UserType.CUSTOMER, Set.of(Permission.READ, Permission.WRITE), null));
+        new UserContext(
+            userId,
+            "Customer " + userId,
+            UserType.CUSTOMER,
+            "CUSTOMER",
+            Set.of(Permission.READ, Permission.WRITE),
+            null,
+            null));
   }
 }

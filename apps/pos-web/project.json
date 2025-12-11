@@ -1,0 +1,9 @@
+{
+  "name": "pos-web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/pos-web/src",
+  "projectType": "application",
+  "tags": ["type:app", "scope:pos", "platform:web"],
+  "// targets": "to see all targets run: nx show project pos-web --web",
+  "targets": {}
+}

@@ -1,0 +1,24 @@
+{
+  "name": "pos-web-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/pos-web-e2e",
+  "implicitDependencies": ["pos-web"],
+  "tags": ["type:e2e", "scope:pos", "platform:web"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "outputs": ["{workspaceRoot}/dist/.playwright/apps/pos-web-e2e"],
+      "options": {
+        "config": "apps/pos-web-e2e/playwright.config.ts"
+      }
+    },
+    "e2e:ui": {
+      "executor": "@nx/playwright:playwright",
+      "options": {
+        "config": "apps/pos-web-e2e/playwright.config.ts",
+        "ui": true
+      }
+    }
+  }
+}

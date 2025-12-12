@@ -17,6 +17,7 @@ include("libs:backend:platform:platform-webflux")
 include("libs:backend:platform:platform-security")
 include("libs:backend:platform:platform-test")
 include("libs:backend:platform:platform-audit")
+include("libs:backend:platform:platform-events")
 
 // Shared model libraries
 include("libs:backend:shared-model:shared-model-product")

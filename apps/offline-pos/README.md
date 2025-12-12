@@ -295,6 +295,26 @@ pnpm nx serve offline-pos
 
 The UI automatically connects to `ws://localhost:9100/stomp` for scanner and payment events.
 
+### Design System Tokens
+
+The offline-pos app uses design tokens copied from `libs/frontend/shared-design/tokens/` for visual consistency with the main e-commerce application.
+
+**Token files:**
+- `static/css/tokens.css` - CSS custom properties (colors, typography, spacing)
+- `static/css/pico-overrides.css` - Maps tokens to Pico CSS variables
+
+**Syncing tokens:**
+When design tokens change in `libs/frontend/shared-design/tokens/src/`, manually update `static/css/tokens.css`:
+
+1. Copy updated values from source files:
+   - `colors.css` - Color palette and semantic colors
+   - `typography.css` - Font families, sizes, weights
+   - `spacing.css` - Spacing scale and border radii
+
+2. Only copy light mode values (omit `.dark` selectors)
+
+3. Test visual appearance: `pnpm nx serve offline-pos`
+
 ### Seeding Test Data
 
 ```bash

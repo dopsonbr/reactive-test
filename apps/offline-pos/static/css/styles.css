@@ -1,128 +1,239 @@
-/* Offline POS Custom Styles */
+/* Offline POS Custom Styles
+ * Uses design system tokens from tokens.css
+ */
 
-:root {
-    --offline-banner: #ffc107;
-    --online-banner: #28a745;
-    --error-banner: #dc3545;
-}
-
-/* Header */
+/* === Header === */
 header nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-4);
 }
 
-.store-id, .operator {
-    font-size: 0.875rem;
-    color: var(--muted-color);
+.store-id,
+.operator {
+  font-size: var(--text-sm);
+  color: var(--color-muted-foreground);
 }
 
-/* Status Banner */
+/* === Status Banner === */
 .banner {
-    padding: 0.5rem 1rem;
-    text-align: center;
-    font-weight: 500;
+  padding: var(--spacing-2) var(--spacing-4);
+  text-align: center;
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-4);
 }
 
 .banner.offline {
-    background: var(--offline-banner);
-    color: #000;
+  background: var(--color-destructive);
+  color: var(--color-destructive-foreground);
 }
 
 .banner.online {
-    background: var(--online-banner);
-    color: #fff;
+  background: var(--color-success);
+  color: var(--color-success-foreground);
 }
 
 .banner.hidden {
-    display: none;
+  display: none;
 }
 
-/* Login */
+/* === Login === */
 .pin-input {
-    font-size: 2rem;
-    text-align: center;
-    letter-spacing: 0.5rem;
-    max-width: 200px;
+  font-size: var(--text-3xl);
+  text-align: center;
+  letter-spacing: var(--spacing-2);
+  max-width: 200px;
+  font-family: var(--font-mono);
 }
 
-/* Scan Screen */
+/* === Scan Screen === */
 .scan-area {
-    min-height: 200px;
-    border: 2px dashed var(--muted-border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
+  min-height: 200px;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-4);
+  background: var(--color-muted);
+  color: var(--color-muted-foreground);
 }
 
 .scan-feedback {
-    padding: 1rem;
-    background: var(--card-background-color);
-    border-radius: 4px;
-    margin-bottom: 1rem;
+  padding: var(--spacing-4);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-4);
+  text-align: center;
+  font-weight: var(--font-medium);
 }
 
-/* Cart */
+.scan-feedback.success {
+  background: var(--color-success);
+  color: var(--color-success-foreground);
+  border-color: var(--color-success);
+}
+
+.scan-feedback.error {
+  background: var(--color-destructive);
+  color: var(--color-destructive-foreground);
+  border-color: var(--color-destructive);
+}
+
+/* === Search Results / Product Cards === */
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+}
+
+.product-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+}
+
+.product-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--spacing-2);
+}
+
+.product-card .price {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-primary);
+}
+
+.product-card footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.product-card footer small {
+  color: var(--color-muted-foreground);
+  font-size: var(--text-xs);
+}
+
+/* === Cart === */
 .cart-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--muted-border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-3) 0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .cart-item .name {
-    flex: 1;
+  flex: 1;
+  font-weight: var(--font-medium);
 }
 
 .cart-item .qty-controls {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
 }
 
 .cart-item .qty-controls button {
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
+  width: var(--spacing-8);
+  height: var(--spacing-8);
+  padding: 0;
+  font-size: var(--text-lg);
 }
 
 .cart-totals {
-    margin-top: 1rem;
-    text-align: right;
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: 2px solid var(--color-border);
+  text-align: right;
 }
 
-/* Payment */
+.cart-totals .total {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-primary);
+}
+
+/* === Actions Bar === */
+.actions {
+  display: flex;
+  gap: var(--spacing-4);
+  margin-top: var(--spacing-6);
+}
+
+.actions a,
+.actions button {
+  flex: 1;
+  text-align: center;
+}
+
+/* === Payment === */
 .payment-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
+  display: flex;
+  gap: var(--spacing-4);
+  margin-top: var(--spacing-8);
 }
 
 .payment-buttons button {
-    flex: 1;
-    padding: 2rem;
-    font-size: 1.5rem;
+  flex: 1;
+  padding: var(--spacing-8) var(--spacing-4);
+  font-size: var(--text-xl);
 }
 
 .payment-status {
-    text-align: center;
-    padding: 2rem;
-    font-size: 1.25rem;
+  text-align: center;
+  padding: var(--spacing-8);
+  font-size: var(--text-xl);
+  background: var(--color-muted);
+  border-radius: var(--radius-lg);
 }
 
-/* Complete */
+/* === Complete === */
 .transaction-complete {
-    text-align: center;
-    padding: 2rem;
+  text-align: center;
+  padding: var(--spacing-8);
+}
+
+.transaction-complete h1 {
+  color: var(--color-success);
+  margin-bottom: var(--spacing-4);
 }
 
 .transaction-id {
-    font-family: monospace;
-    font-size: 1.25rem;
-    background: var(--card-background-color);
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  background: var(--color-muted);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+/* === Utility Classes === */
+.hidden {
+  display: none !important;
+}
+
+.error {
+  color: var(--color-destructive);
+}
+
+.dev-hint {
+  display: block;
+  color: var(--color-muted-foreground);
+  background: var(--color-muted);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-2);
+  text-align: center;
 }

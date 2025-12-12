@@ -1,0 +1,78 @@
+/* Pico CSS Overrides
+ * Maps design system tokens to Pico CSS variables
+ * Load after pico.min.css and tokens.css
+ */
+
+:root {
+  /* === Color Mappings === */
+  --pico-primary: var(--color-primary);
+  --pico-primary-hover: var(--color-orange-600);
+  --pico-primary-focus: var(--color-ring);
+  --pico-primary-inverse: var(--color-primary-foreground);
+
+  --pico-background-color: var(--color-background);
+  --pico-color: var(--color-foreground);
+  --pico-muted-color: var(--color-muted-foreground);
+  --pico-muted-border-color: var(--color-border);
+
+  --pico-card-background-color: var(--color-card);
+  --pico-card-border-color: var(--color-border);
+  --pico-card-sectioning-background-color: var(--color-muted);
+
+  /* Form elements */
+  --pico-form-element-background-color: var(--color-background);
+  --pico-form-element-border-color: var(--color-input);
+  --pico-form-element-focus-color: var(--color-ring);
+
+  /* Secondary/outline buttons */
+  --pico-secondary: var(--color-secondary-foreground);
+  --pico-secondary-hover: var(--color-gray-700);
+  --pico-secondary-background: var(--color-secondary);
+  --pico-secondary-border: var(--color-border);
+
+  /* === Typography === */
+  --pico-font-family: var(--font-sans);
+  --pico-font-family-monospace: var(--font-mono);
+  --pico-font-size: var(--text-base);
+  --pico-font-weight: var(--font-normal);
+  --pico-line-height: var(--leading-normal);
+
+  /* === Spacing & Radius === */
+  --pico-border-radius: var(--radius-md);
+  --pico-spacing: var(--spacing-4);
+  --pico-block-spacing-vertical: var(--spacing-4);
+  --pico-block-spacing-horizontal: var(--spacing-4);
+
+  /* === Transitions === */
+  --pico-transition: 0.15s ease-in-out;
+}
+
+/* Button improvements to match shared-ui */
+button,
+[type="submit"],
+[type="button"],
+[role="button"] {
+  font-weight: var(--font-medium);
+  border-radius: var(--radius-md);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Focus ring style matching shared-ui */
+:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Card/article styling */
+article {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+/* Input focus states */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-ring);
+  box-shadow: 0 0 0 3px hsla(24.6, 95%, 53.1%, 0.1);
+}

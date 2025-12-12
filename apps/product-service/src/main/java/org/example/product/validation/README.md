@@ -4,11 +4,10 @@
 Validates incoming request parameters and headers to ensure they meet business constraints before processing.
 
 ## Behavior
-Accepts SKU path parameters and request headers (store number, order number, user ID, session ID), applies format and range checks, and returns validation errors as a reactive Mono that fails if constraints are violated.
+ProductRequestValidator checks SKU and metadata headers; SearchRequestValidator validates search queries, price ranges, availability filters, zip codes, and selling locations. Returns validation errors as reactive Mono failures when constraints are violated.
 
 ## Quirks
-- SKU must be 6-12 digits (100,000 to 999,999,999,999)
-- Store number restricted to 1-2000 range
-- Order number and session ID must be valid UUIDs
-- User ID must be exactly 6 alphanumeric characters
-- All validation errors are collected and returned together, not fail-fast
+- User ID accepts 1-50 alphanumeric chars (hyphens/underscores allowed) for service accounts
+- Session ID can be UUID or kiosk-style identifier (e.g., KIOSK-001)
+- Search query is optional (allows category browsing without text)
+- All validation errors collected and returned together, not fail-fast

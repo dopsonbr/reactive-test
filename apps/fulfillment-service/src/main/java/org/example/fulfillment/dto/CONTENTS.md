@@ -8,6 +8,9 @@
 | `FulfillmentCostResponse.java` | Response with calculated fulfillment cost breakdown |
 | `FulfillmentPlanRequest.java` | Request for fulfillment plan with items and shipping method |
 | `FulfillmentPlanResponse.java` | Response with plan ID, warehouse assignments, estimated dates |
+| `FulfillmentSlot.java` | Time slot with date, start/end times, capacity, and availability |
+| `FulfillmentSlotsRequest.java` | Request for available fulfillment slots |
+| `FulfillmentSlotsResponse.java` | Response with list of available time slots |
 | `ReservationRequest.java` | Request for inventory reservation with order and plan IDs |
 | `ReservationResponse.java` | Response with reservation ID and confirmation status |
 | `ShippingOption.java` | Shipping option with code, name, cost, and estimated delivery days |

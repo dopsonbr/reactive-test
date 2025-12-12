@@ -9,4 +9,5 @@ dependencies {
     // Test dependencies
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.fasterxml.jackson.core:jackson-databind")
+    testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 }

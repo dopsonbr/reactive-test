@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Test;
 
 class FulfillmentDetailsTest {
 
-  private final ObjectMapper objectMapper =
-      new ObjectMapper().registerModule(new JavaTimeModule());
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
   @Test
   void shouldSerializeDeliveryFulfillment() throws Exception {

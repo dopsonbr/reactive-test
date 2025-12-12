@@ -12,8 +12,7 @@ class CustomerSnapshotTest {
   @Test
   void shouldSerializeToJson() throws Exception {
     CustomerSnapshot customer =
-        new CustomerSnapshot(
-            "cust-123", "John", "Doe", "john@example.com", "555-1234", "GOLD");
+        new CustomerSnapshot("cust-123", "John", "Doe", "john@example.com", "555-1234", "GOLD");
 
     String json = objectMapper.writeValueAsString(customer);
 

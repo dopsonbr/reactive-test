@@ -4,8 +4,4 @@ import java.math.BigDecimal;
 
 /** Discount applied to an order. */
 public record AppliedDiscount(
-    String discountId,
-    String code,
-    String description,
-    String type,
-    BigDecimal appliedAmount) {}
+    String discountId, String code, String description, String type, BigDecimal appliedAmount) {}

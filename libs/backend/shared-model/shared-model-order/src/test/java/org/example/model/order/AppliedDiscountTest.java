@@ -13,8 +13,7 @@ class AppliedDiscountTest {
   @Test
   void shouldSerializeToJson() throws Exception {
     AppliedDiscount discount =
-        new AppliedDiscount(
-            "disc-123", "SAVE20", "20% off", "PERCENTAGE", new BigDecimal("15.00"));
+        new AppliedDiscount("disc-123", "SAVE20", "20% off", "PERCENTAGE", new BigDecimal("15.00"));
 
     String json = objectMapper.writeValueAsString(discount);
 

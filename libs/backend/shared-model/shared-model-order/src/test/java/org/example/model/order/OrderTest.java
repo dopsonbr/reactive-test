@@ -12,8 +12,7 @@ import org.junit.jupiter.api.Test;
 
 class OrderTest {
 
-  private final ObjectMapper objectMapper =
-      new ObjectMapper().registerModule(new JavaTimeModule());
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
   @Test
   void shouldBuildOrder() {

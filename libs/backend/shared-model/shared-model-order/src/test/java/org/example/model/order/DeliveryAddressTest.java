@@ -12,8 +12,7 @@ class DeliveryAddressTest {
   @Test
   void shouldSerializeToJson() throws Exception {
     DeliveryAddress address =
-        new DeliveryAddress(
-            "123 Main St", "Apt 4", "Springfield", "IL", "62701", "USA");
+        new DeliveryAddress("123 Main St", "Apt 4", "Springfield", "IL", "62701", "USA");
 
     String json = objectMapper.writeValueAsString(address);
 

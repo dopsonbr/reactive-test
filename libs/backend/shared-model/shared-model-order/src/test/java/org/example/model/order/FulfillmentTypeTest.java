@@ -10,8 +10,6 @@ class FulfillmentTypeTest {
   void shouldHaveExpectedTypes() {
     assertThat(FulfillmentType.values())
         .containsExactlyInAnyOrder(
-            FulfillmentType.DELIVERY,
-            FulfillmentType.PICKUP,
-            FulfillmentType.IMMEDIATE);
+            FulfillmentType.DELIVERY, FulfillmentType.PICKUP, FulfillmentType.IMMEDIATE);
   }
 }

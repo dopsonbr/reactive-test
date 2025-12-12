@@ -1,4 +1,4 @@
-# 054B: Platform Events Library
+# 055B: Platform Events Library
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 

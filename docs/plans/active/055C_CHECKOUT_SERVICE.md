@@ -1,4 +1,4 @@
-# 054C: Checkout Service Changes
+# 055C: Checkout Service Changes
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Spring WebFlux, Redis, R2DBC PostgreSQL, platform-events
 
-**Prerequisites:** Complete 054A (shared-model-order) and 054B (platform-events) first
+**Prerequisites:** Complete 055A (shared-model-order) and 055B (platform-events) first
 
 ---
 

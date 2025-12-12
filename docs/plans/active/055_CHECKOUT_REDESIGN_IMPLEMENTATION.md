@@ -16,15 +16,15 @@ This implementation is divided into focused sub-plans for parallel or sequential
 
 | Sub-Plan | Description | Dependencies | Est. Tasks |
 |----------|-------------|--------------|------------|
-| [054A](054A_SHARED_MODEL_ORDER.md) | Create shared-model-order library | None | 12 |
-| [054B](054B_PLATFORM_EVENTS.md) | Create platform-events library | None | 15 |
-| [054C](054C_CHECKOUT_SERVICE.md) | Update checkout-service | 054A, 054B | 25 |
-| [054D](054D_ORDER_SERVICE.md) | Update order-service consumer | 054A, 054B | 18 |
+| [055A](055A_SHARED_MODEL_ORDER.md) | Create shared-model-order library | None | 12 |
+| [055B](055B_PLATFORM_EVENTS.md) | Create platform-events library | None | 15 |
+| [055C](055C_CHECKOUT_SERVICE.md) | Update checkout-service | 055A, 055B | 25 |
+| [055D](055D_ORDER_SERVICE.md) | Update order-service consumer | 055A, 055B | 18 |
 
 **Recommended execution order:**
-1. 054A and 054B can run in parallel (no dependencies)
-2. 054C after 054A and 054B complete
-3. 054D after 054A and 054B complete (can parallel with 054C)
+1. 055A and 055B can run in parallel (no dependencies)
+2. 055C after 055A and 055B complete
+3. 055D after 055A and 055B complete (can parallel with 055C)
 
 ---
 
@@ -32,7 +32,7 @@ This implementation is divided into focused sub-plans for parallel or sequential
 
 Before starting any sub-plan:
 
-- [ ] Create feature branch: `git checkout -b feat/054-checkout-redesign`
+- [ ] Create feature branch: `git checkout -b feat/055-checkout-redesign`
 - [ ] Verify build passes: `pnpm nx run-many -t build`
 - [ ] Verify tests pass: `pnpm nx run-many -t test`
 
@@ -40,7 +40,7 @@ Before starting any sub-plan:
 
 ## Design Reference
 
-See [054_CHECKOUT_SERVICE_REDESIGN.md](054_CHECKOUT_SERVICE_REDESIGN.md) for full design decisions.
+See [055_CHECKOUT_SERVICE_REDESIGN.md](055_CHECKOUT_SERVICE_REDESIGN.md) for full design decisions.
 
 ---
 
@@ -59,10 +59,10 @@ See [054_CHECKOUT_SERVICE_REDESIGN.md](054_CHECKOUT_SERVICE_REDESIGN.md) for ful
 
 | Sub-Plan | New Files |
 |----------|-----------|
-| 054A | `libs/backend/shared-model/shared-model-order/` (9 model classes) |
-| 054B | `libs/backend/platform/platform-events/` (6 classes) |
-| 054C | `apps/checkout-service/.../CheckoutTransactionEntity.java`, `EventRetryScheduler.java`, etc. |
-| 054D | `apps/order-service/.../consumer/OrderEventConsumer.java`, etc. |
+| 055A | `libs/backend/shared-model/shared-model-order/` (9 model classes) |
+| 055B | `libs/backend/platform/platform-events/` (6 classes) |
+| 055C | `apps/checkout-service/.../CheckoutTransactionEntity.java`, `EventRetryScheduler.java`, etc. |
+| 055D | `apps/order-service/.../consumer/OrderEventConsumer.java`, etc. |
 
 ---
 

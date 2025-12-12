@@ -1,6 +1,6 @@
 # 046A_backend-graphql-parity
 
-**Status: DRAFT**
+**Status: COMPLETED**
 
 ---
 

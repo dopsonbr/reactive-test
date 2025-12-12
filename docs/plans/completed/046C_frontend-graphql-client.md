@@ -1,6 +1,6 @@
 # 046C_frontend-graphql-client
 
-**Status: DRAFT**
+**Status: COMPLETED**
 
 ---
 

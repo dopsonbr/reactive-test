@@ -1,6 +1,6 @@
 # 046B_graphql-tests-docs
 
-**Status: DRAFT**
+**Status: COMPLETED**
 
 ---
 

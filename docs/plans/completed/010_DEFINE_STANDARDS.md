@@ -1,5 +1,9 @@
 # 010 - Define Platform and Application Standards
 
+**Status: COMPLETED**
+
+---
+
 ## Overview
 
 This implementation plan establishes comprehensive standards for reactive platform development based on patterns extracted from the product-service reference implementation. The goal is to create consistent, documented standards for:
@@ -103,7 +107,7 @@ Create each standard file with: **Intent**, **Outcomes**, **Patterns**, **Anti-p
 
 **File:** `docs/standards/architecture.md`
 
-````markdown
+```markdown
 # Architecture Standard
 
 ## Intent
@@ -153,13 +157,13 @@ Controller → Service → Repository
 ## Reference
 - `apps/product-service/` - Reference implementation
 - `libs/platform/platform-test/.../ArchitectureRules.java` - Enforcement
-````
+```
 
 #### 1.2 Models Standard
 
 **File:** `docs/standards/models.md`
 
-````markdown
+```markdown
 # Models Standard
 
 ## Intent
@@ -338,13 +342,13 @@ class Product {
 - `apps/product-service/src/.../domain/Product.java` - Domain model example
 - `apps/product-service/src/.../repository/*/` - Response record examples
 - `apps/cart-service/src/.../domain/` - Cart domain models
-````
+```
 
 #### 1.3 Resilience Standards
 
 **File:** `docs/standards/resiliency-circuit-breakers.md`
 
-````markdown
+```markdown
 # Circuit Breaker Standard
 
 ## Intent
@@ -400,11 +404,11 @@ FALLBACK = new Response("Unavailable", null, 0)
 ## Reference
 - `apps/product-service/src/.../repository/` - Pattern examples
 - `libs/platform/platform-resilience/` - ReactiveResilience wrapper
-````
+```
 
 **File:** `docs/standards/resiliency-retries.md`
 
-````markdown
+```markdown
 # Retry Standard
 
 ## Intent
@@ -457,11 +461,11 @@ Total max: ~300ms + call time
 
 ## Reference
 - `apps/product-service/src/main/resources/application.yml`
-````
+```
 
 **File:** `docs/standards/resiliency-bulk-heads.md`
 
-````markdown
+```markdown
 # Bulkhead Standard
 
 ## Intent
@@ -500,11 +504,11 @@ resilience4j.bulkhead.instances.{service-name}:
 
 ## Reference
 - `apps/product-service/src/main/resources/application.yml`
-````
+```
 
 **File:** `docs/standards/resiliency-timeouts.md`
 
-````markdown
+```markdown
 # Timeout Standard
 
 ## Intent
@@ -545,13 +549,13 @@ bulkhead → retry → circuit-breaker → TIMEOUT → actual call
 
 ## Reference
 - `libs/platform/platform-resilience/ReactiveResilience.java`
-````
+```
 
 #### 1.3 Caching Standard
 
 **File:** `docs/standards/caching.md`
 
-````markdown
+```markdown
 # Caching Standard
 
 ## Intent
@@ -630,13 +634,13 @@ Examples:
 - `apps/product-service/src/.../repository/merchandise/` - Cache-aside
 - `apps/product-service/src/.../repository/inventory/` - Fallback-only
 - `libs/platform/platform-cache/` - Cache abstraction
-````
+```
 
 #### 1.4 Observability Standards
 
 **File:** `docs/standards/observability-logs.md`
 
-````markdown
+```markdown
 # Logging Standard
 
 ## Intent
@@ -709,11 +713,11 @@ WebClient.builder()
 ## Reference
 - `libs/platform/platform-logging/StructuredLogger.java`
 - `apps/product-service/src/.../config/ProductServiceConfig.java`
-````
+```
 
 **File:** `docs/standards/observability-metrics.md`
 
-````markdown
+```markdown
 # Metrics Standard
 
 ## Intent
@@ -762,11 +766,11 @@ resilience4j.circuitbreaker.configs.default:
 ## Reference
 - `apps/product-service/src/main/resources/application.yml`
 - Grafana dashboards in `docker/grafana/`
-````
+```
 
 **File:** `docs/standards/observability-traces.md`
 
-````markdown
+```markdown
 # Tracing Standard
 
 ## Intent
@@ -804,13 +808,13 @@ management:
 ## Reference
 - Tempo in `docker/docker-compose.yml`
 - Grafana trace exploration
-````
+```
 
 #### 1.5 Error Handling Standard
 
 **File:** `docs/standards/error-handling.md`
 
-````markdown
+```markdown
 # Error Handling Standard
 
 ## Intent
@@ -868,13 +872,13 @@ Fallback is returned when:
 ## Reference
 - `libs/platform/platform-error/GlobalErrorHandler.java`
 - `apps/product-service/src/.../repository/*/`
-````
+```
 
 #### 1.6 Security Standard
 
 **File:** `docs/standards/security.md`
 
-````markdown
+```markdown
 # Security Standard
 
 ## Intent
@@ -919,13 +923,13 @@ See `006_AUTHN_AUTHZ.md` for implementation plan:
 ## Reference
 - `apps/product-service/src/.../validation/`
 - `libs/platform/platform-security/` (placeholder)
-````
+```
 
 #### 1.7 Validation Standard
 
 **File:** `docs/standards/validation.md`
 
-````markdown
+```markdown
 # Validation Standard
 
 ## Intent
@@ -973,13 +977,13 @@ Collect ALL errors, don't fail on first:
 
 ## Reference
 - `apps/product-service/src/.../validation/ProductRequestValidator.java`
-````
+```
 
 #### 1.8 Testing Standards
 
 **File:** `docs/standards/testing-unit.md`
 
-````markdown
+```markdown
 # Unit Testing Standard
 
 ## Intent
@@ -1030,11 +1034,11 @@ StepVerifier.create(mono)
 ## Reference
 - `apps/product-service/src/test/java/` - Examples
 - `libs/platform/platform-test/ReactorTestSupport.java` - Utilities
-````
+```
 
 **File:** `docs/standards/testing-integration.md`
 
-````markdown
+```markdown
 # Integration Testing Standard
 
 ## Intent
@@ -1097,11 +1101,11 @@ Every application MUST have:
 ## Reference
 - `apps/product-service/src/test/.../ProductServiceApplicationTest.java`
 - `libs/platform/platform-test/RedisTestSupport.java`
-````
+```
 
 **File:** `docs/standards/testing-e2e.md`
 
-````markdown
+```markdown
 # End-to-End Testing Standard
 
 ## Intent
@@ -1158,13 +1162,13 @@ Test circuit breaker behavior:
 ## Reference
 - `e2e-test/` - k6 test scripts
 - `docker/docker-compose.yml` - Test profiles
-````
+```
 
 #### 1.9 Code Quality Standards
 
 **File:** `docs/standards/code-style.md`
 
-````markdown
+```markdown
 # Code Style Standard
 
 ## Intent
@@ -1214,11 +1218,11 @@ spotless {
 
 ## Reference
 - `buildSrc/src/main/kotlin/platform.java-conventions.gradle.kts`
-````
+```
 
 **File:** `docs/standards/documentation.md`
 
-````markdown
+```markdown
 # Documentation Standard
 
 ## Intent
@@ -1239,10 +1243,10 @@ module/
 ├── AGENTS.md    # AI agent guidance
 ├── CONTENTS.md  # File index
 └── src/
-````
+```
 
 ### README.md Template
-````markdown
+```markdown
 # Module Name
 
 Brief description.
@@ -1259,10 +1263,10 @@ YAML/properties examples.
 
 ## Running
 Commands to run/test.
-````
+```
 
 ### AGENTS.md Template
-````markdown
+```markdown
 # Module Agent Guidelines
 
 ## Key Files
@@ -1278,10 +1282,10 @@ Code patterns used in this module.
 
 ## Anti-patterns
 What to avoid.
-````
+```
 
 ### CONTENTS.md Template
-````markdown
+```markdown
 # Module Contents
 
 ## Main Source (src/main/java/...)
@@ -1510,7 +1514,7 @@ ls docs/standards/*.md | wc -l  # Should be 20
 
 # Full verification
 ./ci/verify.sh
-````
+```
 
 ---
 

@@ -1,6 +1,6 @@
 # 046_CART_GRAPHQL_CLIENT_ALIGNMENT
 
-**Status: DRAFT**
+**Status: COMPLETED**
 
 ---
 

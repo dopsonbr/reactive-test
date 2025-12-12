@@ -59,7 +59,8 @@ public abstract class EventConsumer {
                   .onErrorResume(e2 -> Mono.empty());
             })
         .then()
-        .doOnSuccess(v -> log.info("Consumer group initialized: {}", properties.getConsumerGroup()));
+        .doOnSuccess(
+            v -> log.info("Consumer group initialized: {}", properties.getConsumerGroup()));
   }
 
   /**
@@ -73,9 +74,7 @@ public abstract class EventConsumer {
         .opsForStream()
         .read(
             Consumer.from(properties.getConsumerGroup(), properties.getConsumerName()),
-            StreamReadOptions.empty()
-                .count(properties.getBatchSize())
-                .block(Duration.ofMillis(50)),
+            StreamReadOptions.empty().count(properties.getBatchSize()).block(Duration.ofMillis(50)),
             StreamOffset.create(properties.getStreamKey(), ReadOffset.lastConsumed()))
         .onErrorResume(
             e -> {

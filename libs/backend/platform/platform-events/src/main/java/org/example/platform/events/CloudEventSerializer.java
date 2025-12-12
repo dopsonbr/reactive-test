@@ -1,10 +1,10 @@
 package org.example.platform.events;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.IOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import java.io.IOException;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;

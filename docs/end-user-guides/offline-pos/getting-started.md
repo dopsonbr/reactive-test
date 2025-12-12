@@ -147,9 +147,6 @@ Each screen has a primary action that advances to the next step:
 
 After login, you'll see the main scanning interface:
 
-![Scan Screen](images/scan-screen-wireframe.png)
-*The scan screen where you add items*
-
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  OFFLINE POS                    │  Operator: 1234  │  [🔴 Offline]  [🚪]│

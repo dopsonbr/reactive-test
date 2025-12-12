@@ -7,12 +7,20 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..', '..');
 
-const PLAN_MAPPINGS = [
-  {
-    source: path.join(ROOT, 'docs', 'archive', '010_DEFINE_STANDARDS.md'),
-    destination: path.join(ROOT, 'docs', 'plans', 'completed', '010_DEFINE_STANDARDS.md'),
-  },
+// Files to process in place (fix markdown issues)
+const FILES_TO_FIX = [
+  path.join(ROOT, 'docs', 'plans', 'completed', '010_DEFINE_STANDARDS.md'),
 ];
+
+/**
+ * Add language hints to code fences that don't have them.
+ * This prevents VitePress from parsing Java generics like List<Item> as Vue components.
+ */
+function addLanguageHints(content) {
+  // Match code blocks without a language specifier
+  // Replace ``` with ```text for blocks that look like they contain code with angle brackets
+  return content.replace(/^```\s*$/gm, '```text');
+}
 
 function convertMarkdownFences(content) {
   const lines = content.split('\n');
@@ -50,15 +58,24 @@ function convertMarkdownFences(content) {
   return lines.join('\n');
 }
 
-async function processPlan({ source, destination }) {
-  const raw = await readFile(source, 'utf8');
-  const fixed = convertMarkdownFences(raw);
-  await writeFile(destination, fixed, 'utf8');
+async function fixFile(filePath) {
+  try {
+    const raw = await readFile(filePath, 'utf8');
+    let fixed = convertMarkdownFences(raw);
+    fixed = addLanguageHints(fixed);
+    await writeFile(filePath, fixed, 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      // File doesn't exist, skip silently
+      return;
+    }
+    throw err;
+  }
 }
 
 async function main() {
-  for (const mapping of PLAN_MAPPINGS) {
-    await processPlan(mapping);
+  for (const file of FILES_TO_FIX) {
+    await fixFile(file);
   }
 }
 

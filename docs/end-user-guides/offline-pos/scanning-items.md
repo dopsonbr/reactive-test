@@ -14,9 +14,6 @@ The Offline POS connects to a barcode scanner. When configured:
 2. **Trigger the scan** (automatic or button-press)
 3. **Listen for confirmation** - a beep and visual feedback
 
-![Scanning a Product](images/barcode-scan-wireframe.png)
-*Position the barcode facing the scanner*
-
 ### Scan Feedback
 
 After a successful scan:

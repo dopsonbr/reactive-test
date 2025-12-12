@@ -8,9 +8,6 @@ Welcome to the Offline POS User Guide. This documentation covers the disaster re
 
 The Offline POS is a backup point-of-sale system that allows store associates to continue processing transactions when the main POS system or network connectivity is unavailable. It runs on a local device and stores transactions until they can be synchronized with central systems.
 
-![Offline POS Overview](images/offline-pos-overview-wireframe.png)
-*The Offline POS main interface*
-
 ---
 
 ## When to Use Offline POS

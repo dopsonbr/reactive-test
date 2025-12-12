@@ -48,7 +48,7 @@ The `product-service` application serves as the reference implementation with:
 
 ### Standards Structure
 
-```
+```text
 docs/standards/
 ├── README.md                      # Standards overview (✓ created)
 ├── CONTENTS.md                    # File index (✓ created)
@@ -69,11 +69,10 @@ docs/standards/
 ├── testing-integration.md         # Integration test patterns
 ├── testing-e2e.md                 # E2E test patterns
 └── validation.md                  # Request validation patterns
-```
-
+```text
 ### Documentation Structure
 
-```
+```text
 reactive-platform/
 ├── README.md                          # Project overview (exists)
 ├── CLAUDE.md                          # AI agent instructions (exists)
@@ -93,8 +92,7 @@ reactive-platform/
     ├── README.md                      # Platform library standards (Phase 4)
     ├── AGENTS.md                      # Platform development guidance
     └── platform-*/                    # Each module with README/AGENTS/CONTENTS
-```
-
+```text
 ---
 
 ## Implementation Plan
@@ -107,7 +105,7 @@ Create each standard file with: **Intent**, **Outcomes**, **Patterns**, **Anti-p
 
 **File:** `docs/standards/architecture.md`
 
-```markdown
+````markdown
 # Architecture Standard
 
 ## Intent
@@ -122,7 +120,7 @@ Establish consistent layered architecture across all applications to ensure sepa
 ## Patterns
 
 ### Package Structure
-```
+```text
 org.example.{app}/
 ├── {App}Application.java       # Entry point
 ├── controller/                 # HTTP endpoints (REST)
@@ -132,15 +130,13 @@ org.example.{app}/
 ├── domain/                     # Domain models (records)
 ├── config/                     # Configuration classes
 └── validation/                 # Request validators
-```
-
+```text
 ### Layer Dependencies
-```
+```text
 Controller → Service → Repository
      ↓          ↓          ↓
    Domain    Domain     Domain
-```
-
+```text
 ### Rules
 - Controllers depend on services (never repositories directly)
 - Services orchestrate repositories
@@ -157,13 +153,13 @@ Controller → Service → Repository
 ## Reference
 - `apps/product-service/` - Reference implementation
 - `libs/platform/platform-test/.../ArchitectureRules.java` - Enforcement
-```
+````
 
 #### 1.2 Models Standard
 
 **File:** `docs/standards/models.md`
 
-```markdown
+````markdown
 # Models Standard
 
 ## Intent
@@ -180,15 +176,14 @@ Keep domain models as pure data containers with no business logic, ensuring test
 
 ### Use Java Records
 Records are the preferred way to define models:
-```
+```text
 record Product(
     long sku,
     String description,
     String price,
     int availableQuantity
 ) {}
-```
-
+```text
 ### No Business Logic in Models
 Models contain ONLY:
 - Fields (data)
@@ -205,7 +200,7 @@ Models NEVER contain:
 ### Creation Logic Lives Outside
 
 **Wrong - logic in model:**
-```
+```text
 record Order(String id, List<Item> items, BigDecimal total) {
     // DON'T DO THIS
     public Order addItem(Item item) {
@@ -214,10 +209,9 @@ record Order(String id, List<Item> items, BigDecimal total) {
         return new Order(id, newItems, calculateTotal(newItems));
     }
 }
-```
-
+```text
 **Right - logic in service:**
-```
+```text
 record Order(String id, List<Item> items, BigDecimal total) {}
 
 class OrderService {
@@ -227,10 +221,9 @@ class OrderService {
         return new Order(order.id(), newItems, calculateTotal(newItems));
     }
 }
-```
-
+```text
 ### Validation Lives in Validators
-```
+```text
 record CreateProductRequest(long sku, String description) {}
 
 class ProductRequestValidator {
@@ -247,10 +240,9 @@ class ProductRequestValidator {
             : Mono.error(new ValidationException(errors));
     }
 }
-```
-
+```text
 ### Transformation Lives in Mappers/Services
-```
+```text
 record ExternalProductResponse(String sku, String desc, String amt) {}
 record Product(long sku, String description, String price) {}
 
@@ -263,8 +255,7 @@ class ProductMapper {
         );
     }
 }
-```
-
+```text
 ### Model Categories
 
 | Category | Location | Example |
@@ -280,7 +271,7 @@ All models MUST be immutable:
 - For collections, use `List.of()`, `Set.of()`, `Map.of()`
 - Never expose mutable collections
 
-```
+```text
 // Good - immutable
 record Cart(String id, List<CartItem> items) {
     public Cart {
@@ -290,32 +281,29 @@ record Cart(String id, List<CartItem> items) {
 
 // Bad - mutable collection exposed
 record Cart(String id, List<CartItem> items) {} // items can be modified
-```
-
+```text
 ## Anti-patterns
 
 ### Logic in Constructors
-```
+```text
 // DON'T - validation in constructor
 record Product(long sku, String description) {
     public Product {
         if (sku <= 0) throw new IllegalArgumentException("Invalid SKU");
     }
 }
-```
-
+```text
 ### Factory Methods with Business Rules
-```
+```text
 // DON'T - business logic in static factory
 record Order(String id, Status status) {
     public static Order create() {
         return new Order(UUID.randomUUID().toString(), Status.PENDING);
     }
 }
-```
-
+```text
 ### Derived Fields Calculated in Model
-```
+```text
 // DON'T - calculation in model
 record Cart(List<CartItem> items) {
     public BigDecimal getTotal() {
@@ -327,28 +315,26 @@ record Cart(List<CartItem> items) {
 
 // DO - calculation in service, store result
 record Cart(List<CartItem> items, BigDecimal total) {}
-```
-
+```text
 ### Mutable Models
-```
+```text
 // DON'T - mutable class
 class Product {
     private String description;
     public void setDescription(String desc) { this.description = desc; }
 }
-```
-
+```text
 ## Reference
 - `apps/product-service/src/.../domain/Product.java` - Domain model example
 - `apps/product-service/src/.../repository/*/` - Response record examples
 - `apps/cart-service/src/.../domain/` - Cart domain models
-```
+````
 
 #### 1.3 Resilience Standards
 
 **File:** `docs/standards/resiliency-circuit-breakers.md`
 
-```markdown
+````markdown
 # Circuit Breaker Standard
 
 ## Intent
@@ -372,29 +358,25 @@ resilience4j.circuitbreaker.instances.{service-name}:
   wait-duration-in-open-state: 10s
   permitted-number-of-calls-in-half-open-state: 3
   automatic-transition-from-open-to-half-open-enabled: true
-```
-
+```text
 ### State Machine
-```
+```text
 CLOSED --[failure rate >= threshold]--> OPEN
 OPEN --[wait duration expires]--> HALF_OPEN
 HALF_OPEN --[success rate >= threshold]--> CLOSED
 HALF_OPEN --[failure]--> OPEN
-```
-
+```text
 ### Usage Pattern
-```
+```text
 repository.call()
   → resilience.decorate("service-name", httpCall)
   → on error: log circuit breaker state, return fallback
-```
-
+```text
 ### Fallback Response
 Every repository MUST define a static fallback:
-```
+```text
 FALLBACK = new Response("Unavailable", null, 0)
-```
-
+```text
 ## Anti-patterns
 - No fallback response (errors propagate to user)
 - Circuit breaker without timeout (stuck calls)
@@ -404,11 +386,11 @@ FALLBACK = new Response("Unavailable", null, 0)
 ## Reference
 - `apps/product-service/src/.../repository/` - Pattern examples
 - `libs/platform/platform-resilience/` - ReactiveResilience wrapper
-```
+````
 
 **File:** `docs/standards/resiliency-retries.md`
 
-```markdown
+````markdown
 # Retry Standard
 
 ## Intent
@@ -436,16 +418,14 @@ resilience4j.retry.instances.{service-name}:
   ignore-exceptions:
     - WebClientResponseException$BadRequest
     - WebClientResponseException$NotFound
-```
-
+```text
 ### Retry Timing (exponential backoff)
-```
+```text
 Attempt 1: immediate
 Attempt 2: 100ms delay
 Attempt 3: 200ms delay
 Total max: ~300ms + call time
-```
-
+```text
 ### Retryable vs Non-Retryable
 | Retryable | Non-Retryable |
 |-----------|---------------|
@@ -461,11 +441,11 @@ Total max: ~300ms + call time
 
 ## Reference
 - `apps/product-service/src/main/resources/application.yml`
-```
+````
 
 **File:** `docs/standards/resiliency-bulk-heads.md`
 
-```markdown
+````markdown
 # Bulkhead Standard
 
 ## Intent
@@ -483,8 +463,7 @@ Limit concurrent requests to external services to prevent resource exhaustion.
 resilience4j.bulkhead.instances.{service-name}:
   max-concurrent-calls: 25
   max-wait-duration: 0s
-```
-
+```text
 ### Sizing Guidelines
 | Service Type | Max Concurrent | Rationale |
 |--------------|----------------|-----------|
@@ -504,11 +483,11 @@ resilience4j.bulkhead.instances.{service-name}:
 
 ## Reference
 - `apps/product-service/src/main/resources/application.yml`
-```
+````
 
 **File:** `docs/standards/resiliency-timeouts.md`
 
-```markdown
+````markdown
 # Timeout Standard
 
 ## Intent
@@ -526,8 +505,7 @@ Fail fast when external services are slow to prevent thread blocking.
 resilience4j.timelimiter.instances.{service-name}:
   timeout-duration: 2s
   cancel-running-future: true
-```
-
+```text
 ### Timeout Guidelines
 | Operation | Timeout | Rationale |
 |-----------|---------|-----------|
@@ -538,10 +516,9 @@ resilience4j.timelimiter.instances.{service-name}:
 
 ### Decorator Order
 Timeout is innermost decorator:
-```
+```text
 bulkhead → retry → circuit-breaker → TIMEOUT → actual call
-```
-
+```text
 ## Anti-patterns
 - No timeout (infinite wait possible)
 - Timeout > retry total time (retry never completes)
@@ -549,13 +526,13 @@ bulkhead → retry → circuit-breaker → TIMEOUT → actual call
 
 ## Reference
 - `libs/platform/platform-resilience/ReactiveResilience.java`
-```
+````
 
 #### 1.3 Caching Standard
 
 **File:** `docs/standards/caching.md`
 
-```markdown
+````markdown
 # Caching Standard
 
 ## Intent
@@ -571,41 +548,37 @@ Reduce load on external services and improve response times.
 ### Cache-Aside (Default)
 Use for data that changes infrequently.
 
-```
+```text
 request arrives
   → check cache
   → if HIT: return cached value
   → if MISS: call service → cache response → return
-```
-
-```
+```text
+```text
 Data flow:
 [Client] → [Cache Check] → [Cache HIT] → [Return]
                 ↓
           [Cache MISS]
                 ↓
           [Call Service] → [Cache PUT] → [Return]
-```
-
+```text
 ### Fallback-Only
 Use for data that MUST be fresh (inventory, real-time data).
 
-```
+```text
 request arrives
   → call service (always)
   → on success: update cache, return
   → on error: check cache for fallback
-```
-
-```
+```text
+```text
 Data flow:
 [Client] → [Call Service] → [Success] → [Cache PUT] → [Return]
                 ↓
             [Error]
                 ↓
           [Cache GET] → [Return Stale or Fallback]
-```
-
+```text
 ### TTL Guidelines
 | Data Type | TTL | Pattern | Rationale |
 |-----------|-----|---------|-----------|
@@ -616,14 +589,13 @@ Data flow:
 
 ### Key Generation
 Use consistent key format:
-```
+```text
 {entity}:{identifier}:{id}
 Examples:
   merchandise:sku:123456
   price:sku:123456
   inventory:sku:123456:store:1234
-```
-
+```text
 ## Anti-patterns
 - Caching volatile data with long TTL
 - No TTL (stale data forever)
@@ -634,13 +606,13 @@ Examples:
 - `apps/product-service/src/.../repository/merchandise/` - Cache-aside
 - `apps/product-service/src/.../repository/inventory/` - Fallback-only
 - `libs/platform/platform-cache/` - Cache abstraction
-```
+````
 
 #### 1.4 Observability Standards
 
 **File:** `docs/standards/observability-logs.md`
 
-```markdown
+````markdown
 # Logging Standard
 
 ## Intent
@@ -671,8 +643,7 @@ Provide consistent, structured, searchable logs for debugging and monitoring.
     "message": "Processing request"
   }
 }
-```
-
+```text
 ### Logger Names
 Lowercase, no dots, component name only:
 - `productcontroller`
@@ -689,21 +660,19 @@ Lowercase, no dots, component name only:
 
 ### Context Propagation
 Use Reactor Context, NOT MDC:
-```
+```text
 Mono.deferContextual(ctx -> {
     structuredLogger.logMessage(ctx, LOGGER_NAME, "message");
     return ...
 })
-```
-
+```text
 ### WebClient Logging
 All WebClient beans MUST include logging filter:
-```
+```text
 WebClient.builder()
     .filter(loggingFilter.create("repositoryname"))
     .build()
-```
-
+```text
 ## Anti-patterns
 - Using MDC (not reactive-safe)
 - Logging without context (no correlation)
@@ -713,11 +682,11 @@ WebClient.builder()
 ## Reference
 - `libs/platform/platform-logging/StructuredLogger.java`
 - `apps/product-service/src/.../config/ProductServiceConfig.java`
-```
+````
 
 **File:** `docs/standards/observability-metrics.md`
 
-```markdown
+````markdown
 # Metrics Standard
 
 ## Intent
@@ -749,15 +718,13 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
-```
-
+```text
 ### Health Indicators
 Circuit breakers register as health indicators:
 ```yaml
 resilience4j.circuitbreaker.configs.default:
   register-health-indicator: true
-```
-
+```text
 ## Anti-patterns
 - High-cardinality labels (user ID, order ID)
 - Metrics without labels (can't filter)
@@ -766,11 +733,11 @@ resilience4j.circuitbreaker.configs.default:
 ## Reference
 - `apps/product-service/src/main/resources/application.yml`
 - Grafana dashboards in `docker/grafana/`
-```
+````
 
 **File:** `docs/standards/observability-traces.md`
 
-```markdown
+````markdown
 # Tracing Standard
 
 ## Intent
@@ -798,8 +765,7 @@ management:
   tracing:
     sampling:
       probability: 1.0  # 100% in dev, lower in prod
-```
-
+```text
 ## Anti-patterns
 - 100% sampling in production (too much data)
 - Not propagating context to external calls
@@ -808,13 +774,13 @@ management:
 ## Reference
 - Tempo in `docker/docker-compose.yml`
 - Grafana trace exploration
-```
+````
 
 #### 1.5 Error Handling Standard
 
 **File:** `docs/standards/error-handling.md`
 
-```markdown
+````markdown
 # Error Handling Standard
 
 ## Intent
@@ -840,8 +806,7 @@ Provide consistent, informative error responses without leaking implementation d
     "x-store-number": "Must be between 1 and 2000"
   }
 }
-```
-
+```text
 ### Exception Mapping
 | Exception | HTTP Status | Description |
 |-----------|-------------|-------------|
@@ -854,10 +819,9 @@ Provide consistent, informative error responses without leaking implementation d
 
 ### Repository Fallbacks
 Every repository MUST define a fallback:
-```
+```text
 FALLBACK = new Response("Unavailable", ...)
-```
-
+```text
 Fallback is returned when:
 - Circuit breaker is open
 - All retries exhausted
@@ -872,13 +836,13 @@ Fallback is returned when:
 ## Reference
 - `libs/platform/platform-error/GlobalErrorHandler.java`
 - `apps/product-service/src/.../repository/*/`
-```
+````
 
 #### 1.6 Security Standard
 
 **File:** `docs/standards/security.md`
 
-```markdown
+````markdown
 # Security Standard
 
 ## Intent
@@ -901,13 +865,12 @@ All endpoints MUST validate:
 | x-sessionid | UUID | UUID pattern |
 
 ### Validation Pattern
-```
+```text
 Controller receives request
   → Validator.validate(headers, params)
   → if errors: throw ValidationException
   → else: proceed
-```
-
+```text
 ### OAuth2 (Future)
 See `006_AUTHN_AUTHZ.md` for implementation plan:
 - Resource server configuration
@@ -923,13 +886,13 @@ See `006_AUTHN_AUTHZ.md` for implementation plan:
 ## Reference
 - `apps/product-service/src/.../validation/`
 - `libs/platform/platform-security/` (placeholder)
-```
+````
 
 #### 1.7 Validation Standard
 
 **File:** `docs/standards/validation.md`
 
-```markdown
+````markdown
 # Validation Standard
 
 ## Intent
@@ -952,13 +915,12 @@ Reject invalid requests early with clear error messages.
 | path params | positive long | "Must be a positive number" |
 
 ### Validator Pattern
-```
+```text
 RequestValidator
   .validate(params, headers)
   .then(proceed)
   .onError(ValidationException with field errors)
-```
-
+```text
 ### Error Aggregation
 Collect ALL errors, don't fail on first:
 ```json
@@ -968,8 +930,7 @@ Collect ALL errors, don't fail on first:
     "x-userid": "Must be 6 alphanumeric characters"
   }
 }
-```
-
+```text
 ## Anti-patterns
 - Failing on first error (user fixes one, gets another)
 - Vague error messages ("Invalid input")
@@ -977,13 +938,13 @@ Collect ALL errors, don't fail on first:
 
 ## Reference
 - `apps/product-service/src/.../validation/ProductRequestValidator.java`
-```
+````
 
 #### 1.8 Testing Standards
 
 **File:** `docs/standards/testing-unit.md`
 
-```markdown
+````markdown
 # Unit Testing Standard
 
 ## Intent
@@ -1004,7 +965,7 @@ Test individual components in isolation for fast feedback.
 - Or descriptive: `shouldReturnFallbackWhenServiceFails()`
 
 ### Structure (Arrange-Act-Assert)
-```
+```text
 @Test
 void methodName_condition_expectedResult() {
     // Arrange
@@ -1016,15 +977,13 @@ void methodName_condition_expectedResult() {
     // Assert
     assertThat(result).isEqualTo(expected);
 }
-```
-
+```text
 ### Reactor Testing
-```
+```text
 StepVerifier.create(mono)
     .expectNext(expectedValue)
     .verifyComplete();
-```
-
+```text
 ## Anti-patterns
 - Testing multiple things in one test
 - No assertions (test that can't fail)
@@ -1034,11 +993,11 @@ StepVerifier.create(mono)
 ## Reference
 - `apps/product-service/src/test/java/` - Examples
 - `libs/platform/platform-test/ReactorTestSupport.java` - Utilities
-```
+````
 
 **File:** `docs/standards/testing-integration.md`
 
-```markdown
+````markdown
 # Integration Testing Standard
 
 ## Intent
@@ -1052,7 +1011,7 @@ Test components with real infrastructure (Redis, HTTP).
 ## Patterns
 
 ### Test Class Setup
-```
+```text
 @SpringBootTest
 @Testcontainers
 class ServiceIntegrationTest {
@@ -1067,10 +1026,9 @@ class ServiceIntegrationTest {
             () -> RedisTestSupport.getRedisPort(redis));
     }
 }
-```
-
+```text
 ### WireMock for HTTP
-```
+```text
 @RegisterExtension
 static WireMockExtension wiremock = WireMockExtension.newInstance()
     .options(wireMockConfig().port(8082))
@@ -1083,8 +1041,7 @@ void test() {
 
     // test code
 }
-```
-
+```text
 ### Required Tests
 Every application MUST have:
 - [ ] Context load test (`contextLoads()`)
@@ -1101,11 +1058,11 @@ Every application MUST have:
 ## Reference
 - `apps/product-service/src/test/.../ProductServiceApplicationTest.java`
 - `libs/platform/platform-test/RedisTestSupport.java`
-```
+````
 
 **File:** `docs/standards/testing-e2e.md`
 
-```markdown
+````markdown
 # End-to-End Testing Standard
 
 ## Intent
@@ -1137,8 +1094,7 @@ export const options = {
         http_req_failed: ['rate<0.01']
     }
 };
-```
-
+```text
 ### Test Types
 | Type | Purpose | Trigger |
 |------|---------|---------|
@@ -1162,13 +1118,13 @@ Test circuit breaker behavior:
 ## Reference
 - `e2e-test/` - k6 test scripts
 - `docker/docker-compose.yml` - Test profiles
-```
+````
 
 #### 1.9 Code Quality Standards
 
 **File:** `docs/standards/code-style.md`
 
-```markdown
+````markdown
 # Code Style Standard
 
 ## Intent
@@ -1194,8 +1150,7 @@ spotless {
         formatAnnotations()
     }
 }
-```
-
+```text
 ### Naming Conventions
 | Type | Convention | Example |
 |------|------------|---------|
@@ -1209,8 +1164,7 @@ spotless {
 ```bash
 ./gradlew spotlessCheck  # Verify formatting
 ./gradlew spotlessApply  # Auto-format
-```
-
+```text
 ## Anti-patterns
 - Manual formatting
 - Inconsistent naming
@@ -1218,11 +1172,11 @@ spotless {
 
 ## Reference
 - `buildSrc/src/main/kotlin/platform.java-conventions.gradle.kts`
-```
+````
 
 **File:** `docs/standards/documentation.md`
 
-```markdown
+````markdown
 # Documentation Standard
 
 ## Intent
@@ -1237,16 +1191,16 @@ Provide consistent documentation for humans and AI agents.
 
 ### File Structure
 Every module (app or library) has:
-```
+```text
 module/
 ├── README.md    # Purpose, usage, configuration
 ├── AGENTS.md    # AI agent guidance
 ├── CONTENTS.md  # File index
 └── src/
-```
+````
 
 ### README.md Template
-```markdown
+````markdown
 # Module Name
 
 Brief description.
@@ -1263,10 +1217,10 @@ YAML/properties examples.
 
 ## Running
 Commands to run/test.
-```
+````
 
 ### AGENTS.md Template
-```markdown
+````markdown
 # Module Agent Guidelines
 
 ## Key Files
@@ -1282,10 +1236,10 @@ Code patterns used in this module.
 
 ## Anti-patterns
 What to avoid.
-```
+````
 
 ### CONTENTS.md Template
-```markdown
+````markdown
 # Module Contents
 
 ## Main Source (src/main/java/...)
@@ -1296,8 +1250,7 @@ What to avoid.
 
 ## Tests
 - `FileTest.java` - Description
-```
-
+```text
 ## Anti-patterns
 - No documentation
 - Outdated documentation
@@ -1306,8 +1259,7 @@ What to avoid.
 ## Reference
 - `docs/standards/` - Standards documentation
 - `apps/product-service/` - Reference implementation
-```
-
+```text
 ---
 
 ### Phase 2: Code Formatting with Spotless
@@ -1323,8 +1275,7 @@ dependencies {
     // ... existing
     implementation("com.diffplug.spotless:spotless-plugin-gradle:7.0.0.BETA4")
 }
-```
-
+```text
 #### 2.2 Update Java Conventions with Spotless
 
 **File:** `buildSrc/src/main/kotlin/platform.java-conventions.gradle.kts`
@@ -1349,15 +1300,13 @@ spotless {
 tasks.withType<JavaCompile> {
     dependsOn("spotlessCheck")
 }
-```
-
+```text
 #### 2.3 Format Existing Code
 
 ```bash
 ./gradlew spotlessApply
 ./gradlew spotlessCheck
-```
-
+```text
 ---
 
 ### Phase 3: ArchUnit Architecture Tests
@@ -1371,8 +1320,7 @@ dependencies {
     // ... existing
     api("com.tngtech.archunit:archunit-junit5:1.3.0")
 }
-```
-
+```text
 #### 3.2 Create Shared Architecture Rules
 
 **File:** `libs/platform/platform-test/src/main/java/org/example/platform/test/architecture/ArchitectureRules.java`
@@ -1514,7 +1462,7 @@ ls docs/standards/*.md | wc -l  # Should be 20
 
 # Full verification
 ./ci/verify.sh
-```
+````
 
 ---
 

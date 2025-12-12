@@ -1,107 +1,62 @@
 # Completed Implementation Plans
 
-Historical archive of 70+ implementation plans preserved for reference. Plans document design decisions, phases, and lessons learned.
+Historical archive of 51+ implementation plans preserved for reference. Plans document design decisions, phases, and lessons learned.
 
-<style>
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-  margin: 1.5rem 0;
-}
-.stat-card {
-  text-align: center;
-  padding: 1rem;
-  background: var(--vp-c-bg-soft);
-  border-radius: 8px;
-}
-.stat-card .number {
-  font-size: 2rem;
-  font-weight: bold;
-  color: var(--vp-c-brand-1);
-}
-.stat-card .label {
-  font-size: 0.85rem;
-  color: var(--vp-c-text-2);
-}
-.category {
-  margin: 2rem 0 1rem 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--vp-c-divider);
-}
-</style>
+## All Completed Plans
 
-<div class="stats-grid">
-  <div class="stat-card">
-    <div class="number">70+</div>
-    <div class="label">Plans Completed</div>
-  </div>
-  <div class="stat-card">
-    <div class="number">9</div>
-    <div class="label">Backend Services</div>
-  </div>
-  <div class="stat-card">
-    <div class="number">3</div>
-    <div class="label">Frontend Apps</div>
-  </div>
-  <div class="stat-card">
-    <div class="number">12</div>
-    <div class="label">Platform Libs</div>
-  </div>
-</div>
-
-## Recent Completions
-
-| Plan | Description |
-|------|-------------|
-| [049 Peripheral Toolkit](./049_PERIPHERAL_DEVELOPER_TOOLKIT) | WebSocket device SDK with scanner and payment emulators |
-| [047 VitePress Docs](./047_VITE_DOCS) | Documentation site with repo explorer |
-| [044 Self-Checkout Kiosk](./044_SELF_CHECKOUT_KIOSK) | Customer-facing kiosk application |
-| [043 Model Alignment](./043_MODEL_ALIGNMENT) | Frontend/backend shared TypeScript models |
-
-<h2 class="category">Backend Services</h2>
-
-| Plan | Description |
-|------|-------------|
-| [008 Cart Service](./008_CART_SERVICE) | Shopping cart with Redis caching |
-| [009 Audit Data](./009_AUDIT_DATA) | Audit event processing and storage |
-| [011 Product Search](./011_PRODUCT_SEARCH_API) | Product aggregation from multiple sources |
-| [015 Customer Service](./015_CUSTOMER_SERVICE) | Customer profile management |
-| [017 Discount Service](./017_DISCOUNT_SERVICE) | Promos, markdowns, and loyalty |
-| [019 Fulfillment Service](./019_FULFILLMENT_SERVICE) | Order fulfillment orchestration |
-| [032 Checkout Service](./032_CHECKOUT_SERVICE) | Payment and order completion |
-| [038 Order Service](./038_ORDER_SERVICE) | Order viewing with GraphQL |
-| [039 User Service](./039_USER_SERVICE) | JWT authentication and users |
-
-<h2 class="category">Frontend Development</h2>
-
-| Plan | Description |
-|------|-------------|
-| [021 Frontend Standards](./021_FRONTEND_STANDARDS_INITIATIVE) | Standards, templates, and linting |
-| [022 Design System](./022_DESIGN_SYSTEM_AND_COMPONENT_LIBRARY) | Tokens, themes, and component library |
-| [023 Frontend E2E](./023_FRONTEND_FLOWS_AND_E2E) | Playwright tests with MSW mocking |
-| [029 E-commerce Web](./029_ECOMMERCE_WEB) | Main storefront application |
-| [044 Self-Checkout Kiosk](./044_SELF_CHECKOUT_KIOSK) | Kiosk for in-store self-service |
-
-<h2 class="category">Platform & Infrastructure</h2>
-
-| Plan | Description |
-|------|-------------|
-| [000 Initial Setup](./000_INIT_IMPLEMENTATION_PLAN) | Project bootstrapping |
-| [001 Grafana Stack](./001_GRAFANA_STACK_IMPLEMENTATION_PLAN) | Observability with Prometheus, Loki, Tempo |
-| [003 Cache](./003_CACHE_IMPLEMENTATION_PLAN) | Redis cache abstraction |
-| [004 Resilience](./004_RESILIENCE_CHAOS_IMPLEMENTATION_PLAN) | Circuit breakers, retries, timeouts |
-| [006 Auth](./006_AUTHN_AUTHZ) | OAuth2/JWT authentication |
-| [020 Nx Monorepo](./020_NX_MONOREPO_IMPLEMENTATION) | Nx workspace orchestration |
-
-<h2 class="category">Quality & Testing</h2>
-
-| Plan | Description |
-|------|-------------|
-| [002 Validation](./002_REQUEST_VALIDATION_IMPLEMENTATION_PLAN) | Request validation patterns |
-| [010 Standards](./010_DEFINE_STANDARDS) | Backend and frontend standards |
-| [012 Product Search Testing](./012_PRODUCT_SEARCH_TESTING) | Integration and load testing |
-| [018 Spring Boot 4 Validation](./018_SPRING_BOOT_4_VALIDATION) | Framework upgrade validation |
+| # | Plan |
+|---|------|
+| 000 | [000_INIT_IMPLEMENTATION_PLAN](./000_INIT_IMPLEMENTATION_PLAN) |
+| 001 | [Start the observability stack](./001_GRAFANA_STACK_IMPLEMENTATION_PLAN) |
+| 002 | [Request Validation Implementation Plan](./002_REQUEST_VALIDATION_IMPLEMENTATION_PLAN) |
+| 003 | [Redis Cache Implementation Plan](./003_CACHE_IMPLEMENTATION_PLAN) |
+| 004 | [Implementation Plan: Resilience4j & Chaos Testing](./004_RESILIENCE_CHAOS_IMPLEMENTATION_PLAN) |
+| 006 | [006: OAuth2 Authentication & Authorization Implementation Plan](./006_AUTHN_AUTHZ) |
+| 007 | [007: Gradle Multi-Module Refactoring](./007_MULTIMODULE_REFACTOR) |
+| 007 | [008: OAuth Feature Branch Merge Plan](./007_OAUTH_MERGE_PLAN) |
+| 008 | [008 Cart Service Enhancement - Granular CRUD with Shared Domain](./008_CART_SERVICE) |
+| 009 | [009 Audit Data Service - Event Tracking and Storage](./009_AUDIT_DATA) |
+| 010 | [010 - Define Platform and Application Standards](./010_DEFINE_STANDARDS) |
+| 011 | [011: Product Search API Implementation](./011_PRODUCT_SEARCH_API) |
+| 012 | [012: Product Search Testing & Infrastructure](./012_PRODUCT_SEARCH_TESTING) |
+| 013 | [013_SPRING_BOOT_4_MIGRATION](./013_SPRING_BOOT_4_MIGRATION) |
+| 014 | [014_CART_GRAPHQL](./014_CART_GRAPHQL) |
+| 015 | [015_CUSTOMER_SERVICE](./015_CUSTOMER_SERVICE) |
+| 017 | [017_DISCOUNT_SERVICE](./017_DISCOUNT_SERVICE) |
+| 018 | [018_SPRING_BOOT_4_VALIDATION](./018_SPRING_BOOT_4_VALIDATION) |
+| 020 | [020_NX_MONOREPO_IMPLEMENTATION](./020_NX_MONOREPO_IMPLEMENTATION) |
+| 021 | [021_FRONTEND_STANDARDS_INITIATIVE](./021_FRONTEND_STANDARDS_INITIATIVE) |
+| 022 | [022_DESIGN_SYSTEM_AND_COMPONENT_LIBRARY](./022_DESIGN_SYSTEM_AND_COMPONENT_LIBRARY) |
+| 023 | [023_FRONTEND_FLOWS_AND_E2E](./023_FRONTEND_FLOWS_AND_E2E) |
+| 024 | [024_FRONTEND_LINT_GUARDRAILS](./024_FRONTEND_LINT_GUARDRAILS) |
+| 025 | [025_FULFILLMENT_SERVICE_STUBS](./025_FULFILLMENT_SERVICE_STUBS) |
+| 026 | [026_CHECKOUT_SERVICE](./026_CHECKOUT_SERVICE) |
+| 027 | [027_ORDER_SERVICE](./027_ORDER_SERVICE) |
+| 028 | [028_BACKEND_PACKAGE_STANDARDIZATION](./028_BACKEND_PACKAGE_STANDARDIZATION) |
+| 029 | [029_LIBS_TIER_MIGRATION](./029_LIBS_TIER_MIGRATION) |
+| 030 | [030_ACTUATOR_PROFILES](./030_ACTUATOR_PROFILES) |
+| 031 | [031_JAVA_25_UPGRADE](./031_JAVA_25_UPGRADE) |
+| 032 | [032_DOCUMENT_UNDOCUMENTED_SERVICES](./032_DOCUMENT_UNDOCUMENTED_SERVICES) |
+| 034 | [034: Enable Nx Lint and Format for Gradle Projects](./034_NX_LINT_FORMAT_GRADLE) |
+| 035 | [035_FAKE_AUTH_DOCKER](./035_FAKE_AUTH_DOCKER) |
+| 036 | [036_USER_SERVICE](./036_USER_SERVICE) |
+| 037 | [036 Product Browsing Experience](./037_PRODUCT_BROWSING) |
+| 038 | [038_NOT_IMPLEMENTED](./038_NOT_IMPLEMENTED) |
+| 039 | [039_NOT_IMPLEMENTED](./039_NOT_IMPLEMENTED) |
+| 041 | [041_E2E_DIRECTORY_CONSOLIDATION](./041_E2E_DIRECTORY_CONSOLIDATION) |
+| 043 | [043_MODEL_ALIGNMENT](./043_MODEL_ALIGNMENT) |
+| 043 | [043 Urgent Fix: Services Startup Issues](./043_URGENT_FIX_SERVICES) |
+| 044 | [044 E2E Fullstack Test Fix Plan](./044_E2E_FULLSTACK_FIX_PLAN) |
+| 044 | [044_SELF_CHECKOUT_KIOSK](./044_SELF_CHECKOUT_KIOSK) |
+| 045 | [045_POS_SYSTEM](./045_POS_SYSTEM) |
+| 046 | [046_CART_GRAPHQL_CLIENT_ALIGNMENT](./046_CART_GRAPHQL_CLIENT_ALIGNMENT) |
+| 047 | [047: Documentation Static Site with VitePress](./047_VITE_DOCS) |
+| 048 | [048_OFFLINE_POS](./048_OFFLINE_POS) |
+| 049 | [049 - Peripheral Developer Toolkit](./049_PERIPHERAL_DEVELOPER_TOOLKIT) |
+| 050 | [050: Merchant Portal and Product Data Services](./050_MERCHANT_PORTAL_AND_DATA_SERVICES) |
+| 051 | [051_PERIPHERAL_DOCKER](./051_PERIPHERAL_DOCKER) |
+| 052 | [052: Offline POS UX Improvement](./052_OFFLINE_POS_UX) |
+| 053 | [E2E Test Consolidation Implementation Plan](./053_E2E_TEST_CONSOLIDATION) |
 
 ---
 

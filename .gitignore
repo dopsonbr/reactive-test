@@ -70,6 +70,11 @@ docs/repo-explorer/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
 
+# Generated doc indexes (created by generate-plan-indexes.js)
+docs/plans/active/index.md
+docs/plans/completed/index.md
+docs/ADRs/index.md
+
 
 # Git worktrees
 .worktrees/

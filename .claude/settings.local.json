@@ -191,7 +191,9 @@
       "Bash(docker stop:*)",
       "Bash(ENV=production go run:*)",
       "Bash(E2E_BASE_URL=http://localhost:3003 pnpm exec playwright test:*)",
-      "Bash(E2E_BASE_URL=http://localhost:3002 pnpm exec playwright test:*)"
+      "Bash(E2E_BASE_URL=http://localhost:3002 pnpm exec playwright test:*)",
+      "Bash(pnpm docs:build:*)",
+      "Bash(CART_ID=\"d04f50e3-8ce7-42cf-a09a-41dabbcd1c52\":*)"
     ],
     "deny": [],
     "ask": [

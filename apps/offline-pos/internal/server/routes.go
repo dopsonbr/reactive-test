@@ -14,7 +14,7 @@ func (s *Server) registerRoutes() {
 		http.FileServer(http.FS(staticContent))))
 
 	// Pages
-	pages := handlers.NewPageHandlers(s.db, s.templatesFS)
+	pages := handlers.NewPageHandlers(s.db, s.templatesFS, s.devMode)
 	s.router.HandleFunc("GET /", pages.Login)
 	s.router.HandleFunc("POST /login", pages.HandleLogin)
 	s.router.HandleFunc("GET /scan", pages.Scan)

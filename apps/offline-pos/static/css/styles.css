@@ -62,6 +62,65 @@ header nav {
   color: var(--color-muted-foreground);
 }
 
+/* === Cart Preview (on scan page) === */
+.cart-preview {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-4);
+  overflow: hidden;
+}
+
+.cart-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.cart-preview-total {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+}
+
+.cart-preview-items {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.cart-preview-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cart-preview-item:last-child {
+  border-bottom: none;
+}
+
+.cart-preview-item .item-qty {
+  color: var(--color-muted-foreground);
+  font-size: var(--text-sm);
+  min-width: var(--spacing-6);
+}
+
+.cart-preview-item .item-name {
+  flex: 1;
+  font-weight: var(--font-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cart-preview-item .item-price {
+  color: var(--color-primary);
+  font-weight: var(--font-semibold);
+}
+
 .scan-feedback {
   padding: var(--spacing-4);
   background: var(--color-card);

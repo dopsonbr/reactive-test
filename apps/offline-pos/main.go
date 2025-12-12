@@ -20,7 +20,7 @@ var staticFS embed.FS
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3000" // Use PORT env var if there's a conflict
+		port = "3005" // Use PORT env var if there's a conflict
 	}
 
 	dbPath := os.Getenv("DB_PATH")
@@ -39,12 +39,15 @@ func main() {
 		centralURL = "http://localhost:8080" // default for dev
 	}
 
+	// Dev mode: enabled unless ENV=production
+	devMode := os.Getenv("ENV") != "production"
+
 	syncSvc := sync.NewService(database, centralURL)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	syncSvc.Start(ctx)
 
-	srv := server.New(port, database, templatesFS, staticFS, syncSvc)
+	srv := server.New(port, database, templatesFS, staticFS, syncSvc, devMode)
 	log.Printf("Starting Offline POS on :%s", port)
 	if err := srv.Run(); err != nil {
 		log.Fatal(err)

@@ -1,7 +1,25 @@
 {{define "content"}}
+{{if .Cart}}
+<div class="cart-preview" id="cart-preview">
+    <div class="cart-preview-header">
+        <strong>Cart ({{.CartCount}} items)</strong>
+        <span class="cart-preview-total">${{formatPrice .Total}}</span>
+    </div>
+    <div class="cart-preview-items">
+        {{range .Cart}}
+        <div class="cart-preview-item">
+            <span class="item-qty">{{.Quantity}}×</span>
+            <span class="item-name">{{.Name}}</span>
+            <span class="item-price">${{formatPrice .PriceCents}}</span>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{else}}
 <div class="scan-area" id="scan-area">
     <span>Scan barcode or search below</span>
 </div>
+{{end}}
 
 <div id="scan-feedback" class="scan-feedback hidden"></div>
 
@@ -17,11 +35,13 @@
 <div id="search-results" class="search-results"></div>
 
 <div class="actions">
-    <a href="/cart" role="button" class="primary">
-        View Cart
-        <span id="cart-count">({{.CartCount}})</span>
-    </a>
-    <a href="/payment" role="button" class="secondary">Proceed to Checkout</a>
+    {{if .Cart}}
+    <a href="/cart" role="button" class="secondary">Edit Cart</a>
+    <a href="/payment" role="button" class="primary">Pay ${{formatPrice .Total}}</a>
+    {{else}}
+    <a href="/cart" role="button" class="secondary" disabled>Cart Empty</a>
+    <a href="/payment" role="button" class="primary" disabled>Checkout</a>
+    {{end}}
 </div>
 {{end}}
 

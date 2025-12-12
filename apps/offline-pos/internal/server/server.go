@@ -15,9 +15,10 @@ type Server struct {
 	router      *http.ServeMux
 	templatesFS embed.FS
 	staticFS    embed.FS
+	devMode     bool
 }
 
-func New(port string, db *sql.DB, templatesFS, staticFS embed.FS, syncSvc *sync.Service) *Server {
+func New(port string, db *sql.DB, templatesFS, staticFS embed.FS, syncSvc *sync.Service, devMode bool) *Server {
 	s := &Server{
 		port:        port,
 		db:          db,
@@ -25,6 +26,7 @@ func New(port string, db *sql.DB, templatesFS, staticFS embed.FS, syncSvc *sync.
 		router:      http.NewServeMux(),
 		templatesFS: templatesFS,
 		staticFS:    staticFS,
+		devMode:     devMode,
 	}
 	s.registerRoutes()
 	return s

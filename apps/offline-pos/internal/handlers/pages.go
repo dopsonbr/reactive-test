@@ -16,9 +16,10 @@ type PageHandlers struct {
 	fs        embed.FS
 	funcMap   template.FuncMap
 	templates map[string]*template.Template
+	devMode   bool
 }
 
-func NewPageHandlers(database *sql.DB, fs embed.FS) *PageHandlers {
+func NewPageHandlers(database *sql.DB, fs embed.FS, devMode bool) *PageHandlers {
 	// Add helper functions
 	funcMap := template.FuncMap{
 		"formatPrice": formatPrice,
@@ -44,6 +45,7 @@ func NewPageHandlers(database *sql.DB, fs embed.FS) *PageHandlers {
 		fs:        fs,
 		funcMap:   funcMap,
 		templates: templates,
+		devMode:   devMode,
 	}
 }
 
@@ -68,6 +70,7 @@ func (h *PageHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"Title":       "Login",
 		"StoreNumber": "0001", // TODO: Get from config
+		"DevMode":     h.devMode,
 	}
 	h.render(w, "login", data)
 }
@@ -117,11 +120,23 @@ func (h *PageHandlers) Scan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Calculate totals for cart preview
+	subtotal := 0
+	for _, item := range sess.Cart {
+		subtotal += item.PriceCents * item.Quantity
+	}
+	tax := subtotal * 825 / 10000 // 8.25% tax
+	total := subtotal + tax
+
 	data := map[string]interface{}{
 		"Title":       "Scan",
 		"StoreNumber": "0001", // TODO: Get from config
 		"Operator":    sess.Operator,
 		"CartCount":   len(sess.Cart),
+		"Cart":        sess.Cart,
+		"Subtotal":    subtotal,
+		"Tax":         tax,
+		"Total":       total,
 	}
 
 	h.render(w, "scan", data)

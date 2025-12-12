@@ -180,7 +180,17 @@
       "Bash(do)",
       "Bash(do docker exec postgres psql -U postgres -d $db -c \"ALTER SCHEMA public OWNER TO postgres; GRANT CREATE ON SCHEMA public TO PUBLIC;\")",
       "Bash(/Users/briandopson/github/dopsonbr/reactive-test/gradlew :apps:product-service:spotlessApply)",
-      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25.0.1-tem ./powerstart:*)"
+      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25.0.1-tem ./powerstart:*)",
+      "Bash(test:*)",
+      "Bash(E2E_BASE_URL=http://localhost:3004 pnpm nx e2e:*)",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__click",
+      "Bash(E2E_BASE_URL=http://localhost:3004 pnpm exec playwright test:*)",
+      "Bash(go run:*)",
+      "Bash(docker stop:*)",
+      "Bash(ENV=production go run:*)",
+      "Bash(E2E_BASE_URL=http://localhost:3003 pnpm exec playwright test:*)"
     ],
     "deny": [],
     "ask": [

@@ -16,6 +16,9 @@
         {{if .Error}}
         <small class="error">{{.Error}}</small>
         {{end}}
+        {{if .DevMode}}
+        <small class="dev-hint">Dev mode: use PIN <strong>1234</strong></small>
+        {{end}}
         <button type="submit">Sign In</button>
     </form>
 </article>

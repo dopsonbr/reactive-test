@@ -190,7 +190,8 @@
       "Bash(go run:*)",
       "Bash(docker stop:*)",
       "Bash(ENV=production go run:*)",
-      "Bash(E2E_BASE_URL=http://localhost:3003 pnpm exec playwright test:*)"
+      "Bash(E2E_BASE_URL=http://localhost:3003 pnpm exec playwright test:*)",
+      "Bash(E2E_BASE_URL=http://localhost:3002 pnpm exec playwright test:*)"
     ],
     "deny": [],
     "ask": [

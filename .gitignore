@@ -70,3 +70,6 @@ docs/repo-explorer/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
 
+
+# Git worktrees
+.worktrees/

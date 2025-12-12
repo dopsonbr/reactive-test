@@ -77,7 +77,7 @@ describe('PeripheralProvider', () => {
 
 describe('usePeripherals', () => {
   it('should throw when used outside provider', () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     expect(() => {
       render(<TestConsumer />);

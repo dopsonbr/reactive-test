@@ -219,7 +219,7 @@ describe('PaymentService', () => {
       });
 
       // Initialize subscription
-      service.onStateChange(() => {});
+      service.onStateChange(vi.fn());
 
       expect(service.state).toBe('idle');
 

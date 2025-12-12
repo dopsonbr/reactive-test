@@ -184,7 +184,7 @@ export function MarkdownDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Apply Markdown</DialogTitle>
           <DialogDescription>

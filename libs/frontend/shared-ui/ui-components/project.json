@@ -3,7 +3,7 @@
   "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/frontend/shared-ui/ui-components/src",
   "projectType": "library",
-  "tags": ["scope:shared", "type:lib", "platform:web"],
+  "tags": ["scope:shared", "type:ui", "platform:web"],
   "targets": {
     "ladle": {
       "executor": "nx:run-commands",

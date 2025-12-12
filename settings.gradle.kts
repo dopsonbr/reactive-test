@@ -24,6 +24,7 @@ include("libs:backend:shared-model:shared-model-customer")
 include("libs:backend:shared-model:shared-model-discount")
 include("libs:backend:shared-model:shared-model-fulfillment")
 include("libs:backend:shared-model:shared-model-payment")
+include("libs:backend:shared-model:shared-model-order")
 
 // Applications
 include("apps:product-service")

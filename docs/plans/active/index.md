@@ -16,6 +16,8 @@ Current work in progress. Each plan documents the design, phases, and checklist 
 | [033_FIX_JAVA_25_TEST_FAILURES](./033_FIX_JAVA_25_TEST_FAILURES) | |
 | [042_USER_SERVICE_STANDARDS_REMEDIATION](./042_USER_SERVICE_STANDARDS_REMEDIATION) | |
 | [054 - E2E Fullstack Test Fixes](./054_E2E_FULLSTACK_FIXES) | |
+| [056_SYNTHETIC_OMNI_USER](./056_SYNTHETIC_OMNI_USER) | |
+| [057_ORDER_SERVICE_OWN_DB_AND_EVENT_CONSUMER](./057_ORDER_SERVICE_OWN_DB_AND_EVENT_CONSUMER) | `order-service` owns `orderdb` and consumes `orders:completed` |
 
 ---
 

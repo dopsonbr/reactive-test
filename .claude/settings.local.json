@@ -193,7 +193,12 @@
       "Bash(E2E_BASE_URL=http://localhost:3003 pnpm exec playwright test:*)",
       "Bash(E2E_BASE_URL=http://localhost:3002 pnpm exec playwright test:*)",
       "Bash(pnpm docs:build:*)",
-      "Bash(CART_ID=\"d04f50e3-8ce7-42cf-a09a-41dabbcd1c52\":*)"
+      "Bash(CART_ID=\"d04f50e3-8ce7-42cf-a09a-41dabbcd1c52\":*)",
+      "Bash(docker network inspect:*)",
+      "Bash(do if curl -s http://localhost:8091/actuator/health)",
+      "Bash(then echo \"merchandise-service is healthy\")",
+      "Bash(fi)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": [

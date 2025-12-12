@@ -1,8 +1,10 @@
 import { execSync } from 'child_process';
 
 export default async function globalTeardown() {
-  if (process.env.E2E_KEEP_RUNNING === 'true') {
-    console.log('Keeping services running (E2E_KEEP_RUNNING=true)');
+  // By default, keep services running to avoid destroying dev environment
+  // Only stop if explicitly requested with E2E_STOP_SERVICES=true
+  if (process.env.E2E_STOP_SERVICES !== 'true') {
+    console.log('Keeping services running (set E2E_STOP_SERVICES=true to stop)');
     return;
   }
 

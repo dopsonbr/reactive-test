@@ -6,12 +6,12 @@ export const TEST_EMPLOYEE = {
   storeNumber: '100',
 };
 
-// Test products with known SKUs
+// Test products with known SKUs (matching real backend direct lookup API)
 export const TEST_PRODUCTS = {
-  SKU_001: { sku: 'SKU-001', name: 'Widget Pro', price: 149.99 },
-  SKU_002: { sku: 'SKU-002', name: 'Widget Standard', price: 79.99 },
-  SKU_003: { sku: 'SKU-003', name: 'Accessory Kit', price: 29.99 },
-  HEADPHONES: { sku: '10000003', name: 'Wireless Headphones', price: 199.99 },
+  HEADPHONES: { sku: '100001', name: 'Wireless Bluetooth Headphones', price: 129.99 },
+  SMART_TV: { sku: '100002', name: '4K Ultra HD Smart TV 55"', price: 699.99 },
+  SPEAKER: { sku: '100003', name: 'Portable Bluetooth Speaker', price: 59.99 },
+  KEYBOARD: { sku: '100004', name: 'Wireless Mechanical Keyboard', price: 89.99 },
 };
 
 // Extended test with fixtures

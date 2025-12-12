@@ -1,16 +1,38 @@
 import { test as base, expect, Page } from '@playwright/test';
 
-// Test products with known SKUs (8-digit format for scanner)
+// Test products with known SKUs (matching real backend direct lookup API)
 export const TEST_PRODUCTS = {
-  PRODUCT_001: { sku: '10000001', name: 'Widget Pro', price: 149.99 },
-  PRODUCT_002: { sku: '10000002', name: 'Widget Standard', price: 79.99 },
-  PRODUCT_003: { sku: '10000003', name: 'Accessory Kit', price: 29.99 },
+  HEADPHONES: { sku: '100001', name: 'Wireless Bluetooth Headphones', price: 129.99 },
+  SMART_TV: { sku: '100002', name: '4K Ultra HD Smart TV 55"', price: 699.99 },
+  SPEAKER: { sku: '100003', name: 'Portable Bluetooth Speaker', price: 59.99 },
 };
 
-// Helper to scan a product by simulating barcode scanner input
+// Helper to add a product by using the manual SKU entry dialog
+export async function addProductBySku(page: Page, sku: string) {
+  // Click "Enter SKU Manually" button
+  await page.getByRole('button', { name: /enter sku manually/i }).click();
+
+  // Wait for keypad dialog to appear (look for numeric keypad)
+  await expect(page.getByRole('group', { name: /keypad/i })).toBeVisible();
+
+  // Type SKU using the keypad buttons
+  for (const digit of sku) {
+    // Click the digit button within the keypad group
+    await page.getByRole('group', { name: /keypad/i }).getByRole('button', { name: digit, exact: true }).click();
+  }
+
+  // Submit - wait for it to be enabled after entering digits
+  const submitBtn = page.getByRole('button', { name: /submit/i });
+  await expect(submitBtn).toBeEnabled({ timeout: 2000 });
+  await submitBtn.click();
+
+  // Wait for the keypad to close (cart should update)
+  await expect(page.getByRole('group', { name: /keypad/i })).not.toBeVisible({ timeout: 10000 });
+}
+
+// Legacy helper - keep for compatibility but use addProductBySku instead
 export async function scanProduct(page: Page, sku: string) {
-  await page.keyboard.type(sku, { delay: 50 });
-  await page.keyboard.press('Enter');
+  await addProductBySku(page, sku);
 }
 
 // Helper to start a kiosk session

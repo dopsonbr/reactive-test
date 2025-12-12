@@ -18,8 +18,17 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
+    // Run sanity checks first to catch fundamental issues
+    {
+      name: 'sanity',
+      testMatch: /sanity\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    // Journey tests depend on sanity passing
     {
       name: 'chromium',
+      testMatch: /.*-journey\.spec\.ts/,
+      dependencies: ['sanity'],
       use: { ...devices['Desktop Chrome'] },
     },
   ],

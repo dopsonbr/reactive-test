@@ -6,15 +6,24 @@ Guidance for AI agents working with end-to-end and performance tests.
 
 ## Overview
 
-This directory contains three types of tests:
+This directory contains full-stack E2E tests and performance tests:
 
 | Type | Location | Purpose |
 |------|----------|---------|
-| Full-Stack E2E | `ecommerce-fullstack/` | Playwright tests against real Docker services |
+| Full-Stack E2E | `{app}-fullstack/` | Playwright tests against real Docker services |
 | Performance | `k6/` | Load tests, chaos tests, resilience validation |
-| API Mocks | `wiremock/` | WireMock stub definitions |
+| API Mocks | `wiremock/` | WireMock stub definitions for backend services |
 
-**Note:** Mocked E2E tests live in `apps/ecommerce-web/e2e/`, not here.
+### Full-Stack E2E Suites
+
+| Suite | Directory | Target App |
+|-------|-----------|------------|
+| E-commerce | `ecommerce-fullstack/` | ecommerce-web |
+| POS | `pos-fullstack/` | pos-web |
+| Kiosk | `kiosk-fullstack/` | kiosk-web |
+| Merchant Portal | `merchant-portal-fullstack/` | merchant-portal-web |
+
+**IMPORTANT:** Mocked E2E tests live in `apps/{app}/e2e/` or `apps/{app}-e2e/`, NOT in this directory. The `e2e/` directory is exclusively for full-stack integration tests that require real backend services.
 
 ---
 
@@ -22,10 +31,12 @@ This directory contains three types of tests:
 
 ### Test Selection
 
-- **Adding frontend tests?** Use `apps/ecommerce-web/e2e/` (MSW mocks, fast)
-- **Testing service integration?** Use `ecommerce-fullstack/` (real services)
-- **Testing performance/resilience?** Use `k6/`
-- **Mocking external APIs?** Add to `wiremock/mappings/`
+- **Adding frontend tests?** Use `apps/{app}/e2e/` or `apps/{app}-e2e/` (MSW mocks, fast)
+- **Testing service integration?** Use `e2e/{app}-fullstack/` (real services)
+- **Testing performance/resilience?** Use `e2e/k6/`
+- **Mocking external APIs for backend?** Add to `e2e/wiremock/mappings/`
+
+**Never use MSW or mocks in the `e2e/` directory.** All tests here must run against real backend services.
 
 ### WireMock Mappings
 

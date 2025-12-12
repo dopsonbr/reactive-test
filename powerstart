@@ -42,7 +42,7 @@ const ALL_APPS = {
 const SERVICE_GROUPS = {
   'frontend': {
     name: 'Frontend/Web',
-    description: 'ecommerce-web, kiosk-web, home-portal',
+    description: 'ecommerce-web, kiosk-web, home-portal, pos-web, offline-pos, merchant-portal',
     default: true,
   },
   'backends': {
@@ -114,6 +114,9 @@ const ALL_SERVICES = [
   { name: 'ecommerce-web', port: 3001, group: 'frontend', docker: 'ecommerce-web', healthEndpoint: '/' },
   { name: 'kiosk-web', port: 3002, group: 'frontend', docker: null, healthEndpoint: '/' },
   { name: 'home-portal', port: 3003, group: 'frontend', docker: null, healthEndpoint: '/' },
+  { name: 'pos-web', port: 3004, group: 'frontend', docker: null, healthEndpoint: '/' },
+  { name: 'offline-pos', port: 3005, group: 'frontend', docker: 'offline-pos', healthEndpoint: '/api/status' },
+  { name: 'merchant-portal', port: 3010, group: 'frontend', docker: 'merchant-portal', healthEndpoint: '/' },
 ];
 
 // ANSI colors
@@ -652,6 +655,7 @@ async function checkPortConflicts() {
     { port: 3002, service: 'kiosk-web' },
     { port: 3003, service: 'home-portal' },
     { port: 3004, service: 'pos-web' },
+    { port: 3005, service: 'offline-pos' },
     { port: 3010, service: 'merchant-portal' },
   ];
 
@@ -1075,6 +1079,33 @@ async function startFrontend() {
     }
     startedServices.push('pos-web:3004');
   }
+
+  // Start offline-pos (Go app in Docker)
+  if (alreadyRunning.has('offline-pos')) {
+    logSuccess('offline-pos already running');
+    startedServices.push('offline-pos:3005');
+  } else {
+    logStep('Starting offline-pos...');
+    exec('docker compose up -d offline-pos', { cwd: DOCKER_DIR, silent: true, ignoreError: true });
+    logSuccess('offline-pos container started');
+
+    logStep('Waiting for offline-pos to be healthy...');
+    let ready = false;
+    for (let i = 0; i < 60; i++) {
+      if (await isHealthy(3005, '/api/status')) {
+        ready = true;
+        break;
+      }
+      await sleep(2000);
+    }
+
+    if (ready) {
+      logSuccess('offline-pos is ready');
+    } else {
+      logWarning('offline-pos may not be fully ready yet');
+    }
+    startedServices.push('offline-pos:3005');
+  }
 }
 
 // Print summary
@@ -1153,6 +1184,9 @@ function printSummary() {
   console.log(`  ${colors.cyan}kiosk-web${colors.nc}         http://localhost:3002`);
   console.log('                     Self-checkout kiosk application');
   console.log('');
+  console.log(`  ${colors.cyan}offline-pos${colors.nc}       http://localhost:3005`);
+  console.log('                     Offline-capable point of sale');
+  console.log('');
   console.log(`  ${colors.cyan}merchant-portal${colors.nc}   http://localhost:3010`);
   console.log('                     Merchant data management portal');
   console.log('');
@@ -1171,6 +1205,9 @@ function printSummary() {
   console.log(`  ${colors.bold}Home Portal:${colors.nc}     ${colors.cyan}http://localhost:3003${colors.nc}  ${colors.yellow}← Start here!${colors.nc}`);
   console.log(`  E-commerce:      ${colors.cyan}http://localhost:3001${colors.nc}`);
   console.log(`  Kiosk:           ${colors.cyan}http://localhost:3002${colors.nc}`);
+  console.log(`  POS:             ${colors.cyan}http://localhost:3004${colors.nc}`);
+  console.log(`  Offline POS:     ${colors.cyan}http://localhost:3005${colors.nc}`);
+  console.log(`  Merchant:        ${colors.cyan}http://localhost:3010${colors.nc}`);
 }
 
 // Print banner
@@ -1208,7 +1245,7 @@ ${colors.cyan}Starting Services:${colors.nc}
     ${colors.bold}--no-observability${colors.nc}    Start everything except observability
 
   ${colors.cyan}Frontend Apps:${colors.nc}
-    ecommerce-web (:3001), kiosk-web (:3002), home-portal (:3003), pos-web (:3004), merchant-portal (:3010)
+    ecommerce-web (:3001), kiosk-web (:3002), home-portal (:3003), pos-web (:3004), offline-pos (:3005), merchant-portal (:3010)
 
   ${colors.cyan}Managing Services:${colors.nc}
     ${colors.bold}-s, --stop${colors.nc}            Stop all services
@@ -1235,7 +1272,8 @@ ${colors.bold}PROFILES${colors.nc}
   ${colors.cyan}minimal${colors.nc}    Infrastructure only (PostgreSQL, Redis)
 
 ${colors.bold}SERVICE GROUPS${colors.nc}
-  ${colors.cyan}frontend${colors.nc}       ecommerce-web (:3001), kiosk-web (:3002), home-portal (:3003)
+  ${colors.cyan}frontend${colors.nc}       ecommerce-web (:3001), kiosk-web (:3002), home-portal (:3003), pos-web (:3004),
+                 offline-pos (:3005), merchant-portal (:3010)
   ${colors.cyan}backends${colors.nc}       product-service, cart-service, customer-service, discount-service,
                  fulfillment-service, audit-service, checkout-service, order-service,
                  user-service, peripheral-emulator + PostgreSQL, Redis
@@ -1743,6 +1781,12 @@ function printSelectiveSummary(selections) {
     console.log('                     Main e-commerce storefront');
     console.log(`  ${colors.cyan}kiosk-web${colors.nc}         http://localhost:3002`);
     console.log('                     Self-checkout kiosk');
+    console.log(`  ${colors.cyan}pos-web${colors.nc}           http://localhost:3004`);
+    console.log('                     Point of sale');
+    console.log(`  ${colors.cyan}offline-pos${colors.nc}       http://localhost:3005`);
+    console.log('                     Offline-capable point of sale');
+    console.log(`  ${colors.cyan}merchant-portal${colors.nc}   http://localhost:3010`);
+    console.log('                     Merchant data management portal');
     console.log('');
   }
 
@@ -1762,6 +1806,9 @@ function printSelectiveSummary(selections) {
     console.log(`  ${colors.bold}Home Portal:${colors.nc}     ${colors.cyan}http://localhost:3003${colors.nc}  ${colors.yellow}← Start here!${colors.nc}`);
     console.log(`  E-commerce:      ${colors.cyan}http://localhost:3001${colors.nc}`);
     console.log(`  Kiosk:           ${colors.cyan}http://localhost:3002${colors.nc}`);
+    console.log(`  POS:             ${colors.cyan}http://localhost:3004${colors.nc}`);
+    console.log(`  Offline POS:     ${colors.cyan}http://localhost:3005${colors.nc}`);
+    console.log(`  Merchant:        ${colors.cyan}http://localhost:3010${colors.nc}`);
   }
 }
 

@@ -6,30 +6,50 @@ This directory contains all E2E and performance testing assets for the reactive 
 
 | Type | Directory | Speed | Backend Required | When to Run |
 |------|-----------|-------|------------------|-------------|
-| **Mocked E2E** | `apps/ecommerce-web/e2e/` | ~2 min | No (MSW mocks) | Every PR |
-| **Full-Stack E2E** | `e2e/ecommerce-fullstack/` | ~10 min | Yes (Docker) | Main + nightly |
+| **Mocked E2E** | `apps/{app}/e2e/` or `apps/{app}-e2e/` | ~2 min | No (MSW mocks) | Every PR |
+| **Full-Stack E2E** | `e2e/{app}-fullstack/` | ~10 min | Yes (Docker) | Main + nightly |
 | **Performance** | `e2e/k6/` | Variable | Yes (Docker) | On-demand, pre-release |
+
+### Full-Stack E2E Suites
+
+| Suite | Directory | Target App |
+|-------|-----------|------------|
+| E-commerce | `e2e/ecommerce-fullstack/` | ecommerce-web |
+| POS | `e2e/pos-fullstack/` | pos-web |
+| Kiosk | `e2e/kiosk-fullstack/` | kiosk-web |
+| Merchant Portal | `e2e/merchant-portal-fullstack/` | merchant-portal-web |
 
 ## Directory Structure
 
 ```
 e2e/
-├── README.md                 # This file
-├── AGENTS.md                 # AI agent guidance
-├── ecommerce-fullstack/      # Playwright full-stack tests
-│   ├── specs/                # Test specifications
-│   ├── fixtures/             # Seed data
+├── README.md                    # This file
+├── AGENTS.md                    # AI agent guidance
+├── ecommerce-fullstack/         # E-commerce full-stack tests
+│   ├── specs/                   # Test specifications
+│   ├── fixtures/                # Seed data
 │   └── playwright.config.ts
-├── k6/                       # Performance/load tests
-│   ├── load-test.js          # Basic load testing
-│   ├── resilience-test.js    # Multi-phase chaos tests
+├── pos-fullstack/               # POS full-stack tests
+│   ├── specs/                   # Test specifications
+│   ├── fixtures/                # Test helpers and seed data
+│   └── playwright.config.ts
+├── kiosk-fullstack/             # Kiosk full-stack tests
+│   ├── specs/                   # Test specifications
+│   ├── fixtures/                # Test helpers
+│   └── playwright.config.ts
+├── merchant-portal-fullstack/   # Merchant Portal full-stack tests
+├── k6/                          # Performance/load tests
+│   ├── load-test.js             # Basic load testing
+│   ├── resilience-test.js       # Multi-phase chaos tests
 │   ├── circuit-breaker-test.js
-│   └── *.md                  # Test documentation
-├── wiremock/                 # API mock definitions
-│   └── mappings/             # WireMock stub JSON files
-├── data/                     # Generated test data
-├── src/                      # Test utilities
-└── config.json               # Test configuration
+│   └── *.md                     # Test documentation
+├── wiremock/                    # API mock definitions (for backend services)
+│   └── mappings/                # WireMock stub JSON files
+├── data/                        # Generated test data
+├── src/                         # Test utilities
+└── config.json                  # Test configuration
+
+Note: Mocked E2E tests live in apps/{app}/e2e/ or apps/{app}-e2e/, NOT in this directory.
 ```
 
 ---

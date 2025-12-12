@@ -207,26 +207,15 @@ export function useCart() {
           id: cartId,
         });
 
-        if (!result.cart) {
-          // Cart doesn't exist, create a new one
-          const createResult = await graphqlRequest<{ createCart: Cart }>(
-            CREATE_CART_MUTATION,
-            { input: { storeNumber: getStoreNumber() } }
-          );
-          setCartId(createResult.createCart.id);
-          return createResult.createCart;
-        }
-
+        // Return null if cart doesn't exist - addProduct will create it with the correct cartId
+        // Don't auto-create here because createCart generates a server-side ID which would
+        // overwrite the client's cartId and break cart operations
         return result.cart;
       } catch (error) {
-        // If there's a GraphQL error (e.g., cart not found), create a new cart
+        // If cart not found, return null instead of creating a new one
+        // addProduct will handle cart creation with the client's cartId
         if (error instanceof ApiError && error.status === 400) {
-          const createResult = await graphqlRequest<{ createCart: Cart }>(
-            CREATE_CART_MUTATION,
-            { input: { storeNumber: getStoreNumber() } }
-          );
-          setCartId(createResult.createCart.id);
-          return createResult.createCart;
+          return null;
         }
         throw error;
       }

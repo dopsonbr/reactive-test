@@ -11,10 +11,11 @@ import { test, expect, Page } from '../fixtures/test-base';
 test.describe('Cart Subscriptions (Full-Stack)', () => {
   test.beforeEach(async ({ page }) => {
     // Set up session for test isolation with required headers
+    // Only generate new IDs if they don't exist (preserve across navigations within same test)
     await page.addInitScript(() => {
-      const cartId = crypto.randomUUID();
-      const orderId = crypto.randomUUID();
-      const sessionId = crypto.randomUUID();
+      const cartId = sessionStorage.getItem('cartId') || crypto.randomUUID();
+      const orderId = sessionStorage.getItem('orderNumber') || crypto.randomUUID();
+      const sessionId = sessionStorage.getItem('sessionId') || crypto.randomUUID();
       sessionStorage.setItem('cartId', cartId);
       sessionStorage.setItem('userId', 'E2EUSR');
       sessionStorage.setItem('storeNumber', '1');
@@ -29,7 +30,7 @@ test.describe('Cart Subscriptions (Full-Stack)', () => {
 
     // Wait for cart page to load (will show empty cart initially)
     await expect(
-      page.getByText(/your cart/i).or(page.getByText(/empty/i))
+      page.getByRole('heading', { name: /your cart/i, level: 1 })
     ).toBeVisible({ timeout: 10000 });
 
     // Monitor for GraphQL requests
@@ -94,34 +95,27 @@ test.describe('Cart Subscriptions (Full-Stack)', () => {
       .click();
 
     // Wait for the GraphQL mutation
-    await addResponsePromise;
+    const addResponse = await addResponsePromise;
 
-    // Set up cart query listener before navigation
-    const cartQueryResponsePromise = page.waitForResponse((res) =>
-      res.url().includes('/graphql') && res.request().method() === 'POST'
-    );
+    // Verify the add response is valid GraphQL
+    const addResponseBody = await addResponse.json();
+    expect(addResponseBody.data).toBeDefined();
+    expect(addResponseBody.errors).toBeUndefined();
 
     // Navigate to cart page
     await page.getByTestId('cart-link').click();
 
-    // Wait for GraphQL cart query
-    const cartQueryResponse = await cartQueryResponsePromise;
-
-    // Verify the response is valid GraphQL
-    const responseBody = await cartQueryResponse.json();
-    expect(responseBody.data).toBeDefined();
-    expect(responseBody.errors).toBeUndefined();
-
-    // Cart page should show items
+    // Cart page should show items (React Query may use cached data, so just wait for UI)
     await expect(page.locator('[data-testid^="cart-item-"]').first()).toBeVisible({
       timeout: 10000,
     });
   });
 
   test('update quantity uses GraphQL mutation', async ({ page }) => {
-    // Add item first
+    // Add item first - set up response listener before navigation
+    const productResponsePromise = page.waitForResponse('**/products/search**');
     await page.goto('/');
-    await page.waitForResponse('**/products/search**');
+    await productResponsePromise;
     await page.locator('[data-testid^="product-card-"]').first().waitFor();
 
     // Set up response listener before clicking
@@ -137,43 +131,39 @@ test.describe('Cart Subscriptions (Full-Stack)', () => {
 
     await addResponsePromise;
 
-    // Set up cart query listener before navigation
-    const cartQueryPromise = page.waitForResponse((res) =>
-      res.url().includes('/graphql') && res.request().method() === 'POST'
-    );
-
     // Go to cart
     await page.getByTestId('cart-link').click();
 
-    // Wait for cart to load
-    await cartQueryPromise;
-
-    // Wait for cart items to be visible
+    // Wait for cart items to be visible (React Query may use cached data, so don't wait for GraphQL)
     await expect(page.locator('[data-testid^="cart-item-"]').first()).toBeVisible({ timeout: 10000 });
 
-    // Find and click increase button
+    // Find and click increase button - wait for it to be enabled (not just visible)
     const increaseButton = page.getByRole('button', { name: 'Increase quantity' });
-    if (await increaseButton.isVisible({ timeout: 5000 })) {
-      // Set up update listener before clicking
-      const updateResponsePromise = page.waitForResponse((res) =>
-        res.url().includes('/graphql') && res.request().method() === 'POST'
-      );
+    await expect(increaseButton).toBeEnabled({ timeout: 10000 });
 
-      await increaseButton.click();
+    // Set up update listener before clicking
+    // Filter by content-type to avoid catching SSE subscription responses
+    const updateResponsePromise = page.waitForResponse((res) =>
+      res.url().includes('/graphql') &&
+      res.request().method() === 'POST' &&
+      res.headers()['content-type']?.includes('application/json')
+    );
 
-      // Wait for GraphQL mutation
-      const updateResponse = await updateResponsePromise;
+    await increaseButton.click();
 
-      const responseBody = await updateResponse.json();
-      expect(responseBody.data).toBeDefined();
-      expect(responseBody.errors).toBeUndefined();
-    }
+    // Wait for GraphQL mutation
+    const updateResponse = await updateResponsePromise;
+
+    const responseBody = await updateResponse.json();
+    expect(responseBody.data).toBeDefined();
+    expect(responseBody.errors).toBeUndefined();
   });
 
   test('remove item uses GraphQL mutation', async ({ page }) => {
-    // Add item first
+    // Add item first - set up response listener before navigation
+    const productResponsePromise = page.waitForResponse('**/products/search**');
     await page.goto('/');
-    await page.waitForResponse('**/products/search**');
+    await productResponsePromise;
     await page.locator('[data-testid^="product-card-"]').first().waitFor();
 
     // Set up response listener before clicking
@@ -189,37 +179,32 @@ test.describe('Cart Subscriptions (Full-Stack)', () => {
 
     await addResponsePromise;
 
-    // Set up cart query listener before navigation
-    const cartQueryPromise = page.waitForResponse((res) =>
-      res.url().includes('/graphql') && res.request().method() === 'POST'
-    );
-
     // Go to cart
     await page.getByTestId('cart-link').click();
 
-    // Wait for cart to load
-    await cartQueryPromise;
-
-    // Wait for cart item to be visible before trying to remove
+    // Wait for cart item to be visible (React Query may use cached data, so don't wait for GraphQL)
     await expect(page.locator('[data-testid^="cart-item-"]').first()).toBeVisible({ timeout: 10000 });
 
-    // Remove item
+    // Find and click remove button - wait for it to be enabled (not just visible)
     const removeButton = page.getByRole('button', { name: 'Remove' });
-    if (await removeButton.isVisible({ timeout: 5000 })) {
-      // Set up delete listener before clicking
-      const deleteResponsePromise = page.waitForResponse((res) =>
-        res.url().includes('/graphql') && res.request().method() === 'POST'
-      );
+    await expect(removeButton).toBeEnabled({ timeout: 10000 });
 
-      await removeButton.click();
+    // Set up delete listener before clicking
+    // Filter by content-type to avoid catching SSE subscription responses
+    const deleteResponsePromise = page.waitForResponse((res) =>
+      res.url().includes('/graphql') &&
+      res.request().method() === 'POST' &&
+      res.headers()['content-type']?.includes('application/json')
+    );
 
-      // Wait for GraphQL mutation
-      const deleteResponse = await deleteResponsePromise;
+    await removeButton.click();
 
-      const responseBody = await deleteResponse.json();
-      expect(responseBody.data).toBeDefined();
-      // Note: Backend may return errors in some edge cases, we primarily verify GraphQL was called
-    }
+    // Wait for GraphQL mutation
+    const deleteResponse = await deleteResponsePromise;
+
+    const responseBody = await deleteResponse.json();
+    expect(responseBody.data).toBeDefined();
+    // Note: Backend may return errors in some edge cases, we primarily verify GraphQL was called
   });
 
   test('GraphQL error handling shows user feedback', async ({ page }) => {

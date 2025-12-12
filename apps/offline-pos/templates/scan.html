@@ -1,5 +1,5 @@
 {{define "content"}}
-{{if .Cart}}
+{{if gt .CartCount 1}}
 <div class="cart-preview" id="cart-preview">
     <div class="cart-preview-header">
         <strong>Cart ({{.CartCount}} items)</strong>
@@ -48,7 +48,7 @@
 {{define "scripts"}}
 <script type="module">
     import { connectPeripherals, onScan } from '/static/js/peripheral.js';
-    import { addToCart, updateCartCount } from '/static/js/cart.js';
+    import { addToCart, refreshCartPreview } from '/static/js/cart.js';
 
     const searchInput = document.getElementById('search-input');
     const searchForm = document.getElementById('search-form');
@@ -126,7 +126,7 @@
         try {
             await addToCart(upc);
             showFeedback(true, `Added: ${name}`);
-            await updateCartCount();
+            await refreshCartPreview();
             // Clear search after adding
             searchInput.value = '';
             resultsDiv.innerHTML = '';
@@ -144,7 +144,7 @@
         setTimeout(() => el.classList.add('hidden'), 2000);
     }
 
-    // Initialize cart count on load
-    updateCartCount();
+    // Initialize cart preview on load
+    refreshCartPreview();
 </script>
 {{end}}

@@ -204,8 +204,7 @@ public class CheckoutRequestValidator {
     }
   }
 
-  private void validateDeliveryAddress(
-      DeliveryAddress address, List<ValidationError> errors) {
+  private void validateDeliveryAddress(DeliveryAddress address, List<ValidationError> errors) {
     if (address.street1() == null || address.street1().isBlank()) {
       errors.add(new ValidationError("deliveryAddress.street1", "Street address is required"));
     }

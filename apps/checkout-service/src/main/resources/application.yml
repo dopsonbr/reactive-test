@@ -22,6 +22,11 @@ spring:
     password: ${DB_PASSWORD:checkout_pass}
     locations: classpath:db/migration
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   security:
     oauth2:
       # Resource Server (inbound JWT validation from user-service)
@@ -52,6 +57,14 @@ services:
     base-url: ${DISCOUNT_SERVICE_URL:http://localhost:8084}
   fulfillment:
     base-url: ${FULFILLMENT_SERVICE_URL:http://localhost:8085}
+
+# Checkout event publishing configuration
+checkout:
+  events:
+    stream-key: orders:completed
+    source: urn:reactive-platform:checkout-service
+    order-completed-type: org.example.checkout.OrderCompleted
+    publish-timeout: 5s
 
 # Logging
 logging:

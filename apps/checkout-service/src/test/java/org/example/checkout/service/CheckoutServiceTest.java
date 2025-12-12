@@ -2,6 +2,7 @@ package org.example.checkout.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,12 +24,14 @@ import org.example.checkout.client.PaymentGatewayClient;
 import org.example.checkout.client.PaymentGatewayClient.PaymentResponse;
 import org.example.checkout.dto.CompleteCheckoutRequest;
 import org.example.checkout.dto.InitiateCheckoutRequest;
-import org.example.checkout.model.FulfillmentType;
-import org.example.checkout.model.Order;
-import org.example.checkout.model.OrderStatus;
-import org.example.checkout.model.PaymentStatus;
-import org.example.checkout.repository.OrderRepository;
+import org.example.checkout.event.OrderCompletedEventPublisher;
+import org.example.checkout.repository.CheckoutTransactionEntity;
+import org.example.checkout.repository.CheckoutTransactionRepository;
 import org.example.checkout.validation.CartValidator;
+import org.example.model.order.FulfillmentType;
+import org.example.model.order.Order;
+import org.example.model.order.OrderStatus;
+import org.example.model.order.PaymentStatus;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
@@ -42,7 +45,6 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -51,7 +53,8 @@ import reactor.test.StepVerifier;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class CheckoutServiceTest {
 
-  @Mock private OrderRepository orderRepository;
+  @Mock private CheckoutTransactionRepository transactionRepository;
+  @Mock private OrderCompletedEventPublisher eventPublisher;
   @Mock private CartServiceClient cartServiceClient;
   @Mock private DiscountServiceClient discountServiceClient;
   @Mock private FulfillmentServiceClient fulfillmentServiceClient;
@@ -71,7 +74,8 @@ class CheckoutServiceTest {
   void setUp() {
     checkoutService =
         new CheckoutService(
-            orderRepository,
+            transactionRepository,
+            eventPublisher,
             cartServiceClient,
             discountServiceClient,
             fulfillmentServiceClient,
@@ -251,8 +255,10 @@ class CheckoutServiceTest {
       // Set up complete checkout mocks
       when(paymentGatewayClient.processPayment(any()))
           .thenReturn(Mono.just(createSuccessfulPaymentResponse()));
-      when(orderRepository.save(any()))
+      when(transactionRepository.save(any(CheckoutTransactionEntity.class)))
           .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+      when(eventPublisher.publishOrderCompleted(any(Order.class), anyString()))
+          .thenReturn(Mono.just("msg-123"));
 
       // Complete checkout
       CompleteCheckoutRequest completeRequest =
@@ -378,68 +384,9 @@ class CheckoutServiceTest {
     }
   }
 
-  @Nested
-  class GetOrderTests {
-
-    @Test
-    void shouldGetOrderSuccessfully() {
-      // Given
-      UUID orderId = UUID.randomUUID();
-      Order order = createTestOrder(orderId);
-      when(orderRepository.findById(orderId)).thenReturn(Mono.just(order));
-
-      // When/Then
-      StepVerifier.create(checkoutService.getOrder(orderId))
-          .assertNext(
-              response -> {
-                assertThat(response.orderId()).isEqualTo(orderId);
-                assertThat(response.storeNumber()).isEqualTo(STORE_NUMBER);
-                assertThat(response.status()).isEqualTo(OrderStatus.PAID);
-              })
-          .verifyComplete();
-    }
-
-    @Test
-    void shouldFailWhenOrderNotFound() {
-      // Given
-      UUID orderId = UUID.randomUUID();
-      when(orderRepository.findById(orderId)).thenReturn(Mono.empty());
-
-      // When/Then
-      StepVerifier.create(checkoutService.getOrder(orderId))
-          .expectErrorMatches(
-              error ->
-                  error instanceof ResponseStatusException
-                      && ((ResponseStatusException) error).getStatusCode() == HttpStatus.NOT_FOUND)
-          .verify();
-    }
-  }
-
-  @Nested
-  class ListOrdersTests {
-
-    @Test
-    void shouldListOrdersByStore() {
-      // Given
-      Order order1 = createTestOrder(UUID.randomUUID());
-      Order order2 = createTestOrder(UUID.randomUUID());
-      when(orderRepository.findByStoreNumber(STORE_NUMBER)).thenReturn(Flux.just(order1, order2));
-
-      // When/Then
-      StepVerifier.create(checkoutService.listOrdersByStore(STORE_NUMBER))
-          .expectNextCount(2)
-          .verifyComplete();
-    }
-
-    @Test
-    void shouldReturnEmptyFluxWhenNoOrders() {
-      // Given
-      when(orderRepository.findByStoreNumber(STORE_NUMBER)).thenReturn(Flux.empty());
-
-      // When/Then
-      StepVerifier.create(checkoutService.listOrdersByStore(STORE_NUMBER)).verifyComplete();
-    }
-  }
+  // NOTE: GetOrderTests and ListOrdersTests have been removed.
+  // Order query operations are now handled by order-service, which consumes
+  // OrderCompleted events published by checkout-service.
 
   // ==================== Test Data Helpers ====================
 
@@ -531,29 +478,6 @@ class CheckoutServiceTest {
 
   private PaymentResponse createFailedPaymentResponse() {
     return new PaymentResponse(false, null, "Insufficient funds", BigDecimal.ZERO);
-  }
-
-  private Order createTestOrder(UUID orderId) {
-    return Order.builder()
-        .id(orderId)
-        .storeNumber(STORE_NUMBER)
-        .orderNumber("ORD-TEST123")
-        .customerId("customer-1")
-        .fulfillmentType(FulfillmentType.IMMEDIATE)
-        .status(OrderStatus.PAID)
-        .paymentStatus(PaymentStatus.COMPLETED)
-        .paymentMethod("CASH")
-        .paymentReference("PAY-TEST123")
-        .subtotal(new BigDecimal("50.00"))
-        .discountTotal(BigDecimal.ZERO)
-        .taxTotal(new BigDecimal("4.00"))
-        .fulfillmentCost(BigDecimal.ZERO)
-        .grandTotal(new BigDecimal("54.00"))
-        .lineItems(List.of())
-        .appliedDiscounts(List.of())
-        .createdAt(Instant.now())
-        .updatedAt(Instant.now())
-        .build();
   }
 
   private RequestMetadata createMetadata() {

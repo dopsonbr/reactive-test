@@ -14,11 +14,11 @@ import org.example.checkout.dto.CheckoutSummaryResponse;
 import org.example.checkout.dto.CompleteCheckoutRequest;
 import org.example.checkout.dto.InitiateCheckoutRequest;
 import org.example.checkout.dto.OrderResponse;
-import org.example.checkout.model.FulfillmentType;
-import org.example.checkout.model.OrderStatus;
-import org.example.checkout.model.PaymentStatus;
 import org.example.checkout.service.CheckoutService;
 import org.example.checkout.validation.CheckoutRequestValidator;
+import org.example.model.order.FulfillmentType;
+import org.example.model.order.OrderStatus;
+import org.example.model.order.PaymentStatus;
 import org.example.platform.test.SecurityTestUtils;
 import org.example.platform.test.TestSecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +29,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /** Security tests for CheckoutController. Verifies OAuth2 authentication and authorization. */
@@ -39,8 +38,8 @@ import reactor.core.publisher.Mono;
 class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
 
   private static final String VALID_CART_ID = "550e8400-e29b-41d4-a716-446655440000";
-  private static final String VALID_ORDER_ID = "660e8400-e29b-41d4-a716-446655440000";
   private static final String CHECKOUT_SESSION_ID = "770e8400-e29b-41d4-a716-446655440000";
+  private static final String TEST_ORDER_ID = "660e8400-e29b-41d4-a716-446655440000";
   private static final String ORDER_NUMBER = "880e8400-e29b-41d4-a716-446655440000";
   private static final String SESSION_ID = "990e8400-e29b-41d4-a716-446655440000";
   private static final String USER_ID = "user01";
@@ -52,6 +51,12 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
 
   @MockitoBean private CheckoutService checkoutService;
   @MockitoBean private CheckoutRequestValidator validator;
+
+  @MockitoBean
+  private org.example.checkout.repository.CheckoutTransactionRepository transactionRepository;
+
+  @MockitoBean private org.example.checkout.event.OrderCompletedEventPublisher eventPublisher;
+  @MockitoBean private org.example.platform.events.CloudEventPublisher cloudEventPublisher;
 
   private CheckoutSummaryResponse testCheckoutSummary;
   private OrderResponse testOrderResponse;
@@ -80,7 +85,7 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
 
     testOrderResponse =
         new OrderResponse(
-            UUID.fromString(VALID_ORDER_ID),
+            UUID.fromString(TEST_ORDER_ID),
             "ORD-123",
             STORE_NUMBER,
             "customer-1",
@@ -106,45 +111,10 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
         .thenReturn(Mono.empty());
     when(validator.validateCompleteCheckout(any(), anyInt(), anyString(), anyString(), anyString()))
         .thenReturn(Mono.empty());
-    when(validator.validateGetOrder(anyString(), anyInt(), anyString(), anyString(), anyString()))
-        .thenReturn(Mono.empty());
-    when(validator.validateListOrders(anyInt(), anyInt(), anyString(), anyString(), anyString()))
-        .thenReturn(Mono.empty());
   }
 
   @Nested
   class AuthenticationTests {
-
-    @Test
-    void shouldReturn401WhenNoToken() {
-      webTestClient
-          .get()
-          .uri("/orders/" + VALID_ORDER_ID)
-          .header("x-store-number", String.valueOf(STORE_NUMBER))
-          .header("x-order-number", ORDER_NUMBER)
-          .header("x-userid", USER_ID)
-          .header("x-sessionid", SESSION_ID)
-          .exchange()
-          .expectStatus()
-          .isUnauthorized();
-    }
-
-    @Test
-    void shouldReturn401WhenTokenExpired() {
-      String expiredToken = SecurityTestUtils.expiredToken();
-
-      webTestClient
-          .get()
-          .uri("/orders/" + VALID_ORDER_ID)
-          .header("Authorization", SecurityTestUtils.bearerAuth(expiredToken))
-          .header("x-store-number", String.valueOf(STORE_NUMBER))
-          .header("x-order-number", ORDER_NUMBER)
-          .header("x-userid", USER_ID)
-          .header("x-sessionid", SESSION_ID)
-          .exchange()
-          .expectStatus()
-          .isUnauthorized();
-    }
 
     @Test
     void shouldReturn401ForInitiateWithoutToken() {
@@ -162,92 +132,48 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
           .expectStatus()
           .isUnauthorized();
     }
-  }
-
-  @Nested
-  class ReadAuthorizationTests {
 
     @Test
-    void shouldReturn403WhenMissingScopeForGetOrder() {
-      String tokenWithWrongScope = SecurityTestUtils.validToken("other:read");
-
+    void shouldReturn401ForCompleteWithoutToken() {
       webTestClient
-          .get()
-          .uri("/orders/" + VALID_ORDER_ID)
-          .header("Authorization", SecurityTestUtils.bearerAuth(tokenWithWrongScope))
+          .post()
+          .uri("/checkout/complete")
           .header("x-store-number", String.valueOf(STORE_NUMBER))
           .header("x-order-number", ORDER_NUMBER)
           .header("x-userid", USER_ID)
           .header("x-sessionid", SESSION_ID)
+          .header("Content-Type", "application/json")
+          .bodyValue(new CompleteCheckoutRequest(CHECKOUT_SESSION_ID, "CASH", null))
           .exchange()
           .expectStatus()
-          .isForbidden();
+          .isUnauthorized();
     }
 
     @Test
-    void shouldReturn200ForGetOrderWithValidScope() {
-      when(checkoutService.getOrder(UUID.fromString(VALID_ORDER_ID)))
-          .thenReturn(Mono.just(testOrderResponse));
-
-      String validToken = SecurityTestUtils.validToken("checkout:read");
+    void shouldReturn401WhenTokenExpired() {
+      String expiredToken = SecurityTestUtils.expiredToken();
 
       webTestClient
-          .get()
-          .uri("/orders/" + VALID_ORDER_ID)
-          .header("Authorization", SecurityTestUtils.bearerAuth(validToken))
+          .post()
+          .uri("/checkout/initiate")
+          .header("Authorization", SecurityTestUtils.bearerAuth(expiredToken))
           .header("x-store-number", String.valueOf(STORE_NUMBER))
           .header("x-order-number", ORDER_NUMBER)
           .header("x-userid", USER_ID)
           .header("x-sessionid", SESSION_ID)
+          .header("Content-Type", "application/json")
+          .bodyValue(
+              new InitiateCheckoutRequest(
+                  VALID_CART_ID, FulfillmentType.IMMEDIATE, null, null, null))
           .exchange()
           .expectStatus()
-          .isOk()
-          .expectBody()
-          .jsonPath("$.orderId")
-          .isEqualTo(VALID_ORDER_ID);
-    }
-
-    @Test
-    void shouldReturn200ForListOrdersWithValidScope() {
-      when(checkoutService.listOrdersByStore(STORE_NUMBER))
-          .thenReturn(Flux.just(testOrderResponse));
-
-      String validToken = SecurityTestUtils.validToken("checkout:read");
-
-      webTestClient
-          .get()
-          .uri(
-              uriBuilder ->
-                  uriBuilder.path("/orders").queryParam("storeNumber", STORE_NUMBER).build())
-          .header("Authorization", SecurityTestUtils.bearerAuth(validToken))
-          .header("x-store-number", String.valueOf(STORE_NUMBER))
-          .header("x-order-number", ORDER_NUMBER)
-          .header("x-userid", USER_ID)
-          .header("x-sessionid", SESSION_ID)
-          .exchange()
-          .expectStatus()
-          .isOk();
-    }
-
-    @Test
-    void shouldReturn403ForListOrdersWithWrongScope() {
-      String tokenWithWrongScope = SecurityTestUtils.validToken("checkout:write");
-
-      webTestClient
-          .get()
-          .uri(
-              uriBuilder ->
-                  uriBuilder.path("/orders").queryParam("storeNumber", STORE_NUMBER).build())
-          .header("Authorization", SecurityTestUtils.bearerAuth(tokenWithWrongScope))
-          .header("x-store-number", String.valueOf(STORE_NUMBER))
-          .header("x-order-number", ORDER_NUMBER)
-          .header("x-userid", USER_ID)
-          .header("x-sessionid", SESSION_ID)
-          .exchange()
-          .expectStatus()
-          .isForbidden();
+          .isUnauthorized();
     }
   }
+
+  // NOTE: ReadAuthorizationTests for order endpoints have been removed.
+  // Order query operations are now handled by order-service, which consumes
+  // OrderCompleted events published by checkout-service.
 
   @Nested
   class WriteAuthorizationTests {
@@ -341,7 +267,7 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
           .isCreated()
           .expectBody()
           .jsonPath("$.orderId")
-          .isEqualTo(VALID_ORDER_ID);
+          .isEqualTo(TEST_ORDER_ID);
     }
 
     @Test
@@ -373,17 +299,21 @@ class CheckoutControllerSecurityTest extends AbstractIntegrationTest {
   class NoScopeTests {
 
     @Test
-    void shouldReturn403WhenNoScopes() {
+    void shouldReturn403WhenNoScopesForInitiate() {
       String noScopesToken = SecurityTestUtils.noScopesToken();
 
       webTestClient
-          .get()
-          .uri("/orders/" + VALID_ORDER_ID)
+          .post()
+          .uri("/checkout/initiate")
           .header("Authorization", SecurityTestUtils.bearerAuth(noScopesToken))
           .header("x-store-number", String.valueOf(STORE_NUMBER))
           .header("x-order-number", ORDER_NUMBER)
           .header("x-userid", USER_ID)
           .header("x-sessionid", SESSION_ID)
+          .header("Content-Type", "application/json")
+          .bodyValue(
+              new InitiateCheckoutRequest(
+                  VALID_CART_ID, FulfillmentType.IMMEDIATE, null, null, null))
           .exchange()
           .expectStatus()
           .isForbidden();

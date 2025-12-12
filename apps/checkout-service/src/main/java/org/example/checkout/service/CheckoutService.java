@@ -22,6 +22,11 @@ import org.example.checkout.dto.CheckoutSummaryResponse;
 import org.example.checkout.dto.CompleteCheckoutRequest;
 import org.example.checkout.dto.InitiateCheckoutRequest;
 import org.example.checkout.dto.OrderResponse;
+import org.example.checkout.event.OrderCompletedEventPublisher;
+import org.example.checkout.model.CheckoutTransactionStatus;
+import org.example.checkout.repository.CheckoutTransactionEntity;
+import org.example.checkout.repository.CheckoutTransactionRepository;
+import org.example.checkout.validation.CartValidator;
 import org.example.model.order.AppliedDiscount;
 import org.example.model.order.CustomerSnapshot;
 import org.example.model.order.FulfillmentDetails;
@@ -30,15 +35,12 @@ import org.example.model.order.Order;
 import org.example.model.order.OrderLineItem;
 import org.example.model.order.OrderStatus;
 import org.example.model.order.PaymentStatus;
-import org.example.checkout.repository.OrderRepository;
-import org.example.checkout.validation.CartValidator;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /** Service for managing checkout operations. */
@@ -48,7 +50,8 @@ public class CheckoutService {
   private static final String LOGGER_NAME = "checkoutservice";
   private static final int SESSION_EXPIRY_MINUTES = 15;
 
-  private final OrderRepository orderRepository;
+  private final CheckoutTransactionRepository transactionRepository;
+  private final OrderCompletedEventPublisher eventPublisher;
   private final CartServiceClient cartServiceClient;
   private final DiscountServiceClient discountServiceClient;
   private final FulfillmentServiceClient fulfillmentServiceClient;
@@ -61,14 +64,16 @@ public class CheckoutService {
       new ConcurrentHashMap<>();
 
   public CheckoutService(
-      OrderRepository orderRepository,
+      CheckoutTransactionRepository transactionRepository,
+      OrderCompletedEventPublisher eventPublisher,
       CartServiceClient cartServiceClient,
       DiscountServiceClient discountServiceClient,
       FulfillmentServiceClient fulfillmentServiceClient,
       PaymentGatewayClient paymentGatewayClient,
       CartValidator cartValidator,
       StructuredLogger structuredLogger) {
-    this.orderRepository = orderRepository;
+    this.transactionRepository = transactionRepository;
+    this.eventPublisher = eventPublisher;
     this.cartServiceClient = cartServiceClient;
     this.discountServiceClient = discountServiceClient;
     this.fulfillmentServiceClient = fulfillmentServiceClient;
@@ -178,30 +183,6 @@ public class CheckoutService {
               // Step 5: Return order response
               .map(OrderResponse::fromOrder);
         });
-  }
-
-  /**
-   * Get an order by ID.
-   *
-   * @param orderId the order ID
-   * @return the order
-   */
-  public Mono<OrderResponse> getOrder(UUID orderId) {
-    return orderRepository
-        .findById(orderId)
-        .map(OrderResponse::fromOrder)
-        .switchIfEmpty(
-            Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")));
-  }
-
-  /**
-   * List orders for a store.
-   *
-   * @param storeNumber the store number
-   * @return list of orders
-   */
-  public Flux<OrderResponse> listOrdersByStore(int storeNumber) {
-    return orderRepository.findByStoreNumber(storeNumber).map(OrderResponse::fromOrder);
   }
 
   // ==================== Helper Methods ====================
@@ -472,10 +453,56 @@ public class CheckoutService {
             .sessionId(userSessionId)
             .build();
 
+    // Create checkout transaction log entry
+    CheckoutTransactionEntity transaction = new CheckoutTransactionEntity();
+    transaction.setId(UUID.randomUUID());
+    transaction.setCheckoutSessionId(session.sessionId());
+    transaction.setCartId(session.cartId());
+    transaction.setStoreNumber(session.storeNumber());
+    transaction.setOrderId(order.id());
+    transaction.setStatus(CheckoutTransactionStatus.COMPLETED);
+    transaction.setGrandTotal(session.grandTotal());
+    transaction.setItemCount(session.lineItems().size());
+    transaction.setPaymentMethod(paymentMethod);
+    transaction.setPaymentReference(paymentReference);
+    transaction.setEventPublished(false);
+    transaction.setEventPublishAttempts(0);
+    transaction.setInitiatedAt(now);
+    transaction.setCompletedAt(now);
+    transaction.setCreatedAt(now);
+    transaction.setUpdatedAt(now);
+
     // Remove checkout session after successful order creation
     checkoutSessions.remove(session.sessionId());
 
-    return orderRepository.save(order);
+    // Save transaction, publish event, then update transaction with publish status
+    return transactionRepository
+        .save(transaction)
+        .flatMap(
+            savedTransaction ->
+                eventPublisher
+                    .publishOrderCompleted(order, session.sessionId())
+                    .flatMap(
+                        messageId -> {
+                          // Mark event as published
+                          savedTransaction.setEventPublished(true);
+                          savedTransaction.setLastPublishAttempt(Instant.now());
+                          savedTransaction.setUpdatedAt(Instant.now());
+                          return transactionRepository.save(savedTransaction);
+                        })
+                    .onErrorResume(
+                        e -> {
+                          // Log publish failure but don't fail the checkout
+                          // A retry mechanism will pick this up later
+                          savedTransaction.setEventPublishAttempts(
+                              savedTransaction.getEventPublishAttempts() + 1);
+                          savedTransaction.setLastPublishAttempt(Instant.now());
+                          savedTransaction.setFailureReason(
+                              "Event publish failed: " + e.getMessage());
+                          savedTransaction.setUpdatedAt(Instant.now());
+                          return transactionRepository.save(savedTransaction);
+                        }))
+        .thenReturn(order);
   }
 
   private Mono<Void> markCartCompleted(Order order) {

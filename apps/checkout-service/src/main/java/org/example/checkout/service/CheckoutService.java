@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.example.checkout.client.CartServiceClient;
 import org.example.checkout.client.CartServiceClient.CartDetails;
@@ -24,6 +23,7 @@ import org.example.checkout.dto.InitiateCheckoutRequest;
 import org.example.checkout.dto.OrderResponse;
 import org.example.checkout.event.OrderCompletedEventPublisher;
 import org.example.checkout.model.CheckoutTransactionStatus;
+import org.example.checkout.repository.CheckoutSessionRepository;
 import org.example.checkout.repository.CheckoutTransactionEntity;
 import org.example.checkout.repository.CheckoutTransactionRepository;
 import org.example.checkout.validation.CartValidator;
@@ -51,6 +51,7 @@ public class CheckoutService {
   private static final int SESSION_EXPIRY_MINUTES = 15;
 
   private final CheckoutTransactionRepository transactionRepository;
+  private final CheckoutSessionRepository sessionRepository;
   private final OrderCompletedEventPublisher eventPublisher;
   private final CartServiceClient cartServiceClient;
   private final DiscountServiceClient discountServiceClient;
@@ -59,12 +60,9 @@ public class CheckoutService {
   private final CartValidator cartValidator;
   private final StructuredLogger structuredLogger;
 
-  // In-memory checkout session store (would use Redis in production)
-  private final ConcurrentHashMap<String, CheckoutSession> checkoutSessions =
-      new ConcurrentHashMap<>();
-
   public CheckoutService(
       CheckoutTransactionRepository transactionRepository,
+      CheckoutSessionRepository sessionRepository,
       OrderCompletedEventPublisher eventPublisher,
       CartServiceClient cartServiceClient,
       DiscountServiceClient discountServiceClient,
@@ -73,6 +71,7 @@ public class CheckoutService {
       CartValidator cartValidator,
       StructuredLogger structuredLogger) {
     this.transactionRepository = transactionRepository;
+    this.sessionRepository = sessionRepository;
     this.eventPublisher = eventPublisher;
     this.cartServiceClient = cartServiceClient;
     this.discountServiceClient = discountServiceClient;
@@ -316,7 +315,7 @@ public class CheckoutService {
             null, // pickup location set by fulfillment service
             request.instructions());
 
-    // Store session
+    // Store session in Redis
     CheckoutSession session =
         new CheckoutSession(
             sessionId,
@@ -335,34 +334,33 @@ public class CheckoutService {
             cart.totals().grandTotal(),
             expiresAt);
 
-    checkoutSessions.put(sessionId, session);
-
-    return Mono.just(
-        new CheckoutSummaryResponse(
-            sessionId,
-            cart.id(),
-            orderNumber,
-            storeNumber,
-            customerSnapshot,
-            lineItems,
-            appliedDiscounts,
-            fulfillmentDetails,
-            reservationId,
-            cart.totals().subtotal(),
-            cart.totals().discountTotal(),
-            cart.totals().taxTotal(),
-            cart.totals().fulfillmentTotal(),
-            cart.totals().grandTotal(),
-            expiresAt));
+    return sessionRepository
+        .save(session)
+        .thenReturn(
+            new CheckoutSummaryResponse(
+                sessionId,
+                cart.id(),
+                orderNumber,
+                storeNumber,
+                customerSnapshot,
+                lineItems,
+                appliedDiscounts,
+                fulfillmentDetails,
+                reservationId,
+                cart.totals().subtotal(),
+                cart.totals().discountTotal(),
+                cart.totals().taxTotal(),
+                cart.totals().fulfillmentTotal(),
+                cart.totals().grandTotal(),
+                expiresAt));
   }
 
   private Mono<CheckoutSession> getCheckoutSession(String sessionId) {
-    CheckoutSession session = checkoutSessions.get(sessionId);
-    if (session == null) {
-      return Mono.error(
-          new ResponseStatusException(HttpStatus.NOT_FOUND, "Checkout session not found"));
-    }
-    return Mono.just(session);
+    return sessionRepository
+        .findById(sessionId)
+        .switchIfEmpty(
+            Mono.error(
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Checkout session not found")));
   }
 
   private Mono<CheckoutSession> validateSession(CheckoutSession session, int storeNumber) {
@@ -372,9 +370,11 @@ public class CheckoutService {
               HttpStatus.BAD_REQUEST, "Checkout session does not belong to this store"));
     }
     if (session.expiresAt().isBefore(Instant.now())) {
-      checkoutSessions.remove(session.sessionId());
-      return Mono.error(
-          new ResponseStatusException(HttpStatus.GONE, "Checkout session has expired"));
+      return sessionRepository
+          .deleteById(session.sessionId())
+          .then(
+              Mono.error(
+                  new ResponseStatusException(HttpStatus.GONE, "Checkout session has expired")));
     }
     return Mono.just(session);
   }
@@ -472,10 +472,7 @@ public class CheckoutService {
     transaction.setCreatedAt(now);
     transaction.setUpdatedAt(now);
 
-    // Remove checkout session after successful order creation
-    checkoutSessions.remove(session.sessionId());
-
-    // Save transaction, publish event, then update transaction with publish status
+    // Save transaction, publish event, delete session, then update transaction with publish status
     return transactionRepository
         .save(transaction)
         .flatMap(
@@ -502,6 +499,8 @@ public class CheckoutService {
                           savedTransaction.setUpdatedAt(Instant.now());
                           return transactionRepository.save(savedTransaction);
                         }))
+        // Delete session from Redis after successful completion
+        .then(sessionRepository.deleteById(session.sessionId()))
         .thenReturn(order);
   }
 

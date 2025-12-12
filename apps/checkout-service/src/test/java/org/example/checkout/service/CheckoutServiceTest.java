@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.example.checkout.client.CartServiceClient;
 import org.example.checkout.client.CartServiceClient.CartCustomer;
 import org.example.checkout.client.CartServiceClient.CartDetails;
@@ -25,8 +26,10 @@ import org.example.checkout.client.PaymentGatewayClient.PaymentResponse;
 import org.example.checkout.dto.CompleteCheckoutRequest;
 import org.example.checkout.dto.InitiateCheckoutRequest;
 import org.example.checkout.event.OrderCompletedEventPublisher;
+import org.example.checkout.repository.CheckoutSessionRepository;
 import org.example.checkout.repository.CheckoutTransactionEntity;
 import org.example.checkout.repository.CheckoutTransactionRepository;
+import org.example.checkout.service.CheckoutService.CheckoutSession;
 import org.example.checkout.validation.CartValidator;
 import org.example.model.order.FulfillmentType;
 import org.example.model.order.Order;
@@ -54,6 +57,7 @@ import reactor.test.StepVerifier;
 class CheckoutServiceTest {
 
   @Mock private CheckoutTransactionRepository transactionRepository;
+  @Mock private CheckoutSessionRepository sessionRepository;
   @Mock private OrderCompletedEventPublisher eventPublisher;
   @Mock private CartServiceClient cartServiceClient;
   @Mock private DiscountServiceClient discountServiceClient;
@@ -64,6 +68,10 @@ class CheckoutServiceTest {
 
   private CheckoutService checkoutService;
 
+  // In-memory session store for testing
+  private final ConcurrentHashMap<String, CheckoutSession> testSessionStore =
+      new ConcurrentHashMap<>();
+
   private static final int STORE_NUMBER = 100;
   private static final String CART_ID = "550e8400-e29b-41d4-a716-446655440000";
   private static final String ORDER_NUMBER = "660e8400-e29b-41d4-a716-446655440000";
@@ -72,9 +80,13 @@ class CheckoutServiceTest {
 
   @BeforeEach
   void setUp() {
+    // Clear test session store
+    testSessionStore.clear();
+
     checkoutService =
         new CheckoutService(
             transactionRepository,
+            sessionRepository,
             eventPublisher,
             cartServiceClient,
             discountServiceClient,
@@ -82,6 +94,31 @@ class CheckoutServiceTest {
             paymentGatewayClient,
             cartValidator,
             structuredLogger);
+
+    // Mock session repository to use in-memory store for testing
+    when(sessionRepository.save(any(CheckoutSession.class)))
+        .thenAnswer(
+            invocation -> {
+              CheckoutSession session = invocation.getArgument(0);
+              testSessionStore.put(session.sessionId(), session);
+              return Mono.empty();
+            });
+
+    when(sessionRepository.findById(anyString()))
+        .thenAnswer(
+            invocation -> {
+              String sessionId = invocation.getArgument(0);
+              CheckoutSession session = testSessionStore.get(sessionId);
+              return session != null ? Mono.just(session) : Mono.empty();
+            });
+
+    when(sessionRepository.deleteById(anyString()))
+        .thenAnswer(
+            invocation -> {
+              String sessionId = invocation.getArgument(0);
+              testSessionStore.remove(sessionId);
+              return Mono.empty();
+            });
   }
 
   @Nested

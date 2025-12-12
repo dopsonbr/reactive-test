@@ -59,7 +59,8 @@ vitest.config.*.timestamp*
 
 ### Playwright ###
 **/playwright-report/
-test-results/
+**/test-results/
+e2e/**/results.json
 
 ### Go binaries ###
 apps/peripheral-emulator/peripheral-emulator

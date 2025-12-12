@@ -17,6 +17,7 @@ include("libs:backend:platform:platform-webflux")
 include("libs:backend:platform:platform-security")
 include("libs:backend:platform:platform-test")
 include("libs:backend:platform:platform-audit")
+include("libs:backend:platform:platform-events")
 
 // Shared model libraries
 include("libs:backend:shared-model:shared-model-product")
@@ -24,6 +25,7 @@ include("libs:backend:shared-model:shared-model-customer")
 include("libs:backend:shared-model:shared-model-discount")
 include("libs:backend:shared-model:shared-model-fulfillment")
 include("libs:backend:shared-model:shared-model-payment")
+include("libs:backend:shared-model:shared-model-order")
 
 // Applications
 include("apps:product-service")

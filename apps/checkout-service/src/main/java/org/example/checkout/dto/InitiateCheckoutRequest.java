@@ -1,8 +1,8 @@
 package org.example.checkout.dto;
 
 import java.time.Instant;
-import org.example.checkout.model.DeliveryAddress;
-import org.example.checkout.model.FulfillmentType;
+import org.example.model.order.DeliveryAddress;
+import org.example.model.order.FulfillmentType;
 
 /**
  * Request to initiate checkout process.

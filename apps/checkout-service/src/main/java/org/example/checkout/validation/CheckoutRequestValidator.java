@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.example.checkout.dto.CompleteCheckoutRequest;
 import org.example.checkout.dto.InitiateCheckoutRequest;
-import org.example.checkout.model.FulfillmentType;
+import org.example.model.order.DeliveryAddress;
+import org.example.model.order.FulfillmentType;
 import org.example.platform.error.ValidationException;
 import org.example.platform.error.ValidationException.ValidationError;
 import org.springframework.stereotype.Component;
@@ -203,8 +204,7 @@ public class CheckoutRequestValidator {
     }
   }
 
-  private void validateDeliveryAddress(
-      org.example.checkout.model.DeliveryAddress address, List<ValidationError> errors) {
+  private void validateDeliveryAddress(DeliveryAddress address, List<ValidationError> errors) {
     if (address.street1() == null || address.street1().isBlank()) {
       errors.add(new ValidationError("deliveryAddress.street1", "Street address is required"));
     }

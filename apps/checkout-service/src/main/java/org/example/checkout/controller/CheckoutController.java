@@ -1,6 +1,5 @@
 package org.example.checkout.controller;
 
-import java.util.UUID;
 import org.example.checkout.dto.CheckoutSummaryResponse;
 import org.example.checkout.dto.CompleteCheckoutRequest;
 import org.example.checkout.dto.InitiateCheckoutRequest;
@@ -15,15 +14,11 @@ import org.example.platform.webflux.context.RequestMetadata;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /** Controller for checkout and order operations. */
@@ -102,52 +97,9 @@ public class CheckoutController {
         .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
   }
 
-  /** Get an order by ID. */
-  @GetMapping("/orders/{orderId}")
-  @PreAuthorize("hasAuthority('SCOPE_checkout:read')")
-  public Mono<OrderResponse> getOrder(
-      @PathVariable String orderId,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
-      ServerHttpRequest httpRequest) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
-
-    return Mono.deferContextual(
-            ctx -> {
-              logRequest(ctx, httpRequest);
-              return validator
-                  .validateGetOrder(orderId, storeNumber, orderNumber, userId, sessionId)
-                  .then(checkoutService.getOrder(UUID.fromString(orderId)))
-                  .doOnSuccess(response -> logResponse(ctx, httpRequest, 200, response));
-            })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-  }
-
-  /** List orders by store number. */
-  @GetMapping("/orders")
-  @PreAuthorize("hasAuthority('SCOPE_checkout:read')")
-  public Flux<OrderResponse> listOrders(
-      @RequestParam int storeNumber,
-      @RequestHeader("x-store-number") int headerStoreNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
-      ServerHttpRequest httpRequest) {
-    RequestMetadata metadata =
-        new RequestMetadata(headerStoreNumber, orderNumber, userId, sessionId);
-
-    return Flux.deferContextual(
-            ctx -> {
-              logRequest(ctx, httpRequest);
-              return validator
-                  .validateListOrders(
-                      storeNumber, headerStoreNumber, orderNumber, userId, sessionId)
-                  .thenMany(checkoutService.listOrdersByStore(storeNumber));
-            })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
-  }
+  // NOTE: Order query APIs (/orders, /orders/{orderId}) have been removed.
+  // Order querying is now handled by order-service, which consumes the OrderCompleted events
+  // published by checkout-service.
 
   private void logRequest(reactor.util.context.ContextView ctx, ServerHttpRequest request) {
     RequestLogData requestData =

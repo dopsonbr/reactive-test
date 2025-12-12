@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":libs:backend:shared-model:shared-model-customer"))
     implementation(project(":libs:backend:shared-model:shared-model-discount"))
     implementation(project(":libs:backend:shared-model:shared-model-fulfillment"))
+    implementation(project(":libs:backend:shared-model:shared-model-order"))
 
     // Platform libraries
     implementation(project(":libs:backend:platform:platform-logging"))
@@ -19,12 +20,14 @@ dependencies {
     implementation(project(":libs:backend:platform:platform-error"))
     implementation(project(":libs:backend:platform:platform-webflux"))
     implementation(project(":libs:backend:platform:platform-security"))
+    implementation(project(":libs:backend:platform:platform-events"))
 
     // Spring Boot starters (versions from BOM)
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-webclient")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
 
     // R2DBC PostgreSQL driver
     implementation("org.postgresql:r2dbc-postgresql")

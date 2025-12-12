@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.example.checkout.model.AppliedDiscount;
-import org.example.checkout.model.CustomerSnapshot;
-import org.example.checkout.model.FulfillmentDetails;
-import org.example.checkout.model.OrderLineItem;
+import org.example.model.order.AppliedDiscount;
+import org.example.model.order.CustomerSnapshot;
+import org.example.model.order.FulfillmentDetails;
+import org.example.model.order.OrderLineItem;
 
 /**
  * Response from initiate checkout containing summary for payment.

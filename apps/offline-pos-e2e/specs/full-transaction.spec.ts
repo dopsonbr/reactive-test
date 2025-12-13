@@ -58,30 +58,29 @@ async function login(page: Page) {
 // Helper to search and add product to cart via UI
 async function searchAndAddProduct(page: Page, searchTerm: string, expectedName: string) {
   const searchInput = page.locator('#search-input');
+
+  // Clear any previous search first
+  await searchInput.clear();
   await searchInput.fill(searchTerm);
 
-  // Wait for search results to appear
+  // Wait for search results to appear (300ms debounce + API call time)
   const productCard = page.locator('.product-card', { hasText: expectedName });
-  await expect(productCard).toBeVisible({ timeout: 5000 });
-
-  // Get current cart count before adding
-  const cartCountEl = page.locator('#cart-count');
-  const currentCountText = await cartCountEl.textContent() || '(0)';
-  const currentCount = parseInt(currentCountText.replace(/[()]/g, '')) || 0;
+  await expect(productCard).toBeVisible({ timeout: 10000 });
 
   // Click Add to Cart button on the product card
   const addButton = productCard.locator('.add-btn');
   await addButton.click();
 
   // Wait for feedback to appear (indicating item was added)
-  await expect(page.locator('#scan-feedback')).toBeVisible({ timeout: 2000 });
+  const feedback = page.locator('#scan-feedback');
+  await expect(feedback).toBeVisible({ timeout: 2000 });
+  await expect(feedback).toContainText('Added:', { timeout: 2000 });
 
-  // Wait for cart count to increase (updateCartCount is async)
-  const expectedCount = currentCount + 1;
-  await expect(cartCountEl).toContainText(`(${expectedCount})`, { timeout: 5000 });
+  // Wait for action buttons to update (Edit Cart replaces Cart Empty)
+  await expect(page.locator('a[href="/cart"]')).toContainText('Edit Cart', { timeout: 5000 });
 
-  // Clear search for next product
-  await searchInput.clear();
+  // Wait for feedback to hide and search to clear (done by JS)
+  await expect(searchInput).toHaveValue('', { timeout: 3000 });
 }
 
 test.describe('Offline POS - Login Flow', () => {
@@ -232,15 +231,21 @@ test.describe('Offline POS - Add to Cart via UI', () => {
     await expect(page.locator('.cart-item .qty')).toContainText('2');
   });
 
-  test('should update cart count badge after adding item', async ({ page }) => {
-    // Initially cart count should be 0
-    await expect(page.locator('#cart-count')).toContainText('(0)');
+  test('should update action buttons after adding item', async ({ page }) => {
+    // Initially cart should be empty
+    await expect(page.locator('a[href="/cart"]')).toContainText('Cart Empty');
 
-    // Add an item - helper already verifies cart count updated to (1)
+    // Add an item - helper already verifies action buttons updated
     await searchAndAddProduct(page, 'milk', 'Whole Milk');
 
-    // Add another - cart count should now be (2)
+    // Verify Pay button shows price
+    await expect(page.locator('a[href="/payment"]')).toContainText('Pay $');
+
+    // Add another item
     await searchAndAddProduct(page, 'banana', 'Organic Bananas');
+
+    // Cart preview should show item count when > 1 item
+    await expect(page.locator('.cart-preview-header')).toContainText('2 items');
   });
 });
 
@@ -427,7 +432,7 @@ test.describe('Offline POS - Complete Page UI', () => {
     await expect(page).toHaveURL(/\/scan/);
 
     // Cart should be empty
-    await expect(page.locator('#cart-count')).toContainText('(0)');
+    await expect(page.locator('a[href="/cart"]')).toContainText('Cart Empty');
   });
 
   test('should sign out from complete page', async ({ page }) => {
@@ -505,7 +510,7 @@ test.describe('Offline POS - Full Transaction E2E', () => {
     // STEP 7: Start new transaction and verify cart is cleared
     await page.click('a[href="/scan"]');
     await expect(page).toHaveURL(/\/scan/);
-    await expect(page.locator('#cart-count')).toContainText('(0)');
+    await expect(page.locator('a[href="/cart"]')).toContainText('Cart Empty');
   });
 
   test('complete multiple transactions in sequence', async ({ page }) => {
@@ -518,6 +523,7 @@ test.describe('Offline POS - Full Transaction E2E', () => {
     await page.click('#btn-cash');
     await expect(page).toHaveURL(/\/complete/);
     await page.click('a[href="/scan"]');
+    await expect(page.locator('#search-input')).toBeVisible();
 
     // Transaction 2: Multiple items
     await searchAndAddProduct(page, 'milk', 'Whole Milk');
@@ -529,6 +535,7 @@ test.describe('Offline POS - Full Transaction E2E', () => {
     await page.click('#btn-cash');
     await expect(page).toHaveURL(/\/complete/);
     await page.click('a[href="/scan"]');
+    await expect(page.locator('#search-input')).toBeVisible();
 
     // Transaction 3: Same item multiple times
     for (let i = 0; i < 3; i++) {

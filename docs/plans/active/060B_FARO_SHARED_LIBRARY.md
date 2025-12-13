@@ -1,183 +1,16 @@
-# Frontend Observability with Grafana Faro - Implementation Plan
+# 060B: Faro Shared Library
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **For Claude:** Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Implement full RUM across 4 frontend apps using Grafana Faro with Alloy receiver routing to existing Loki/Tempo/Prometheus.
+**Parent Plan:** [060_FRONTEND_OBSERVABILITY_FARO.md](060_FRONTEND_OBSERVABILITY_FARO.md)
 
-**Architecture:** Faro SDK in each frontend app sends telemetry to Grafana Alloy (new Docker service). Alloy routes logs to Loki, traces to Tempo. Shared library provides consistent initialization and user action tracking across apps.
+**Prerequisite:** [060A_FARO_INFRASTRUCTURE.md](060A_FARO_INFRASTRUCTURE.md)
 
-**Tech Stack:** @grafana/faro-react, @grafana/faro-web-tracing, Grafana Alloy, Vite, React
-
-**Parent Design:** `docs/plans/active/059_FRONTEND_OBSERVABILITY_FARO.md`
+**Goal:** Create a shared Faro library with initialization, logging, and user action tracking that all frontend apps can use.
 
 ---
 
-## Phase 1: Infrastructure
-
-### Task 1.1: Create Alloy Configuration Directory
-
-**Files:**
-- Create: `docker/alloy/config.alloy`
-
-**Step 1: Create the Alloy config file**
-
-```hcl
-// docker/alloy/config.alloy
-// Grafana Alloy configuration for Faro frontend observability
-
-logging {
-  level = "info"
-}
-
-// ============================================================================
-// Faro Receiver - Accepts browser telemetry from frontend apps
-// ============================================================================
-
-faro.receiver "frontend" {
-  server {
-    listen_address = "0.0.0.0"
-    listen_port    = 12347
-
-    cors_allowed_origins = [
-      "http://localhost:*",
-      "http://127.0.0.1:*",
-      "http://localhost:3001",   // ecommerce-web
-      "http://localhost:3002",   // kiosk-web
-      "http://localhost:3004",   // pos-web
-      "http://localhost:3010",   // merchant-portal
-      "http://localhost:4200",   // Vite dev server
-      "http://localhost:5173",   // Vite dev server alt
-    ]
-  }
-
-  output {
-    logs   = [loki.write.default.receiver]
-    traces = [otelcol.exporter.otlp.tempo.input]
-  }
-}
-
-// ============================================================================
-// Loki Writer - Send logs to Loki
-// ============================================================================
-
-loki.write "default" {
-  endpoint {
-    url = "http://loki:3100/loki/api/v1/push"
-  }
-}
-
-// ============================================================================
-// Tempo Exporter - Send traces to Tempo via OTLP
-// ============================================================================
-
-otelcol.exporter.otlp "tempo" {
-  client {
-    endpoint = "tempo:4317"
-    tls {
-      insecure = true
-    }
-  }
-}
-```
-
-**Step 2: Verify file created**
-
-Run: `cat docker/alloy/config.alloy | head -20`
-Expected: Shows logging and faro.receiver configuration
-
-**Step 3: Commit**
-
-```bash
-git add docker/alloy/config.alloy
-git commit -m "chore(docker): add Alloy config for Faro receiver"
-```
-
----
-
-### Task 1.2: Add Alloy Service to Docker Compose
-
-**Files:**
-- Modify: `docker/docker-compose.yml`
-
-**Step 1: Add Alloy service after promtail service**
-
-Find the `promtail:` service block (around line 106-117) and add the following after it:
-
-```yaml
-  alloy:
-    image: grafana/alloy:v1.5.1
-    container_name: alloy
-    command: ["run", "/etc/alloy/config.alloy", "--server.http.listen-addr=0.0.0.0:12345"]
-    volumes:
-      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
-    ports:
-      - "12345:12345"   # Alloy UI
-      - "12347:12347"   # Faro receiver
-    depends_on:
-      loki:
-        condition: service_healthy
-      tempo:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:12345/ready"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-    networks:
-      - observability
-```
-
-**Step 2: Verify docker-compose syntax**
-
-Run: `docker compose -f docker/docker-compose.yml config --quiet && echo "Valid"`
-Expected: `Valid`
-
-**Step 3: Commit**
-
-```bash
-git add docker/docker-compose.yml
-git commit -m "chore(docker): add Grafana Alloy service for frontend observability"
-```
-
----
-
-### Task 1.3: Test Alloy Deployment
-
-**Step 1: Start Alloy with dependencies**
-
-Run: `docker compose -f docker/docker-compose.yml up -d loki tempo alloy`
-Expected: All 3 services start successfully
-
-**Step 2: Verify Alloy is healthy**
-
-Run: `docker compose -f docker/docker-compose.yml ps alloy`
-Expected: Status shows "healthy"
-
-**Step 3: Verify Alloy UI accessible**
-
-Run: `curl -s http://localhost:12345/ready`
-Expected: `Ready`
-
-**Step 4: Test Faro receiver endpoint**
-
-Run:
-```bash
-curl -X POST http://localhost:12347/collect \
-  -H "Content-Type: application/json" \
-  -d '{"logs":[{"message":"test from curl","level":"info","timestamp":"2025-01-01T00:00:00Z"}],"meta":{"app":{"name":"test-app","version":"1.0.0"}}}'
-```
-Expected: HTTP 202 or 204 (accepted)
-
-**Step 5: Verify log reached Loki**
-
-Run: `curl -s 'http://localhost:3100/loki/api/v1/query?query={app="test-app"}' | jq '.data.result'`
-Expected: Array with at least one stream containing "test from curl"
-
----
-
-## Phase 2: Shared Faro Library
-
-### Task 2.1: Generate Library Scaffold
+## Task 1: Generate Library Scaffold
 
 **Step 1: Generate the library using Nx**
 
@@ -201,7 +34,7 @@ git commit -m "chore: scaffold shared-observability/faro library"
 
 ---
 
-### Task 2.2: Add Faro Dependencies
+## Task 2: Add Faro Dependencies
 
 **Files:**
 - Modify: `libs/frontend/shared-observability/faro/package.json`
@@ -228,7 +61,7 @@ git commit -m "chore(faro): add @grafana/faro-* dependencies"
 
 ---
 
-### Task 2.3: Create Configuration Types
+## Task 3: Create Configuration Types
 
 **Files:**
 - Create: `libs/frontend/shared-observability/faro/src/lib/config.ts`
@@ -272,7 +105,7 @@ git commit -m "feat(faro): add FaroConfig types"
 
 ---
 
-### Task 2.4: Write initFaro Tests
+## Task 4: Write initFaro Tests
 
 **Files:**
 - Create: `libs/frontend/shared-observability/faro/src/lib/initFaro.spec.ts`
@@ -380,7 +213,7 @@ git commit -m "test(faro): add initFaro unit tests (red)"
 
 ---
 
-### Task 2.5: Implement initFaro
+## Task 5: Implement initFaro
 
 **Files:**
 - Create: `libs/frontend/shared-observability/faro/src/lib/initFaro.ts`
@@ -469,7 +302,7 @@ git commit -m "feat(faro): implement initFaro initialization (green)"
 
 ---
 
-### Task 2.6: Write Logger Tests
+## Task 6: Write Logger Tests
 
 **Files:**
 - Create: `libs/frontend/shared-observability/faro/src/lib/logger.spec.ts`
@@ -616,7 +449,7 @@ git commit -m "test(faro): add logger unit tests (red)"
 
 ---
 
-### Task 2.7: Implement Logger
+## Task 7: Implement Logger
 
 **Files:**
 - Create: `libs/frontend/shared-observability/faro/src/lib/logger.ts`
@@ -744,7 +577,7 @@ git commit -m "feat(faro): implement FaroLogger (green)"
 
 ---
 
-### Task 2.8: Implement User Action Tracking
+## Task 8: Implement User Action Tracking
 
 **Files:**
 - Create: `libs/frontend/shared-observability/faro/src/lib/userActions.ts`
@@ -900,7 +733,7 @@ git commit -m "feat(faro): add user action tracking helpers"
 
 ---
 
-### Task 2.9: Create Public Exports
+## Task 9: Create Public Exports
 
 **Files:**
 - Modify: `libs/frontend/shared-observability/faro/src/index.ts`
@@ -952,7 +785,7 @@ git commit -m "feat(faro): add public exports"
 
 ---
 
-### Task 2.10: Add Library Documentation
+## Task 10: Add Library Documentation
 
 **Files:**
 - Create: `libs/frontend/shared-observability/faro/README.md`
@@ -1086,392 +919,19 @@ git commit -m "docs(faro): add README and AGENTS.md"
 
 ---
 
-## Phase 3: App Integration
-
-### Task 3.1: Add Faro to ecommerce-web
-
-**Files:**
-- Modify: `apps/ecommerce-web/src/main.tsx`
-- Modify: `apps/ecommerce-web/src/app/providers.tsx`
-
-**Step 1: Update main.tsx to initialize Faro**
-
-Add at the TOP of the file, before any React imports:
-
-```typescript
-// apps/ecommerce-web/src/main.tsx
-import { initFaro } from '@reactive-platform/shared-observability/faro';
-
-// Initialize Faro FIRST to capture early errors
-initFaro({
-  appName: 'ecommerce-web',
-  appVersion: import.meta.env.VITE_APP_VERSION ?? 'dev',
-  collectorUrl: import.meta.env.VITE_FARO_COLLECTOR_URL ?? 'http://localhost:12347/collect',
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8090',
-  enabled: import.meta.env.VITE_FARO_ENABLED !== 'false',
-});
-
-// ... rest of existing imports and code
-```
-
-**Step 2: Update providers.tsx to use FaroErrorBoundary and FaroRoutes**
-
-Replace existing ErrorBoundary with FaroErrorBoundary:
-
-```typescript
-// apps/ecommerce-web/src/app/providers.tsx
-import { FaroErrorBoundary, FaroRoutes } from '@reactive-platform/shared-observability/faro';
-import { ErrorCard } from '@/shared/components/ErrorCard';
-
-export function Providers({ children }: { children: ReactNode }) {
-  return (
-    <FaroErrorBoundary
-      fallback={(error, resetError) => (
-        <div className="container mx-auto p-8">
-          <ErrorCard error={error} onRetry={resetError} />
-        </div>
-      )}
-    >
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <FaroRoutes>
-            {children}
-          </FaroRoutes>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </FaroErrorBoundary>
-  );
-}
-```
-
-**Step 3: Add environment variables to .env files**
-
-Create or update `apps/ecommerce-web/.env.development`:
-
-```bash
-VITE_FARO_ENABLED=true
-VITE_FARO_COLLECTOR_URL=http://localhost:12347/collect
-VITE_APP_VERSION=dev
-VITE_API_BASE_URL=http://localhost:8090
-```
-
-**Step 4: Verify app builds**
-
-Run: `pnpm nx build ecommerce-web`
-Expected: Build succeeds
-
-**Step 5: Commit**
-
-```bash
-git add apps/ecommerce-web/src/main.tsx apps/ecommerce-web/src/app/providers.tsx apps/ecommerce-web/.env.development
-git commit -m "feat(ecommerce-web): integrate Faro observability"
-```
-
----
-
-### Task 3.2: Add Faro to pos-web
-
-**Files:**
-- Modify: `apps/pos-web/src/main.tsx`
-- Modify: `apps/pos-web/src/app/providers.tsx` (or equivalent)
-
-**Step 1: Update main.tsx**
-
-Add at TOP of file:
-
-```typescript
-import { initFaro } from '@reactive-platform/shared-observability/faro';
-
-initFaro({
-  appName: 'pos-web',
-  appVersion: import.meta.env.VITE_APP_VERSION ?? 'dev',
-  collectorUrl: import.meta.env.VITE_FARO_COLLECTOR_URL ?? 'http://localhost:12347/collect',
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8090',
-  enabled: import.meta.env.VITE_FARO_ENABLED !== 'false',
-});
-```
-
-**Step 2: Update providers with FaroErrorBoundary and FaroRoutes**
-
-(Same pattern as ecommerce-web)
-
-**Step 3: Add .env.development**
-
-```bash
-VITE_FARO_ENABLED=true
-VITE_FARO_COLLECTOR_URL=http://localhost:12347/collect
-VITE_APP_VERSION=dev
-VITE_API_BASE_URL=http://localhost:8090
-```
-
-**Step 4: Verify build**
-
-Run: `pnpm nx build pos-web`
-Expected: Build succeeds
-
-**Step 5: Commit**
-
-```bash
-git add apps/pos-web/
-git commit -m "feat(pos-web): integrate Faro observability"
-```
-
----
-
-### Task 3.3: Add Faro to kiosk-web
-
-Follow same pattern as Tasks 3.1-3.2 with `appName: 'kiosk-web'`
-
----
-
-### Task 3.4: Add Faro to merchant-portal
-
-Follow same pattern as Tasks 3.1-3.2 with `appName: 'merchant-portal'`
-
----
-
-### Task 3.5: Update Nginx Configs for Docker Builds
-
-**Files:**
-- Modify: `docker/nginx-frontend.conf` (or per-app nginx configs)
-
-**Step 1: Add /collect proxy location**
-
-Add to each frontend nginx config:
-
-```nginx
-# Proxy Faro collector requests to Alloy
-location /collect {
-    proxy_pass http://alloy:12347/collect;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
-```
-
-**Step 2: Commit**
-
-```bash
-git add docker/nginx-*.conf
-git commit -m "chore(docker): add Faro collector proxy to nginx configs"
-```
-
----
-
-## Phase 4: Key Flow Instrumentation
-
-### Task 4.1: Instrument ecommerce-web Cart Flow
-
-**Files:**
-- Modify cart-related components to add tracking
-
-**Step 1: Add tracking to add-to-cart**
-
-Find the add-to-cart handler and add:
-
-```typescript
-import { trackAction } from '@reactive-platform/shared-observability/faro';
-
-const handleAddToCart = async (product: Product, quantity: number) => {
-  trackAction.cartAdd(product.sku, quantity, product.price);
-  // ... existing logic
-};
-```
-
-**Step 2: Add tracking to checkout flow**
-
-```typescript
-// On checkout start
-trackAction.checkoutStart(cartId, items.length, total);
-
-// On checkout complete
-trackAction.checkoutComplete(orderId, total, items.length);
-
-// On checkout failure
-trackAction.checkoutFail(cartId, error.message, currentStep);
-```
-
-**Step 3: Commit**
-
-```bash
-git add apps/ecommerce-web/src/features/
-git commit -m "feat(ecommerce-web): add user action tracking to cart/checkout"
-```
-
----
-
-### Task 4.2: Instrument pos-web Transaction Flow
-
-**Step 1: Add tracking to scan/void/tender flows**
-
-```typescript
-import { trackAction } from '@reactive-platform/shared-observability/faro';
-
-// On item scan
-trackAction.scanItem(sku, price, 'barcode');
-
-// On item void
-trackAction.voidItem(sku, reason);
-
-// On tender start
-trackAction.tenderStart(transactionId, total);
-
-// On tender complete
-trackAction.tenderComplete(transactionId, paymentMethod, amount);
-```
-
-**Step 2: Commit**
-
-```bash
-git add apps/pos-web/src/features/
-git commit -m "feat(pos-web): add user action tracking to transaction flow"
-```
-
----
-
-### Task 4.3: Instrument merchant-portal CRUD Flows
-
-```typescript
-import { trackAction } from '@reactive-platform/shared-observability/faro';
-
-// On product create
-trackAction.productCreate(sku);
-
-// On product update
-trackAction.productUpdate(sku, Object.keys(changedFields));
-
-// On inventory adjust
-trackAction.inventoryAdjust(sku, delta, newQuantity);
-```
-
----
-
-## Phase 5: Dashboards
-
-### Task 5.1: Create Frontend Health Dashboard
-
-**Files:**
-- Create: `docker/grafana/provisioning/dashboards/frontend-health.json`
-
-**Step 1: Create dashboard JSON**
-
-(Dashboard JSON would be extensive - create with Grafana UI and export, or use template)
-
-Key panels:
-- Error rate by app (Loki query)
-- Web Vitals gauges (Prometheus)
-- Active sessions (Prometheus)
-- Top errors table (Loki)
-
-**Step 2: Commit**
-
-```bash
-git add docker/grafana/provisioning/dashboards/frontend-health.json
-git commit -m "feat(grafana): add frontend health dashboard"
-```
-
----
-
-### Task 5.2: Create User Journey Dashboard
-
-**Files:**
-- Create: `docker/grafana/provisioning/dashboards/user-journey.json`
-
-Key panels:
-- Session timeline
-- Distributed trace view
-- Checkout funnel
-- Error context
-
----
-
-## Phase 6: Cleanup
-
-### Task 6.1: Migrate Existing Logger
-
-**Files:**
-- Modify: `apps/ecommerce-web/src/shared/utils/logger.ts`
-
-**Step 1: Re-export from shared lib**
-
-```typescript
-// apps/ecommerce-web/src/shared/utils/logger.ts
-// Re-export from shared library for backwards compatibility
-export { logger } from '@reactive-platform/shared-observability/faro';
-```
-
-**Step 2: Commit**
-
-```bash
-git add apps/ecommerce-web/src/shared/utils/logger.ts
-git commit -m "refactor(ecommerce-web): migrate logger to shared Faro lib"
-```
-
----
-
-### Task 6.2: Remove Redundant Vitals
-
-**Files:**
-- Delete: `apps/ecommerce-web/src/shared/utils/vitals.ts`
-- Modify: any files importing vitals.ts
-
-**Step 1: Remove vitals.ts and update imports**
-
-Faro automatically captures Web Vitals, so manual initialization is no longer needed.
-
-**Step 2: Commit**
-
-```bash
-git rm apps/ecommerce-web/src/shared/utils/vitals.ts
-git add -u
-git commit -m "refactor(ecommerce-web): remove vitals.ts (Faro handles Web Vitals)"
-```
-
----
-
-## Verification
-
-### Final Integration Test
-
-**Step 1: Start full stack**
-
-```bash
-docker compose -f docker/docker-compose.yml up -d
-```
-
-**Step 2: Open ecommerce-web and trigger events**
-
-1. Open http://localhost:3001
-2. Browse products
-3. Add item to cart
-4. Start checkout
-
-**Step 3: Verify in Grafana**
-
-1. Open http://localhost:3000 (admin/admin)
-2. Go to Explore → Loki
-3. Query: `{app="ecommerce-web"}`
-4. Should see logs from frontend
-
-**Step 4: Verify traces**
-
-1. Go to Explore → Tempo
-2. Search for traces with `service.name = "ecommerce-web"`
-3. Should see frontend spans linked to backend
-
----
-
 ## Summary
 
-| Phase | Tasks | Commits |
-|-------|-------|---------|
-| 1. Infrastructure | 3 | Alloy config, docker-compose, verification |
-| 2. Shared Library | 10 | Config, initFaro, logger, userActions, exports, docs |
-| 3. App Integration | 5 | 4 apps + nginx |
-| 4. Instrumentation | 3 | ecommerce, pos, merchant flows |
-| 5. Dashboards | 2 | Health + Journey dashboards |
-| 6. Cleanup | 2 | Migrate logger, remove vitals |
+| Task | Files | Commit |
+|------|-------|--------|
+| 1 | Library scaffold | scaffold shared-observability/faro |
+| 2 | package.json | add @grafana/faro-* dependencies |
+| 3 | config.ts | FaroConfig types |
+| 4 | initFaro.spec.ts | initFaro tests (red) |
+| 5 | initFaro.ts | initFaro implementation (green) |
+| 6 | logger.spec.ts | logger tests (red) |
+| 7 | logger.ts | FaroLogger implementation (green) |
+| 8 | userActions.ts | user action tracking |
+| 9 | index.ts | public exports |
+| 10 | README.md, AGENTS.md | documentation |
 
-**Total: ~25 tasks**
+**Next:** [060C_FARO_APP_INTEGRATION.md](060C_FARO_APP_INTEGRATION.md)

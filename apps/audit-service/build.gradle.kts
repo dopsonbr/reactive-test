@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":libs:backend:platform:platform-webflux"))
     implementation(project(":libs:backend:platform:platform-security"))
     implementation(project(":libs:backend:platform:platform-audit"))
+    implementation(project(":libs:backend:platform:platform-events"))
 
     // Spring Boot starters (versions from BOM)
     implementation("org.springframework.boot:spring-boot-starter-webflux")

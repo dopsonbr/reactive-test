@@ -18,33 +18,29 @@ class NoOpAuditPublisherTest {
 
   @Test
   void publish_completesSuccessfully() {
-    AuditEvent event = createTestEvent();
+    AuditEventData data = createTestData();
 
-    StepVerifier.create(publisher.publish(event)).verifyComplete();
+    StepVerifier.create(publisher.publish("CART_CREATED", data)).verifyComplete();
   }
 
   @Test
   void publishAndAwait_returnsNoopId() {
-    AuditEvent event = createTestEvent();
+    AuditEventData data = createTestData();
 
-    StepVerifier.create(publisher.publishAndAwait(event))
-        .assertNext(
-            recordId -> {
-              assertThat(recordId).startsWith("noop-");
-              assertThat(recordId).contains(event.eventId());
-            })
+    StepVerifier.create(publisher.publishAndAwait("CART_CREATED", data))
+        .assertNext(recordId -> assertThat(recordId).isEqualTo("noop"))
         .verifyComplete();
   }
 
-  private AuditEvent createTestEvent() {
-    return AuditEvent.create(
-        AuditEventType.CART_CREATED,
-        EntityType.CART,
-        "cart-123",
-        100,
-        "user01",
-        "session-uuid",
-        "trace-uuid",
-        Map.of("test", true));
+  private AuditEventData createTestData() {
+    return AuditEventData.builder()
+        .entityType("CART")
+        .entityId("cart-123")
+        .storeNumber(100)
+        .userId("user01")
+        .sessionId("session-uuid")
+        .traceId("trace-uuid")
+        .payload(Map.of("test", true))
+        .build();
   }
 }

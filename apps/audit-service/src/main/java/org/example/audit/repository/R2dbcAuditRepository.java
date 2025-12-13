@@ -1,9 +1,7 @@
 package org.example.audit.repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.audit.domain.AuditRecord;
 import org.example.audit.domain.TimeRange;
-import org.example.platform.audit.AuditEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -21,40 +19,32 @@ public class R2dbcAuditRepository implements AuditRepository {
   private static final Logger log = LoggerFactory.getLogger(R2dbcAuditRepository.class);
 
   private final R2dbcEntityTemplate template;
-  private final ObjectMapper objectMapper;
 
-  public R2dbcAuditRepository(R2dbcEntityTemplate template, ObjectMapper objectMapper) {
+  public R2dbcAuditRepository(R2dbcEntityTemplate template) {
     this.template = template;
-    this.objectMapper = objectMapper;
   }
 
   @Override
-  public Mono<AuditEvent> save(AuditEvent event) {
-    AuditRecord record = AuditRecord.fromEvent(event, objectMapper);
+  public Mono<AuditRecord> saveRecord(AuditRecord record) {
     return template
         .insert(record)
-        .map(saved -> saved.toEvent(objectMapper))
-        .doOnSuccess(
-            e ->
-                log.debug(
-                    "Saved audit event: eventId={}, eventType={}", e.eventId(), e.eventType()))
+        .doOnSuccess(r -> log.debug("Saved audit record: eventId={}", r.eventId()))
         .doOnError(
             e ->
                 log.error(
-                    "Failed to save audit event: eventId={}, error={}",
-                    event.eventId(),
+                    "Failed to save audit record: eventId={}, error={}",
+                    record.eventId(),
                     e.getMessage()));
   }
 
   @Override
-  public Mono<AuditEvent> findById(String eventId) {
-    return template
-        .selectOne(Query.query(Criteria.where("event_id").is(eventId)), AuditRecord.class)
-        .map(record -> record.toEvent(objectMapper));
+  public Mono<AuditRecord> findByEventId(String eventId) {
+    return template.selectOne(
+        Query.query(Criteria.where("event_id").is(eventId)), AuditRecord.class);
   }
 
   @Override
-  public Flux<AuditEvent> findByEntity(
+  public Flux<AuditRecord> findByEntity(
       String entityType, String entityId, TimeRange timeRange, String eventType, int limit) {
     Criteria criteria = Criteria.where("entity_type").is(entityType).and("entity_id").is(entityId);
 
@@ -63,27 +53,23 @@ public class R2dbcAuditRepository implements AuditRepository {
       criteria = criteria.and("event_type").is(eventType);
     }
 
-    return template
-        .select(
-            Query.query(criteria).sort(Sort.by(Sort.Direction.DESC, "created_at")).limit(limit),
-            AuditRecord.class)
-        .map(record -> record.toEvent(objectMapper));
+    return template.select(
+        Query.query(criteria).sort(Sort.by(Sort.Direction.DESC, "created_at")).limit(limit),
+        AuditRecord.class);
   }
 
   @Override
-  public Flux<AuditEvent> findByUser(String userId, TimeRange timeRange, int limit) {
+  public Flux<AuditRecord> findByUser(String userId, TimeRange timeRange, int limit) {
     Criteria criteria = Criteria.where("user_id").is(userId);
     criteria = addTimeRangeCriteria(criteria, timeRange);
 
-    return template
-        .select(
-            Query.query(criteria).sort(Sort.by(Sort.Direction.DESC, "created_at")).limit(limit),
-            AuditRecord.class)
-        .map(record -> record.toEvent(objectMapper));
+    return template.select(
+        Query.query(criteria).sort(Sort.by(Sort.Direction.DESC, "created_at")).limit(limit),
+        AuditRecord.class);
   }
 
   @Override
-  public Flux<AuditEvent> findByStoreAndEntityType(
+  public Flux<AuditRecord> findByStoreAndEntityType(
       int storeNumber, String entityType, TimeRange timeRange, String eventType, int limit) {
     Criteria criteria =
         Criteria.where("store_number").is(storeNumber).and("entity_type").is(entityType);
@@ -93,11 +79,9 @@ public class R2dbcAuditRepository implements AuditRepository {
       criteria = criteria.and("event_type").is(eventType);
     }
 
-    return template
-        .select(
-            Query.query(criteria).sort(Sort.by(Sort.Direction.DESC, "created_at")).limit(limit),
-            AuditRecord.class)
-        .map(record -> record.toEvent(objectMapper));
+    return template.select(
+        Query.query(criteria).sort(Sort.by(Sort.Direction.DESC, "created_at")).limit(limit),
+        AuditRecord.class);
   }
 
   private Criteria addTimeRangeCriteria(Criteria criteria, TimeRange timeRange) {

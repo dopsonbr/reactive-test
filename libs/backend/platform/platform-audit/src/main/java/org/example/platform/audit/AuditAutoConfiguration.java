@@ -1,8 +1,8 @@
 package org.example.platform.audit;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.net.URI;
+import org.example.platform.events.CloudEventSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -11,30 +11,18 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 
-/** Auto-configuration for audit event publishing. */
+/** Auto-configuration for audit event publishing using CloudEvents format. */
 @AutoConfiguration
 @EnableConfigurationProperties(AuditProperties.class)
 public class AuditAutoConfiguration {
 
   /**
-   * Creates an ObjectMapper configured for audit events if one is not already present.
-   *
-   * @return ObjectMapper with JavaTimeModule and ISO-8601 date formatting
-   */
-  @Bean
-  @ConditionalOnMissingBean(name = "auditObjectMapper")
-  public ObjectMapper auditObjectMapper() {
-    return new ObjectMapper()
-        .registerModule(new JavaTimeModule())
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-  }
-
-  /**
    * Creates the Redis Stream audit publisher when audit is enabled and Redis is available.
    *
    * @param redisTemplate The reactive Redis template
-   * @param objectMapper ObjectMapper for JSON serialization
+   * @param cloudEventSerializer CloudEvents serializer
    * @param properties Audit configuration properties
+   * @param applicationName Application name for CloudEvent source URI
    * @return RedisStreamAuditPublisher instance
    */
   @Bean
@@ -42,9 +30,11 @@ public class AuditAutoConfiguration {
   @ConditionalOnBean(ReactiveRedisTemplate.class)
   public AuditEventPublisher redisStreamAuditPublisher(
       ReactiveRedisTemplate<String, String> redisTemplate,
-      ObjectMapper objectMapper,
-      AuditProperties properties) {
-    return new RedisStreamAuditPublisher(redisTemplate, objectMapper, properties);
+      CloudEventSerializer cloudEventSerializer,
+      AuditProperties properties,
+      @Value("${spring.application.name:unknown}") String applicationName) {
+    URI source = URI.create("/" + applicationName);
+    return new RedisStreamAuditPublisher(redisTemplate, cloudEventSerializer, properties, source);
   }
 
   /**

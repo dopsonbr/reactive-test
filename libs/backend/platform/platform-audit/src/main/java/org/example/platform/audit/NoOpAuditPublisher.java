@@ -14,19 +14,16 @@ public class NoOpAuditPublisher implements AuditEventPublisher {
   private static final Logger log = LoggerFactory.getLogger(NoOpAuditPublisher.class);
 
   @Override
-  public Mono<Void> publish(AuditEvent event) {
+  public Mono<Void> publish(String eventType, AuditEventData data) {
     return Mono.fromRunnable(
         () ->
             log.debug(
-                "Audit event (disabled): eventType={}, entityId={}",
-                event.eventType(),
-                event.entityId()));
+                "Audit event (disabled): eventType={}, entityId={}", eventType, data.entityId()));
   }
 
   @Override
-  public Mono<String> publishAndAwait(AuditEvent event) {
-    log.debug(
-        "Audit event (disabled): eventType={}, entityId={}", event.eventType(), event.entityId());
-    return Mono.just("noop-" + event.eventId());
+  public Mono<String> publishAndAwait(String eventType, AuditEventData data) {
+    log.debug("Audit event (disabled): eventType={}, entityId={}", eventType, data.entityId());
+    return Mono.just("noop");
   }
 }

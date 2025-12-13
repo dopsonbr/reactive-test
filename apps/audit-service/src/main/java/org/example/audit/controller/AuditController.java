@@ -1,10 +1,10 @@
 package org.example.audit.controller;
 
 import java.time.Instant;
+import org.example.audit.domain.AuditRecord;
 import org.example.audit.domain.TimeRange;
 import org.example.audit.service.AuditService;
 import org.example.audit.validation.AuditRequestValidator;
-import org.example.platform.audit.AuditEvent;
 import org.example.platform.error.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,39 +36,39 @@ public class AuditController {
   }
 
   /**
-   * Creates an audit event directly via API.
+   * Creates an audit record directly via API.
    *
-   * <p>Note: The primary ingestion mechanism is via message queue. This endpoint is provided for
+   * <p>Note: The primary ingestion mechanism is via Redis streams. This endpoint is provided for
    * convenience and testing.
    */
   @PostMapping("/events")
   @ResponseStatus(HttpStatus.CREATED)
-  public Mono<AuditEvent> createEvent(@RequestBody AuditEvent event) {
+  public Mono<AuditRecord> createEvent(@RequestBody AuditRecord record) {
     return validator
-        .validateAuditEvent(event)
+        .validateAuditRecord(record)
         .then(
             Mono.defer(
                 () -> {
                   log.info(
-                      "Creating audit event via API: eventType={}, entityId={}",
-                      event.eventType(),
-                      event.entityId());
-                  return auditService.save(event);
+                      "Creating audit record via API: eventType={}, entityId={}",
+                      record.eventType(),
+                      record.entityId());
+                  return auditService.save(record);
                 }));
   }
 
-  /** Gets an audit event by ID. */
+  /** Gets an audit record by event ID. */
   @GetMapping("/events/{eventId}")
-  public Mono<AuditEvent> getEvent(@PathVariable String eventId) {
+  public Mono<AuditRecord> getEvent(@PathVariable String eventId) {
     return validator
         .validateEventId(eventId)
-        .then(auditService.findById(eventId))
-        .switchIfEmpty(Mono.error(new NotFoundException("Audit event not found: " + eventId)));
+        .then(auditService.findByEventId(eventId))
+        .switchIfEmpty(Mono.error(new NotFoundException("Audit record not found: " + eventId)));
   }
 
-  /** Gets audit events for a specific entity. */
+  /** Gets audit records for a specific entity. */
   @GetMapping("/entities/{entityType}/{entityId}/events")
-  public Flux<AuditEvent> getEventsForEntity(
+  public Flux<AuditRecord> getEventsForEntity(
       @PathVariable String entityType,
       @PathVariable String entityId,
       @RequestParam(required = false) Instant startTime,
@@ -81,9 +81,9 @@ public class AuditController {
         .thenMany(auditService.findByEntity(entityType, entityId, timeRange, eventType, limit));
   }
 
-  /** Gets audit events for a specific user. */
+  /** Gets audit records for a specific user. */
   @GetMapping("/users/{userId}/events")
-  public Flux<AuditEvent> getEventsForUser(
+  public Flux<AuditRecord> getEventsForUser(
       @PathVariable String userId,
       @RequestParam(required = false) Instant startTime,
       @RequestParam(required = false) Instant endTime,
@@ -94,9 +94,9 @@ public class AuditController {
         .thenMany(auditService.findByUser(userId, timeRange, limit));
   }
 
-  /** Gets audit events for a specific store and entity type. */
+  /** Gets audit records for a specific store and entity type. */
   @GetMapping("/stores/{storeNumber}/events")
-  public Flux<AuditEvent> getEventsForStore(
+  public Flux<AuditRecord> getEventsForStore(
       @PathVariable int storeNumber,
       @RequestParam String entityType,
       @RequestParam(required = false) Instant startTime,

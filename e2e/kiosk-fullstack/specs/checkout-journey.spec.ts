@@ -59,8 +59,7 @@ test.describe('Kiosk Checkout Journey', () => {
     await expect(page.getByText(/complete|thank you|receipt|order confirmed/i)).toBeVisible({ timeout: 15000 });
   });
 
-  // Skip - cart quantity update API not responding in fullstack mode
-  test.skip('can modify cart quantities before checkout', async ({ page }) => {
+  test('can modify cart quantities before checkout', async ({ page }) => {
     // Start session and add item
     await startSession(page);
     await scanProduct(page, TEST_PRODUCTS.HEADPHONES.sku);
@@ -70,12 +69,15 @@ test.describe('Kiosk Checkout Journey', () => {
     await page.getByRole('button', { name: /review cart/i }).click();
     await expect(page.getByRole('heading', { name: /review your cart/i })).toBeVisible();
 
-    // Modify quantity if controls are available
+    // Wait for cart to load with quantity showing "1"
+    await expect(page.getByRole('status', { name: /quantity: 1/i })).toBeVisible({ timeout: 10000 });
+
+    // Click increase quantity button
     const increaseBtn = page.getByRole('button', { name: /increase quantity/i }).first();
-    if (await increaseBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await increaseBtn.click();
-      // Verify quantity updated (status shows "2") - wait for backend cart update
-      await expect(page.getByRole('status', { name: /quantity/i })).toHaveText('2', { timeout: 10000 });
-    }
+    await expect(increaseBtn).toBeVisible();
+    await increaseBtn.click();
+
+    // Verify quantity updated to "2" - wait for backend cart update
+    await expect(page.getByRole('status', { name: /quantity: 2/i })).toBeVisible({ timeout: 10000 });
   });
 });

@@ -127,7 +127,28 @@ If full fixes take too long, these are acceptable interim solutions:
 
 ## Success Criteria
 
-- [ ] All 4 skipped tests pass
-- [ ] No regressions in existing passing tests
-- [ ] pos-fullstack: 12 passed, 0 skipped
-- [ ] kiosk-fullstack: 4 passed, 0 skipped
+- [x] All 4 skipped tests pass
+- [x] No regressions in existing passing tests
+- [x] pos-fullstack: 12 passed, 0 skipped
+- [x] kiosk-fullstack: 4 passed, 0 skipped
+
+---
+
+## Implementation Complete
+
+### Changes Made
+
+**Issue 1: POS Checkout API (2 tests)**
+- Created `apps/pos-web/src/features/transaction/services/checkoutService.ts` to handle the cart/checkout flow
+- Updated `TransactionProvider.tsx` to use the new checkout service
+- Flow: Create cart → Add items → Initiate checkout → Complete checkout
+
+**Issue 2: Kiosk Cart Quantity Update (1 test)**
+- Fixed `libs/frontend/shared-data/commerce-hooks/src/hooks/useCart.ts`
+- Changed API paths from `/items/` to `/products/` to match cart-service endpoints
+
+**Issue 3: Kiosk Session Cancel (1 test)**
+- Updated test to handle native `confirm()` dialog using Playwright's dialog handler
+- Test now properly accepts the dialog and verifies navigation to welcome screen
+
+All `test.skip` markers have been removed from the tests.

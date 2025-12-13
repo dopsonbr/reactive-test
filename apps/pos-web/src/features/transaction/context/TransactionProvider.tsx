@@ -304,15 +304,16 @@ export function TransactionProvider({ children }: TransactionProviderProps) {
 
   const completeTransaction = useCallback(async (): Promise<TransactionReceipt> => {
     setIsLoading(true);
+    setError(null);
     try {
-      // Create order from completed transaction via API (MSW intercepts)
-      const orderPayload = {
+      // Use real backend services: cart-service + checkout-service
+      const { completeTransaction: completeCheckout } = await import('../services/checkoutService');
+
+      const orderResult = await completeCheckout({
         transactionId: state.id,
         storeNumber: state.storeNumber,
         employeeId: state.employeeId,
-        employeeName: state.employeeName,
         customerId: state.customer?.id,
-        customerName: state.customer ? `${state.customer.firstName} ${state.customer.lastName}` : 'Walk-in Customer',
         items: state.items.map((item) => ({
           sku: item.sku,
           name: item.name,
@@ -334,21 +335,7 @@ export function TransactionProvider({ children }: TransactionProviderProps) {
         taxTotal: state.taxTotal,
         grandTotal: state.grandTotal,
         fulfillmentType: state.fulfillment?.type,
-      };
-
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderPayload),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to create order');
-      }
-
-      const orderResult = await response.json();
 
       // Invalidate orders cache so new order appears in list
       await queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -376,6 +363,11 @@ export function TransactionProvider({ children }: TransactionProviderProps) {
 
       navigate('/transaction/complete');
       return receipt;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to complete transaction';
+      console.error('Transaction completion failed:', err);
+      setError(errorMessage);
+      throw err;
     } finally {
       setIsLoading(false);
     }

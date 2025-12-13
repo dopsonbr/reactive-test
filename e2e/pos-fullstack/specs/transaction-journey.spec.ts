@@ -7,10 +7,11 @@ import { test, expect, TEST_EMPLOYEE, TEST_PRODUCTS } from '../fixtures';
  * It navigates through the transaction flow like a real user:
  * Login -> Add Items -> Checkout -> Fulfillment -> Payment
  *
- * NOTE: Transaction completion (creating the order) is currently mocked in the
- * frontend via /api/orders POST which doesn't match the real checkout-service
- * API (/checkout/complete). The completion step will fail in fullstack mode
- * until the frontend is updated to use the real checkout API.
+ * The frontend uses the real cart-service and checkout-service APIs:
+ * 1. Creates a cart via POST /carts
+ * 2. Adds items via POST /carts/{id}/products
+ * 3. Initiates checkout via POST /checkout/initiate
+ * 4. Completes checkout via POST /checkout/complete
  *
  * Prerequisites:
  * - All backend services must be running (use ./powerstart)
@@ -29,8 +30,7 @@ test.describe('Full-Stack Transaction Journey', () => {
     });
   });
 
-  // Skip until frontend uses real checkout API (POST /checkout/complete)
-  test.skip('complete transaction from login to receipt (real services)', async ({ page }) => {
+  test('complete transaction from login to receipt (real services)', async ({ page }) => {
     // 1. LOGIN
     await page.goto('/');
     await page.getByPlaceholder('Enter your username').fill(TEST_EMPLOYEE.username);
@@ -53,7 +53,7 @@ test.describe('Full-Stack Transaction Journey', () => {
     await expect(page.getByRole('heading', { name: /Cart 1 items/i })).toBeVisible({ timeout: 10000 });
 
     // Add second item
-    await skuInput.fill(TEST_PRODUCTS.SMART_WATCH.sku);
+    await skuInput.fill(TEST_PRODUCTS.SMART_TV.sku);
     await skuInput.press('Enter');
     await expect(page.getByRole('heading', { name: /Cart 2 items/i })).toBeVisible({ timeout: 10000 });
 
@@ -126,8 +126,7 @@ test.describe('Full-Stack Transaction Journey', () => {
     await expect(page.getByText(/headphones/i)).toBeVisible();
   });
 
-  // Skip until frontend uses real checkout API (POST /checkout/complete)
-  test.skip('can start new transaction after completing one', async ({ page }) => {
+  test('can start new transaction after completing one', async ({ page }) => {
     // Login
     await page.goto('/');
     await page.getByPlaceholder('Enter your username').fill(TEST_EMPLOYEE.username);
@@ -138,7 +137,7 @@ test.describe('Full-Stack Transaction Journey', () => {
     // Navigate to transaction and add item using SKU input
     await page.getByRole('link', { name: 'New Transaction' }).click();
     const skuInput = page.getByPlaceholder('Scan or enter SKU...');
-    await skuInput.fill(TEST_PRODUCTS.LAPTOP_STAND.sku);
+    await skuInput.fill(TEST_PRODUCTS.SPEAKER.sku);
     await skuInput.press('Enter');
     await expect(page.getByRole('heading', { name: /Cart 1 items/i })).toBeVisible({ timeout: 10000 });
 

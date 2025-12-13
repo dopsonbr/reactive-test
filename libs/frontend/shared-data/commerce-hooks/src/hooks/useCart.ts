@@ -68,7 +68,7 @@ export function useAddToCart(scope: CartScope) {
 
   return useMutation({
     mutationFn: async (request: AddToCartRequest) => {
-      const url = `${API_BASE}/api/carts/${scope.cartId}/items`;
+      const url = `${API_BASE}/api/carts/${scope.cartId}/products`;
       return apiClient.post<Cart>(url, request, { headers: scope.headers });
     },
     onSuccess: (data) => {
@@ -86,7 +86,7 @@ export function useUpdateCartItem(scope: CartScope) {
 
   return useMutation({
     mutationFn: async ({ sku, quantity }: { sku: string; quantity: number }) => {
-      const url = `${API_BASE}/api/carts/${scope.cartId}/items/${sku}`;
+      const url = `${API_BASE}/api/carts/${scope.cartId}/products/${sku}`;
       const request: UpdateCartItemRequest = { quantity };
       return apiClient.put<Cart>(url, request, { headers: scope.headers });
     },
@@ -105,7 +105,7 @@ export function useRemoveFromCart(scope: CartScope) {
 
   return useMutation({
     mutationFn: async (sku: string) => {
-      const url = `${API_BASE}/api/carts/${scope.cartId}/items/${sku}`;
+      const url = `${API_BASE}/api/carts/${scope.cartId}/products/${sku}`;
       return apiClient.delete<Cart>(url, { headers: scope.headers });
     },
     onSuccess: (data) => {

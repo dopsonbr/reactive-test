@@ -27,23 +27,22 @@ test.describe('Kiosk Session Management', () => {
     await expect(page.getByText(/scan your items/i)).toBeVisible();
   });
 
-  // Skip - session state cleanup after cancel needs investigation
-  test.skip('can cancel session and return to welcome', async ({ page }) => {
+  test('can cancel session and return to welcome', async ({ page }) => {
     await startSession(page);
 
-    // Look for cancel/exit button
-    const cancelBtn = page.getByRole('button', { name: /cancel|exit|end session/i });
-    if (await cancelBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await cancelBtn.click();
+    // Set up handler for native confirm() dialog BEFORE clicking cancel
+    page.on('dialog', async (dialog) => {
+      expect(dialog.type()).toBe('confirm');
+      expect(dialog.message()).toContain('Cancel your transaction');
+      await dialog.accept();
+    });
 
-      // Handle confirmation if present
-      const confirmBtn = page.getByRole('button', { name: /yes|confirm|end/i });
-      if (await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await confirmBtn.click();
-      }
+    // Click cancel button in header
+    const cancelBtn = page.getByRole('button', { name: /cancel/i });
+    await expect(cancelBtn).toBeVisible();
+    await cancelBtn.click();
 
-      // Should return to welcome
-      await expect(page.getByRole('button', { name: /touch to start/i })).toBeVisible({ timeout: 5000 });
-    }
+    // Should return to welcome screen
+    await expect(page.getByRole('button', { name: /touch to start/i })).toBeVisible({ timeout: 5000 });
   });
 });

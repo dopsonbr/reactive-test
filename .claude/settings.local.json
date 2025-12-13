@@ -201,7 +201,8 @@
       "Bash(tee:*)",
       "Bash({} ;)",
       "mcp__nx-mcp__nx_workspace_path",
-      "Bash(pnpm test:*)"
+      "Bash(pnpm test:*)",
+      "Skill(superpowers:dispatching-parallel-agents)"
     ],
     "deny": [],
     "ask": [

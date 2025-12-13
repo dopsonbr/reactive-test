@@ -2,18 +2,18 @@
 
 ## Overview
 
-Order service provides read and update access to sold orders. It shares the `checkoutdb.orders` table with checkout-service but only performs read and update operations (no inserts).
+Order service provides read and update access to sold orders. It owns its own `orderdb.orders` table and receives new orders by consuming `OrderCompleted` CloudEvents from Redis Streams (published by checkout-service).
 
 ## Architecture
 
 ```
 org.example.order
-├── config/           # R2DBC and JSON configuration
+├── config/           # R2DBC, Flyway, and JSON configuration
+├── consumer/         # Redis Streams event consumer
 ├── controller/       # REST endpoints
 ├── dto/              # Request/response DTOs
 ├── graphql/          # GraphQL resolvers
 │   └── input/        # GraphQL input types
-├── model/            # Domain models
 ├── repository/       # Data access layer
 ├── service/          # Business logic
 └── validation/       # Request validation
@@ -76,8 +76,16 @@ Validation collects all errors before failing, using `ValidationException` with 
 
 ## Database
 
-Uses the same PostgreSQL database as checkout-service:
-- Database: `checkoutdb`
+Owns its own PostgreSQL database (local dev shares the same Postgres container):
+- Database: `orderdb`
 - Table: `orders`
-- Connection: R2DBC (reactive)
+- Connection: R2DBC (reactive), JDBC (Flyway migrations)
 - JSONB columns: `line_items`, `applied_discounts`, `fulfillment_details`, `customer_snapshot`
+
+## Event Consumption
+
+Consumes `org.example.checkout.OrderCompleted` CloudEvents from Redis Streams:
+- Stream key: `orders:completed`
+- Consumer group: `order-service`
+- Idempotent inserts via `INSERT ON CONFLICT DO NOTHING`
+- At-least-once delivery with DLQ on permanent failures

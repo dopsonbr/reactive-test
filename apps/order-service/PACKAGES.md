@@ -7,12 +7,12 @@ This document indexes all Java packages in the order-service application.
 | Package | Purpose |
 |---------|---------|
 | [org.example.order](src/main/java/org/example/order/) | Application entry point and Spring Boot bootstrap |
-| [org.example.order.config](src/main/java/org/example/order/config/) | R2DBC configuration and custom JSONB converters |
+| [org.example.order.config](src/main/java/org/example/order/config/) | R2DBC, Flyway, and custom JSONB converters |
+| [org.example.order.consumer](src/main/java/org/example/order/consumer/) | Redis Streams event consumer for OrderCompleted events |
 | [org.example.order.controller](src/main/java/org/example/order/controller/) | REST API endpoints for order operations |
 | [org.example.order.dto](src/main/java/org/example/order/dto/) | Data Transfer Objects for REST API |
 | [org.example.order.graphql](src/main/java/org/example/order/graphql/) | GraphQL query and mutation controllers |
 | [org.example.order.graphql.input](src/main/java/org/example/order/graphql/input/) | GraphQL input types mapped from schema |
-| [org.example.order.model](src/main/java/org/example/order/model/) | Domain models (Order aggregate, enums, value objects) |
 | [org.example.order.repository](src/main/java/org/example/order/repository/) | Reactive R2DBC data access layer |
 | [org.example.order.service](src/main/java/org/example/order/service/) | Business logic and state machine enforcement |
 | [org.example.order.validation](src/main/java/org/example/order/validation/) | REST request validation |
@@ -75,8 +75,8 @@ Both APIs require OAuth2 scopes:
 ### Non-Fail-Fast Validation
 Both `validation` and `graphql.input` packages collect all errors before returning.
 
-### Shared Database
-This service shares the `checkoutdb.orders` table with checkout-service (read-only access).
+### Own Database + Event Consumption
+This service owns its own `orderdb.orders` table and consumes `OrderCompleted` events from checkout-service via Redis Streams.
 
 ## Documentation Files
 

@@ -55,8 +55,6 @@ type FulfillmentDetails {
     deliveryAddress: DeliveryAddress
     pickupLocation: String
     instructions: String
-    trackingNumber: String
-    carrier: String
 }
 
 type DeliveryAddress {
@@ -70,7 +68,7 @@ type DeliveryAddress {
 
 enum OrderStatus {
     CREATED
-    CONFIRMED
+    PAID
     PROCESSING
     SHIPPED
     DELIVERED
@@ -81,9 +79,9 @@ enum OrderStatus {
 enum PaymentStatus {
     PENDING
     AUTHORIZED
-    CAPTURED
-    REFUNDED
+    COMPLETED
     FAILED
+    REFUNDED
 }
 
 enum FulfillmentType {

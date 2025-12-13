@@ -2,9 +2,9 @@ package org.example.order.service;
 
 import java.time.Instant;
 import java.util.UUID;
-import org.example.order.model.FulfillmentDetails;
-import org.example.order.model.Order;
-import org.example.order.model.OrderStatus;
+import org.example.model.order.FulfillmentDetails;
+import org.example.model.order.Order;
+import org.example.model.order.OrderStatus;
 import org.example.order.repository.OrderRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -86,7 +86,7 @@ public class OrderService {
         .flatMap(
             order -> {
               validateStatusTransition(order.status(), newStatus);
-              Order updated = order.withStatus(newStatus);
+              Order updated = OrderMutations.withStatus(order, newStatus);
               return orderRepository.update(updated);
             });
   }
@@ -100,7 +100,7 @@ public class OrderService {
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found: " + orderId)))
         .flatMap(
             order -> {
-              Order updated = order.withFulfillmentDetails(fulfillmentDetails);
+              Order updated = OrderMutations.withFulfillmentDetails(order, fulfillmentDetails);
               return orderRepository.update(updated);
             });
   }
@@ -120,7 +120,7 @@ public class OrderService {
                         HttpStatus.BAD_REQUEST,
                         "Cannot cancel order in status: " + order.status()));
               }
-              Order updated = order.withStatus(OrderStatus.CANCELLED);
+              Order updated = OrderMutations.withStatus(order, OrderStatus.CANCELLED);
               return orderRepository.update(updated);
             });
   }
@@ -131,11 +131,11 @@ public class OrderService {
   }
 
   private void validateStatusTransition(OrderStatus current, OrderStatus next) {
-    // Define valid status transitions
+    // Define valid status transitions based on shared-model-order OrderStatus enum
     boolean valid =
         switch (current) {
-          case CREATED -> next == OrderStatus.CONFIRMED || next == OrderStatus.CANCELLED;
-          case CONFIRMED -> next == OrderStatus.PROCESSING || next == OrderStatus.CANCELLED;
+          case CREATED -> next == OrderStatus.PAID || next == OrderStatus.CANCELLED;
+          case PAID -> next == OrderStatus.PROCESSING || next == OrderStatus.CANCELLED;
           case PROCESSING -> next == OrderStatus.SHIPPED || next == OrderStatus.CANCELLED;
           case SHIPPED -> next == OrderStatus.DELIVERED;
           case DELIVERED -> next == OrderStatus.REFUNDED;
@@ -151,7 +151,7 @@ public class OrderService {
 
   private boolean canCancel(OrderStatus status) {
     return status == OrderStatus.CREATED
-        || status == OrderStatus.CONFIRMED
+        || status == OrderStatus.PAID
         || status == OrderStatus.PROCESSING;
   }
 

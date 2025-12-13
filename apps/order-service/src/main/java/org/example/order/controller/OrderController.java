@@ -2,10 +2,10 @@ package org.example.order.controller;
 
 import java.time.Instant;
 import java.util.UUID;
+import org.example.model.order.Order;
+import org.example.model.order.OrderStatus;
 import org.example.order.dto.OrderSearchRequest;
 import org.example.order.dto.OrderSearchResponse;
-import org.example.order.model.Order;
-import org.example.order.model.OrderStatus;
 import org.example.order.service.OrderService;
 import org.example.order.service.OrderService.OrderSearchCriteria;
 import org.example.order.validation.OrderRequestValidator;

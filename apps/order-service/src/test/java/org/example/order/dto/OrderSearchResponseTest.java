@@ -6,10 +6,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.example.order.model.FulfillmentType;
-import org.example.order.model.Order;
-import org.example.order.model.OrderStatus;
-import org.example.order.model.PaymentStatus;
+import org.example.model.order.FulfillmentType;
+import org.example.model.order.Order;
+import org.example.model.order.OrderStatus;
+import org.example.model.order.PaymentStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -120,7 +120,7 @@ class OrderSearchResponseTest {
         .taxTotal(BigDecimal.valueOf(8.00))
         .fulfillmentCost(BigDecimal.valueOf(5.00))
         .grandTotal(BigDecimal.valueOf(113.00))
-        .paymentStatus(PaymentStatus.CAPTURED)
+        .paymentStatus(PaymentStatus.COMPLETED)
         .status(OrderStatus.CREATED)
         .lineItems(List.of())
         .appliedDiscounts(List.of())

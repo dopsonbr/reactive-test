@@ -1,9 +1,9 @@
 package org.example.order.graphql;
 
 import java.util.UUID;
+import org.example.model.order.OrderStatus;
 import org.example.order.graphql.input.OrderSearchInput;
 import org.example.order.graphql.input.UpdateFulfillmentInput;
-import org.example.order.model.OrderStatus;
 import org.example.platform.error.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -284,13 +284,13 @@ class GraphQLInputValidatorTest {
     @Test
     void validInput_succeeds() {
       StepVerifier.create(
-              validator.validateUpdateStatus(UUID.randomUUID().toString(), OrderStatus.CONFIRMED))
+              validator.validateUpdateStatus(UUID.randomUUID().toString(), OrderStatus.PAID))
           .verifyComplete();
     }
 
     @Test
     void nullId_fails() {
-      StepVerifier.create(validator.validateUpdateStatus(null, OrderStatus.CONFIRMED))
+      StepVerifier.create(validator.validateUpdateStatus(null, OrderStatus.PAID))
           .expectErrorMatches(
               ex ->
                   ex instanceof ValidationException
@@ -326,29 +326,21 @@ class GraphQLInputValidatorTest {
 
     @Test
     void validInput_succeeds() {
-      UpdateFulfillmentInput input =
-          new UpdateFulfillmentInput("2024-12-01T10:00:00Z", null, null, null);
+      UpdateFulfillmentInput input = new UpdateFulfillmentInput("2024-12-01T10:00:00Z", null, null);
       StepVerifier.create(validator.validateUpdateFulfillment(UUID.randomUUID().toString(), input))
           .verifyComplete();
     }
 
     @Test
-    void withTrackingNumber_succeeds() {
-      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, "TRACK123", null, null);
-      StepVerifier.create(validator.validateUpdateFulfillment(UUID.randomUUID().toString(), input))
-          .verifyComplete();
-    }
-
-    @Test
-    void withCarrier_succeeds() {
-      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, null, "FedEx", null);
+    void withPickupLocation_succeeds() {
+      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, "Store #123", null);
       StepVerifier.create(validator.validateUpdateFulfillment(UUID.randomUUID().toString(), input))
           .verifyComplete();
     }
 
     @Test
     void withInstructions_succeeds() {
-      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, null, null, "Leave at door");
+      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, null, "Leave at door");
       StepVerifier.create(validator.validateUpdateFulfillment(UUID.randomUUID().toString(), input))
           .verifyComplete();
     }
@@ -366,7 +358,7 @@ class GraphQLInputValidatorTest {
 
     @Test
     void emptyInput_fails() {
-      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, null, null, null);
+      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, null, null);
       StepVerifier.create(validator.validateUpdateFulfillment(UUID.randomUUID().toString(), input))
           .expectErrorMatches(
               ex ->
@@ -378,8 +370,7 @@ class GraphQLInputValidatorTest {
 
     @Test
     void invalidId_fails() {
-      UpdateFulfillmentInput input =
-          new UpdateFulfillmentInput("2024-12-01T10:00:00Z", null, null, null);
+      UpdateFulfillmentInput input = new UpdateFulfillmentInput("2024-12-01T10:00:00Z", null, null);
       StepVerifier.create(validator.validateUpdateFulfillment("invalid-uuid", input))
           .expectErrorMatches(
               ex ->

@@ -1,6 +1,6 @@
 # Order Service
 
-Order service provides read and update access to sold orders created by checkout-service. Implements order search endpoints, dual REST/GraphQL APIs for viewing orders, and GraphQL mutations for order updates.
+Order service provides read and update access to sold orders. It owns its own `orderdb` database and receives new orders by consuming `OrderCompleted` CloudEvents from Redis Streams (published by checkout-service). Implements order search endpoints, dual REST/GraphQL APIs for viewing orders, and GraphQL mutations for order updates.
 
 ## Port
 
@@ -11,7 +11,8 @@ Order service provides read and update access to sold orders created by checkout
 - Search orders by store, customer, status, date range
 - View individual orders via REST and GraphQL
 - Update orders via GraphQL mutations (status, fulfillment, notes)
-- Shares database with checkout-service (read/update only, no inserts)
+- Consumes `OrderCompleted` events from Redis Streams to insert new orders
+- Owns its own `orderdb` database (isolated from checkout-service)
 
 ## REST Endpoints
 
@@ -46,7 +47,7 @@ Requires OAuth2 scopes:
 
 ## Database
 
-Shares the `checkoutdb.orders` table with checkout-service. This service only reads and updates orders; it does not create new orders.
+Owns its own `orderdb.orders` table. New orders are inserted via event consumption from checkout-service's `OrderCompleted` CloudEvents on Redis Streams.
 
 ## Running
 
@@ -70,6 +71,8 @@ docker build -f docker/Dockerfile.order-service -t order-service .
 Key environment variables:
 - `DB_HOST` - PostgreSQL host (default: localhost)
 - `DB_PORT` - PostgreSQL port (default: 5432)
-- `DB_NAME` - Database name (default: checkoutdb)
-- `DB_USERNAME` - Database user (default: checkout_user)
-- `DB_PASSWORD` - Database password (default: checkout_pass)
+- `DB_NAME` - Database name (default: orderdb)
+- `DB_USERNAME` - Database user (default: order_user)
+- `DB_PASSWORD` - Database password (default: order_pass)
+- `SPRING_DATA_REDIS_HOST` - Redis host for event consumption
+- `SPRING_DATA_REDIS_PORT` - Redis port (default: 6379)

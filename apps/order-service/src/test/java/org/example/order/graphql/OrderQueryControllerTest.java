@@ -8,11 +8,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.example.model.order.FulfillmentType;
+import org.example.model.order.Order;
+import org.example.model.order.OrderStatus;
+import org.example.model.order.PaymentStatus;
 import org.example.order.graphql.input.OrderSearchInput;
-import org.example.order.model.FulfillmentType;
-import org.example.order.model.Order;
-import org.example.order.model.OrderStatus;
-import org.example.order.model.PaymentStatus;
 import org.example.order.service.OrderService;
 import org.example.order.service.OrderService.OrderSearchCriteria;
 import org.junit.jupiter.api.BeforeEach;
@@ -210,7 +210,7 @@ class OrderQueryControllerTest {
     @Test
     void multipleOrders_returnsAll() {
       String customerId = "cust-123";
-      Order order2 = createTestOrder(UUID.randomUUID(), OrderStatus.CONFIRMED);
+      Order order2 = createTestOrder(UUID.randomUUID(), OrderStatus.PAID);
       when(validator.validateCustomerId(customerId)).thenReturn(Mono.empty());
       when(orderService.findByCustomer(customerId)).thenReturn(Flux.just(testOrder, order2));
 
@@ -298,7 +298,7 @@ class OrderQueryControllerTest {
         .taxTotal(BigDecimal.valueOf(8.00))
         .fulfillmentCost(BigDecimal.valueOf(5.00))
         .grandTotal(BigDecimal.valueOf(113.00))
-        .paymentStatus(PaymentStatus.CAPTURED)
+        .paymentStatus(PaymentStatus.COMPLETED)
         .status(status)
         .lineItems(List.of())
         .appliedDiscounts(List.of())

@@ -115,6 +115,7 @@ Detailed standards are in `docs/standards/`:
 | ----------------------------------------- | ---------------------------- |
 | `docs/standards/backend/architecture.md`  | Backend service structure    |
 | `docs/standards/backend/validation.md`    | Request validation patterns  |
+| `docs/standards/backend/events.md`        | Event streaming patterns     |
 | `docs/standards/backend/testing-*.md`     | Testing patterns             |
 | `docs/standards/frontend/architecture.md` | Frontend component structure |
 | `docs/standards/frontend/components.md`   | UI component patterns        |

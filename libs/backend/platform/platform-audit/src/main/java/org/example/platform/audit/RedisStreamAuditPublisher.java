@@ -1,8 +1,9 @@
 package org.example.platform.audit;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.cloudevents.CloudEvent;
+import java.net.URI;
 import java.util.Map;
+import org.example.platform.events.CloudEventSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.stream.RecordId;
@@ -11,77 +12,83 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import reactor.core.publisher.Mono;
 
 /**
- * Redis Streams implementation of AuditEventPublisher.
+ * Redis Streams implementation of AuditEventPublisher using CloudEvents format.
  *
- * <p>Publishes audit events to a Redis Stream for consumption by the audit-service.
+ * <p>Publishes audit events as CloudEvents to a Redis Stream for consumption by the audit-service.
  */
 public class RedisStreamAuditPublisher implements AuditEventPublisher {
 
   private static final Logger log = LoggerFactory.getLogger(RedisStreamAuditPublisher.class);
 
   private final ReactiveRedisTemplate<String, String> redisTemplate;
-  private final ObjectMapper objectMapper;
+  private final CloudEventSerializer serializer;
   private final AuditProperties properties;
+  private final URI source;
 
   public RedisStreamAuditPublisher(
       ReactiveRedisTemplate<String, String> redisTemplate,
-      ObjectMapper objectMapper,
-      AuditProperties properties) {
+      CloudEventSerializer serializer,
+      AuditProperties properties,
+      URI source) {
     this.redisTemplate = redisTemplate;
-    this.objectMapper = objectMapper;
+    this.serializer = serializer;
     this.properties = properties;
+    this.source = source;
   }
 
   @Override
-  public Mono<Void> publish(AuditEvent event) {
-    return publishInternal(event)
+  public Mono<Void> publish(String eventType, AuditEventData data) {
+    return publishInternal(eventType, data)
         .then()
         .onErrorResume(
             e -> {
               log.warn(
-                  "Failed to publish audit event: eventType={}, entityId={}," + " error={}",
-                  event.eventType(),
-                  event.entityId(),
+                  "Failed to publish audit event: eventType={}, entityId={}, error={}",
+                  eventType,
+                  data.entityId(),
                   e.getMessage());
               return Mono.empty();
             });
   }
 
   @Override
-  public Mono<String> publishAndAwait(AuditEvent event) {
-    return publishInternal(event)
+  public Mono<String> publishAndAwait(String eventType, AuditEventData data) {
+    return publishInternal(eventType, data)
         .map(RecordId::getValue)
         .timeout(properties.publishTimeout())
         .doOnSuccess(
             recordId ->
-                log.debug(
-                    "Published audit event: eventId={}, recordId={}", event.eventId(), recordId))
+                log.debug("Published audit event: eventType={}, recordId={}", eventType, recordId))
         .doOnError(
             e ->
                 log.error(
-                    "Failed to publish audit event: eventType={}, entityId={}," + " error={}",
-                    event.eventType(),
-                    event.entityId(),
+                    "Failed to publish audit event: eventType={}, entityId={}, error={}",
+                    eventType,
+                    data.entityId(),
                     e.getMessage()));
   }
 
-  private Mono<RecordId> publishInternal(AuditEvent event) {
+  private Mono<RecordId> publishInternal(String eventType, AuditEventData data) {
     return Mono.defer(
         () -> {
-          try {
-            String json = objectMapper.writeValueAsString(event);
-            Map<String, String> fields = Map.of("eventId", event.eventId(), "payload", json);
+          String type = "org.example.audit." + eventType;
+          String subject = data.entityType() + ":" + data.entityId();
 
-            return redisTemplate
-                .opsForStream()
-                .add(StreamRecords.newRecord().in(properties.streamKey()).ofMap(fields));
-          } catch (JsonProcessingException e) {
-            log.error(
-                "Failed to serialize audit event: eventType={}, error={}",
-                event.eventType(),
-                e.getMessage());
-            return Mono.error(e);
-          }
+          CloudEvent cloudEvent = serializer.buildEvent(type, source, subject, data);
+          String payload = serializer.serialize(cloudEvent);
+
+          Map<String, String> fields =
+              Map.of(
+                  "eventId",
+                  cloudEvent.getId(),
+                  "eventType",
+                  cloudEvent.getType(),
+                  "payload",
+                  payload);
+
+          return redisTemplate
+              .opsForStream()
+              .add(StreamRecords.newRecord().in(properties.streamKey()).ofMap(fields));
         });
   }
 }

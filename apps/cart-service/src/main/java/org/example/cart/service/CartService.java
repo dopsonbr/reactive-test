@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.example.cart.audit.AuditEvent;
-import org.example.cart.audit.AuditEventPublisher;
 import org.example.cart.domain.Cart;
 import org.example.cart.event.CartEvent;
 import org.example.cart.event.CartEventType;
@@ -22,6 +20,8 @@ import org.example.model.discount.AppliedDiscount;
 import org.example.model.fulfillment.Fulfillment;
 import org.example.model.fulfillment.FulfillmentType;
 import org.example.model.product.CartProduct;
+import org.example.platform.audit.AuditEventData;
+import org.example.platform.audit.AuditEventPublisher;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
@@ -719,11 +719,21 @@ public class CartService {
     RequestMetadata metadata = ctx.getOrDefault(ContextKeys.METADATA, null);
     String userId = metadata != null ? metadata.userId() : "";
     String sessionId = metadata != null ? metadata.sessionId() : "";
+    // Use orderNumber as traceId for correlation (RequestMetadata doesn't have traceId)
+    String traceId = metadata != null ? metadata.orderNumber() : "";
 
-    AuditEvent event =
-        AuditEvent.cartEvent(eventType, cart.id(), cart.storeNumber(), userId, sessionId, data);
+    AuditEventData eventData =
+        AuditEventData.builder()
+            .entityType("CART")
+            .entityId(cart.id())
+            .storeNumber(cart.storeNumber())
+            .userId(userId)
+            .sessionId(sessionId)
+            .traceId(traceId)
+            .payload(data)
+            .build();
 
-    return auditEventPublisher.publish(event);
+    return auditEventPublisher.publish(eventType, eventData);
   }
 
   /**

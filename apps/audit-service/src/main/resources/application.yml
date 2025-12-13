@@ -24,10 +24,10 @@ spring:
       port: 6379
       timeout: 1000ms
 
-# Audit consumer configuration
-audit:
-  consumer:
-    stream-key: audit-events
+# Platform events consumer configuration
+platform:
+  events:
+    stream-key: audit:events
     consumer-group: audit-service
     consumer-name: ${HOSTNAME:audit-consumer-1}
     batch-size: 100

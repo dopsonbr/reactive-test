@@ -1,8 +1,8 @@
 package org.example.audit.service;
 
+import org.example.audit.domain.AuditRecord;
 import org.example.audit.domain.TimeRange;
 import org.example.audit.repository.AuditRepository;
-import org.example.platform.audit.AuditEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,71 +24,71 @@ public class AuditService {
   }
 
   /**
-   * Saves an audit event.
+   * Saves an audit record.
    *
-   * @param event The audit event to save
-   * @return The saved audit event
+   * @param record The audit record to save
+   * @return The saved audit record
    */
-  public Mono<AuditEvent> save(AuditEvent event) {
+  public Mono<AuditRecord> save(AuditRecord record) {
     return auditRepository
-        .save(event)
+        .saveRecord(record)
         .doOnSuccess(
-            e ->
+            r ->
                 log.debug(
-                    "Saved audit event via API: eventId={}, eventType={}",
-                    e.eventId(),
-                    e.eventType()));
+                    "Saved audit record via API: eventId={}, eventType={}",
+                    r.eventId(),
+                    r.eventType()));
   }
 
   /**
-   * Finds an audit event by ID.
+   * Finds an audit record by event ID.
    *
    * @param eventId The event ID
-   * @return The audit event if found
+   * @return The audit record if found
    */
-  public Mono<AuditEvent> findById(String eventId) {
-    return auditRepository.findById(eventId);
+  public Mono<AuditRecord> findByEventId(String eventId) {
+    return auditRepository.findByEventId(eventId);
   }
 
   /**
-   * Finds audit events for a specific entity.
+   * Finds audit records for a specific entity.
    *
    * @param entityType Type of entity
    * @param entityId Entity identifier
    * @param timeRange Time range filter
    * @param eventType Optional event type filter
    * @param limit Maximum number of results
-   * @return Flux of matching audit events
+   * @return Flux of matching audit records
    */
-  public Flux<AuditEvent> findByEntity(
+  public Flux<AuditRecord> findByEntity(
       String entityType, String entityId, TimeRange timeRange, String eventType, int limit) {
     return auditRepository.findByEntity(
         entityType, entityId, normalizeTimeRange(timeRange), eventType, normalizeLimit(limit));
   }
 
   /**
-   * Finds audit events by user.
+   * Finds audit records by user.
    *
    * @param userId User identifier
    * @param timeRange Time range filter
    * @param limit Maximum number of results
-   * @return Flux of matching audit events
+   * @return Flux of matching audit records
    */
-  public Flux<AuditEvent> findByUser(String userId, TimeRange timeRange, int limit) {
+  public Flux<AuditRecord> findByUser(String userId, TimeRange timeRange, int limit) {
     return auditRepository.findByUser(userId, normalizeTimeRange(timeRange), normalizeLimit(limit));
   }
 
   /**
-   * Finds audit events by store and entity type.
+   * Finds audit records by store and entity type.
    *
    * @param storeNumber Store number
    * @param entityType Entity type filter
    * @param timeRange Time range filter
    * @param eventType Optional event type filter
    * @param limit Maximum number of results
-   * @return Flux of matching audit events
+   * @return Flux of matching audit records
    */
-  public Flux<AuditEvent> findByStoreAndEntityType(
+  public Flux<AuditRecord> findByStoreAndEntityType(
       int storeNumber, String entityType, TimeRange timeRange, String eventType, int limit) {
     return auditRepository.findByStoreAndEntityType(
         storeNumber, entityType, normalizeTimeRange(timeRange), eventType, normalizeLimit(limit));

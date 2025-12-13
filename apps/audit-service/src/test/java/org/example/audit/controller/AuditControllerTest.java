@@ -7,12 +7,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
-import java.util.Map;
+import org.example.audit.domain.AuditRecord;
 import org.example.audit.service.AuditService;
 import org.example.audit.validation.AuditRequestValidator;
-import org.example.platform.audit.AuditEvent;
-import org.example.platform.audit.AuditEventType;
-import org.example.platform.audit.EntityType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +34,7 @@ class AuditControllerTest {
   @BeforeEach
   void setupMocks() {
     // Configure validator to pass all validation by default
-    when(auditRequestValidator.validateAuditEvent(any())).thenReturn(Mono.empty());
+    when(auditRequestValidator.validateAuditRecord(any())).thenReturn(Mono.empty());
     when(auditRequestValidator.validateEventId(anyString())).thenReturn(Mono.empty());
     when(auditRequestValidator.validateEntityQuery(anyString(), anyString(), anyInt()))
         .thenReturn(Mono.empty());
@@ -48,32 +45,63 @@ class AuditControllerTest {
 
   @Test
   void createEvent_returns201() {
-    AuditEvent event = createTestEvent();
-    when(auditService.save(any(AuditEvent.class))).thenReturn(Mono.just(event));
+    AuditRecord record = createTestRecord();
+    when(auditService.save(any(AuditRecord.class))).thenReturn(Mono.just(record));
 
     webTestClient
         .post()
         .uri("/audit/events")
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(event)
+        .bodyValue(record)
         .exchange()
         .expectStatus()
         .isCreated()
         .expectBody()
         .jsonPath("$.eventId")
-        .isEqualTo(event.eventId())
+        .isEqualTo(record.getEventId())
         .jsonPath("$.eventType")
-        .isEqualTo(AuditEventType.CART_CREATED)
+        .isEqualTo("CART_CREATED")
         .jsonPath("$.entityType")
-        .isEqualTo(EntityType.CART)
+        .isEqualTo("CART")
         .jsonPath("$.entityId")
         .isEqualTo("cart-456");
   }
 
   @Test
+  void createEvent_generatesEventIdWhenNotProvided() {
+    AuditRecord recordWithoutId = new AuditRecord();
+    recordWithoutId.setEventType("CART_CREATED");
+    recordWithoutId.setEntityType("CART");
+    recordWithoutId.setEntityId("cart-456");
+    recordWithoutId.setStoreNumber(100);
+
+    // Mock save to return record with generated ID
+    when(auditService.save(any(AuditRecord.class)))
+        .thenAnswer(
+            invocation -> {
+              AuditRecord saved = invocation.getArgument(0);
+              return Mono.just(saved);
+            });
+
+    webTestClient
+        .post()
+        .uri("/audit/events")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(recordWithoutId)
+        .exchange()
+        .expectStatus()
+        .isCreated()
+        .expectBody()
+        .jsonPath("$.eventId")
+        .isNotEmpty()
+        .jsonPath("$.createdAt")
+        .isNotEmpty();
+  }
+
+  @Test
   void getEvent_returnsEvent() {
-    AuditEvent event = createTestEvent();
-    when(auditService.findById("event-123")).thenReturn(Mono.just(event));
+    AuditRecord record = createTestRecord();
+    when(auditService.findByEventId("event-123")).thenReturn(Mono.just(record));
 
     webTestClient
         .get()
@@ -85,21 +113,21 @@ class AuditControllerTest {
         .jsonPath("$.eventId")
         .isEqualTo("event-123")
         .jsonPath("$.eventType")
-        .isEqualTo(AuditEventType.CART_CREATED);
+        .isEqualTo("CART_CREATED");
   }
 
   @Test
   void getEvent_returns404WhenNotFound() {
-    when(auditService.findById("not-found")).thenReturn(Mono.empty());
+    when(auditService.findByEventId("not-found")).thenReturn(Mono.empty());
 
     webTestClient.get().uri("/audit/events/not-found").exchange().expectStatus().isNotFound();
   }
 
   @Test
   void getEventsForEntity_returnsEvents() {
-    AuditEvent event = createTestEvent();
+    AuditRecord record = createTestRecord();
     when(auditService.findByEntity(anyString(), anyString(), any(), any(), anyInt()))
-        .thenReturn(Flux.just(event));
+        .thenReturn(Flux.just(record));
 
     webTestClient
         .get()
@@ -107,16 +135,15 @@ class AuditControllerTest {
         .exchange()
         .expectStatus()
         .isOk()
-        .expectBodyList(AuditEvent.class)
+        .expectBodyList(AuditRecord.class)
         .hasSize(1);
   }
 
   @Test
   void getEventsForEntity_withQueryParams_passesParameters() {
-    AuditEvent event = createTestEvent();
-    when(auditService.findByEntity(
-            eq(EntityType.CART), eq("cart-456"), any(), eq(AuditEventType.PRODUCT_ADDED), eq(50)))
-        .thenReturn(Flux.just(event));
+    AuditRecord record = createTestRecord();
+    when(auditService.findByEntity(eq("CART"), eq("cart-456"), any(), eq("PRODUCT_ADDED"), eq(50)))
+        .thenReturn(Flux.just(record));
 
     webTestClient
         .get()
@@ -124,7 +151,7 @@ class AuditControllerTest {
             uriBuilder ->
                 uriBuilder
                     .path("/audit/entities/CART/cart-456/events")
-                    .queryParam("eventType", AuditEventType.PRODUCT_ADDED)
+                    .queryParam("eventType", "PRODUCT_ADDED")
                     .queryParam("limit", 50)
                     .build())
         .exchange()
@@ -134,8 +161,8 @@ class AuditControllerTest {
 
   @Test
   void getEventsForUser_returnsEvents() {
-    AuditEvent event = createTestEvent();
-    when(auditService.findByUser(eq("user01"), any(), anyInt())).thenReturn(Flux.just(event));
+    AuditRecord record = createTestRecord();
+    when(auditService.findByUser(eq("user01"), any(), anyInt())).thenReturn(Flux.just(record));
 
     webTestClient
         .get()
@@ -143,17 +170,17 @@ class AuditControllerTest {
         .exchange()
         .expectStatus()
         .isOk()
-        .expectBodyList(AuditEvent.class)
+        .expectBodyList(AuditRecord.class)
         .hasSize(1);
   }
 
   @Test
   void getEventsForUser_withTimeRange_passesParameters() {
-    AuditEvent event = createTestEvent();
+    AuditRecord record = createTestRecord();
     String startTime = "2024-01-01T00:00:00Z";
     String endTime = "2024-12-31T23:59:59Z";
 
-    when(auditService.findByUser(eq("user01"), any(), eq(200))).thenReturn(Flux.just(event));
+    when(auditService.findByUser(eq("user01"), any(), eq(200))).thenReturn(Flux.just(record));
 
     webTestClient
         .get()
@@ -172,10 +199,9 @@ class AuditControllerTest {
 
   @Test
   void getEventsForStore_returnsEvents() {
-    AuditEvent event = createTestEvent();
-    when(auditService.findByStoreAndEntityType(
-            eq(100), eq(EntityType.CART), any(), any(), anyInt()))
-        .thenReturn(Flux.just(event));
+    AuditRecord record = createTestRecord();
+    when(auditService.findByStoreAndEntityType(eq(100), eq("CART"), any(), any(), anyInt()))
+        .thenReturn(Flux.just(record));
 
     webTestClient
         .get()
@@ -183,21 +209,21 @@ class AuditControllerTest {
             uriBuilder ->
                 uriBuilder
                     .path("/audit/stores/100/events")
-                    .queryParam("entityType", EntityType.CART)
+                    .queryParam("entityType", "CART")
                     .build())
         .exchange()
         .expectStatus()
         .isOk()
-        .expectBodyList(AuditEvent.class)
+        .expectBodyList(AuditRecord.class)
         .hasSize(1);
   }
 
   @Test
   void getEventsForStore_withAllParams_passesParameters() {
-    AuditEvent event = createTestEvent();
+    AuditRecord record = createTestRecord();
     when(auditService.findByStoreAndEntityType(
-            eq(200), eq(EntityType.CART), any(), eq(AuditEventType.CART_CREATED), eq(75)))
-        .thenReturn(Flux.just(event));
+            eq(200), eq("CART"), any(), eq("CART_CREATED"), eq(75)))
+        .thenReturn(Flux.just(record));
 
     webTestClient
         .get()
@@ -205,8 +231,8 @@ class AuditControllerTest {
             uriBuilder ->
                 uriBuilder
                     .path("/audit/stores/200/events")
-                    .queryParam("entityType", EntityType.CART)
-                    .queryParam("eventType", AuditEventType.CART_CREATED)
+                    .queryParam("entityType", "CART")
+                    .queryParam("eventType", "CART_CREATED")
                     .queryParam("limit", 75)
                     .build())
         .exchange()
@@ -225,26 +251,27 @@ class AuditControllerTest {
             uriBuilder ->
                 uriBuilder
                     .path("/audit/stores/999/events")
-                    .queryParam("entityType", EntityType.CART)
+                    .queryParam("entityType", "CART")
                     .build())
         .exchange()
         .expectStatus()
         .isOk()
-        .expectBodyList(AuditEvent.class)
+        .expectBodyList(AuditRecord.class)
         .hasSize(0);
   }
 
-  private AuditEvent createTestEvent() {
-    return new AuditEvent(
-        "event-123",
-        AuditEventType.CART_CREATED,
-        EntityType.CART,
-        "cart-456",
-        100,
-        "user01",
-        "session-uuid",
-        "trace-uuid",
-        Instant.parse("2024-06-15T10:30:00Z"),
-        Map.of("items", 3));
+  private AuditRecord createTestRecord() {
+    AuditRecord record = new AuditRecord();
+    record.setEventId("event-123");
+    record.setEventType("CART_CREATED");
+    record.setEntityType("CART");
+    record.setEntityId("cart-456");
+    record.setStoreNumber(100);
+    record.setUserId("user01");
+    record.setSessionId("session-uuid");
+    record.setTraceId("trace-uuid");
+    record.setCreatedAt(Instant.parse("2024-06-15T10:30:00Z"));
+    record.setData("{\"items\": 3}");
+    return record;
   }
 }

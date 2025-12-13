@@ -3,7 +3,7 @@ package org.example.audit.validation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.example.platform.audit.AuditEvent;
+import org.example.audit.domain.AuditRecord;
 import org.example.platform.error.ValidationException;
 import org.example.platform.error.ValidationException.ValidationError;
 import org.springframework.stereotype.Component;
@@ -90,24 +90,24 @@ public class AuditRequestValidator {
     return errors.isEmpty() ? Mono.empty() : Mono.error(new ValidationException(errors));
   }
 
-  /** Validate audit event for creation. */
-  public Mono<Void> validateAuditEvent(AuditEvent event) {
+  /** Validate audit record for creation. */
+  public Mono<Void> validateAuditRecord(AuditRecord record) {
     List<ValidationError> errors = new ArrayList<>();
 
-    if (event == null) {
+    if (record == null) {
       errors.add(new ValidationError("body", "Request body is required"));
       return Mono.error(new ValidationException(errors));
     }
 
-    if (event.eventType() == null || event.eventType().isBlank()) {
+    if (record.eventType() == null || record.eventType().isBlank()) {
       errors.add(new ValidationError("eventType", "Event type is required"));
     }
 
-    if (event.entityType() == null || event.entityType().isBlank()) {
+    if (record.entityType() == null || record.entityType().isBlank()) {
       errors.add(new ValidationError("entityType", "Entity type is required"));
     }
 
-    if (event.entityId() == null || event.entityId().isBlank()) {
+    if (record.entityId() == null || record.entityId().isBlank()) {
       errors.add(new ValidationError("entityId", "Entity ID is required"));
     }
 

@@ -202,7 +202,10 @@
       "Bash({} ;)",
       "mcp__nx-mcp__nx_workspace_path",
       "Bash(pnpm test:*)",
-      "Skill(superpowers:dispatching-parallel-agents)"
+      "Skill(superpowers:dispatching-parallel-agents)",
+      "Bash(/Users/briandopson/github/dopsonbr/reactive-test/tools/test-checkout-flow.sh)",
+      "Bash(BASE_URL=http://localhost:3004 npx playwright test:*)",
+      "WebFetch(domain:grafana.com)"
     ],
     "deny": [],
     "ask": [

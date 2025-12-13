@@ -11,6 +11,8 @@ import org.example.platform.logging.ResponseLogData;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
+import org.example.platform.webflux.context.RequestMetadataExtractor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -56,23 +58,25 @@ public class CustomerController {
   @PreAuthorize("hasAuthority('SCOPE_customer:read')")
   public Mono<Customer> getCustomer(
       @PathVariable String customerId,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
 
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Mono.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateGetRequest(customerId, storeNumber, orderNumber, userId, sessionId)
+                  .validateGetRequest(
+                      customerId,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
                   .then(customerService.getCustomer(customerId))
                   .doOnSuccess(result -> logResponse(ctx, httpRequest, 200, result));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Create a new customer. */
@@ -81,23 +85,25 @@ public class CustomerController {
   @PreAuthorize("hasAuthority('SCOPE_customer:write')")
   public Mono<Customer> createCustomer(
       @RequestBody CreateCustomerRequest request,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
 
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Mono.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateCreateRequest(request, storeNumber, orderNumber, userId, sessionId)
+                  .validateCreateRequest(
+                      request,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
                   .then(customerService.createCustomer(ctx, request))
                   .doOnSuccess(result -> logResponse(ctx, httpRequest, 201, result));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Update an existing customer. */
@@ -106,24 +112,26 @@ public class CustomerController {
   public Mono<Customer> updateCustomer(
       @PathVariable String customerId,
       @RequestBody UpdateCustomerRequest request,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
 
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Mono.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
                   .validateUpdateRequest(
-                      request, customerId, storeNumber, orderNumber, userId, sessionId)
+                      request,
+                      customerId,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
                   .then(customerService.updateCustomer(ctx, customerId, request))
                   .doOnSuccess(result -> logResponse(ctx, httpRequest, 200, result));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Delete a customer. */
@@ -132,23 +140,25 @@ public class CustomerController {
   @PreAuthorize("hasAuthority('SCOPE_customer:delete')")
   public Mono<Void> deleteCustomer(
       @PathVariable String customerId,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
 
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Mono.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateGetRequest(customerId, storeNumber, orderNumber, userId, sessionId)
+                  .validateGetRequest(
+                      customerId,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
                   .then(customerService.deleteCustomer(ctx, customerId))
                   .doOnSuccess(v -> logResponse(ctx, httpRequest, 204, null));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Search customers by ID, email, or phone. */
@@ -158,23 +168,27 @@ public class CustomerController {
       @RequestParam(required = false) String customerId,
       @RequestParam(required = false) String email,
       @RequestParam(required = false) String phone,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
 
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
     CustomerSearchRequest searchRequest = new CustomerSearchRequest(customerId, email, phone);
 
     return Flux.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateSearchRequest(searchRequest, storeNumber, orderNumber, userId, sessionId)
-                  .thenMany(customerService.search(storeNumber, searchRequest.getSearchTerm()));
+                  .validateSearchRequest(
+                      searchRequest,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
+                  .thenMany(
+                      customerService.search(
+                          metadata.storeNumber(), searchRequest.getSearchTerm()));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Get B2B sub-accounts for a parent customer. */
@@ -182,22 +196,24 @@ public class CustomerController {
   @PreAuthorize("hasAuthority('SCOPE_customer:read')")
   public Flux<Customer> getSubAccounts(
       @PathVariable String customerId,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
 
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Flux.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateGetRequest(customerId, storeNumber, orderNumber, userId, sessionId)
+                  .validateGetRequest(
+                      customerId,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
                   .thenMany(customerService.getSubAccounts(customerId));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Create a B2B sub-account under a parent customer. */
@@ -207,23 +223,25 @@ public class CustomerController {
   public Mono<Customer> createSubAccount(
       @PathVariable String customerId,
       @RequestBody CreateCustomerRequest request,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
 
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Mono.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateCreateRequest(request, storeNumber, orderNumber, userId, sessionId)
+                  .validateCreateRequest(
+                      request,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
                   .then(customerService.createSubAccount(ctx, customerId, request))
                   .doOnSuccess(result -> logResponse(ctx, httpRequest, 201, result));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   private void logRequest(ContextView ctx, ServerHttpRequest request) {

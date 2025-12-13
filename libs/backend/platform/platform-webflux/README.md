@@ -38,9 +38,28 @@ return Mono.deferContextual(ctx -> {
 
 ### From Headers (Convenience)
 
+Extract metadata directly from headers:
+
+```java
+RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
+```
+
+Or use the context modifier for reactive chains:
+
 ```java
 return Mono.deferContextual(ctx -> processRequest())
     .contextWrite(ContextKeys.fromHeaders(httpHeaders));
+```
+
+### GraphQL Interceptor
+
+For GraphQL endpoints, extend the base interceptor:
+
+```java
+@Component
+public class MyGraphQlContextInterceptor extends AbstractGraphQlContextInterceptor {
+  // Metadata extraction is automatic
+}
 ```
 
 ### Accessing Context
@@ -62,8 +81,10 @@ Mono.deferContextual(ctx -> {
 
 | Class | Purpose |
 |-------|---------|
-| `ContextKeys` | Reactor Context key constants and utilities |
+| `ContextKeys` | Reactor Context key constants and `fromHeaders()` utility |
 | `RequestMetadata` | Request metadata record |
+| `RequestMetadataExtractor` | Extracts RequestMetadata from HTTP headers |
+| `AbstractGraphQlContextInterceptor` | Base GraphQL interceptor for header extraction |
 
 ## Context Keys
 
@@ -103,10 +124,8 @@ public Mono<Response> getById(
         @PathVariable long id,
         @RequestHeader HttpHeaders headers) {
 
-    RequestMetadata metadata = extractMetadata(headers);
-
     return service.process(id)
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
 }
 ```
 

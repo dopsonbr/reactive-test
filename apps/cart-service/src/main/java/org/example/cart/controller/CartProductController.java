@@ -9,6 +9,8 @@ import org.example.cart.validation.CartRequestValidator;
 import org.example.model.product.CartProduct;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
+import org.example.platform.webflux.context.RequestMetadataExtractor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,17 +42,18 @@ public class CartProductController {
   @GetMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:read')")
   public Mono<List<CartProduct>> getProducts(
-      @PathVariable String cartId,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+      @PathVariable String cartId, @RequestHeader HttpHeaders headers) {
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return validator
-        .validateGetCart(cartId, storeNumber, orderNumber, userId, sessionId)
+        .validateGetCart(
+            cartId,
+            metadata.storeNumber(),
+            metadata.orderNumber(),
+            metadata.userId(),
+            metadata.sessionId())
         .then(cartService.getProducts(cartId))
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Add a product to the cart. */
@@ -60,34 +63,38 @@ public class CartProductController {
   public Mono<Cart> addProduct(
       @PathVariable String cartId,
       @RequestBody AddProductRequest request,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+      @RequestHeader HttpHeaders headers) {
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return validator
-        .validateAddProduct(cartId, request, storeNumber, orderNumber, userId, sessionId)
+        .validateAddProduct(
+            cartId,
+            request,
+            metadata.storeNumber(),
+            metadata.orderNumber(),
+            metadata.userId(),
+            metadata.sessionId())
         .then(cartService.addProduct(cartId, request.sku(), request.quantity()))
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Get a specific product from the cart. */
   @GetMapping("/{sku}")
   @PreAuthorize("hasAuthority('SCOPE_cart:read')")
   public Mono<CartProduct> getProduct(
-      @PathVariable String cartId,
-      @PathVariable long sku,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+      @PathVariable String cartId, @PathVariable long sku, @RequestHeader HttpHeaders headers) {
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return validator
-        .validateProductAccess(cartId, sku, storeNumber, orderNumber, userId, sessionId)
+        .validateProductAccess(
+            cartId,
+            sku,
+            metadata.storeNumber(),
+            metadata.orderNumber(),
+            metadata.userId(),
+            metadata.sessionId())
         .then(cartService.getProduct(cartId, sku))
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Update a product quantity in the cart. */
@@ -97,33 +104,38 @@ public class CartProductController {
       @PathVariable String cartId,
       @PathVariable long sku,
       @RequestBody UpdateProductRequest request,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+      @RequestHeader HttpHeaders headers) {
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return validator
-        .validateUpdateProduct(cartId, sku, request, storeNumber, orderNumber, userId, sessionId)
+        .validateUpdateProduct(
+            cartId,
+            sku,
+            request,
+            metadata.storeNumber(),
+            metadata.orderNumber(),
+            metadata.userId(),
+            metadata.sessionId())
         .then(cartService.updateProduct(cartId, sku, request.quantity()))
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Remove a product from the cart. */
   @DeleteMapping("/{sku}")
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> removeProduct(
-      @PathVariable String cartId,
-      @PathVariable long sku,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+      @PathVariable String cartId, @PathVariable long sku, @RequestHeader HttpHeaders headers) {
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return validator
-        .validateProductAccess(cartId, sku, storeNumber, orderNumber, userId, sessionId)
+        .validateProductAccess(
+            cartId,
+            sku,
+            metadata.storeNumber(),
+            metadata.orderNumber(),
+            metadata.userId(),
+            metadata.sessionId())
         .then(cartService.removeProduct(cartId, sku))
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 }

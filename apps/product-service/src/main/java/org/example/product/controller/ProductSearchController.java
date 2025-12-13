@@ -7,13 +7,13 @@ import org.example.platform.logging.RequestLogData;
 import org.example.platform.logging.ResponseLogData;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.webflux.context.ContextKeys;
-import org.example.platform.webflux.context.RequestMetadata;
 import org.example.product.domain.SearchCriteria;
 import org.example.product.domain.SearchProduct;
 import org.example.product.domain.SearchResponse;
 import org.example.product.domain.SortDirection;
 import org.example.product.service.ProductSearchService;
 import org.example.product.validation.SearchRequestValidator;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -59,15 +59,10 @@ public class ProductSearchController {
       @RequestParam(defaultValue = "DESC") String sortDirection,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader(value = "x-order-number", required = false) String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       @AuthenticationPrincipal Jwt jwt,
       ServerHttpRequest request) {
 
-    RequestMetadata metadata =
-        new RequestMetadata(storeNumber, orderNumber != null ? orderNumber : "", userId, sessionId);
     SearchCriteria criteria =
         new SearchCriteria(
             q,
@@ -111,7 +106,7 @@ public class ProductSearchController {
                             structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
                           });
                 }))
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   @GetMapping("/suggestions")
@@ -119,15 +114,9 @@ public class ProductSearchController {
   public Mono<List<String>> getSuggestions(
       @RequestParam String prefix,
       @RequestParam(defaultValue = "10") int limit,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader(value = "x-order-number", required = false) String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       @AuthenticationPrincipal Jwt jwt,
       ServerHttpRequest request) {
-
-    RequestMetadata metadata =
-        new RequestMetadata(storeNumber, orderNumber != null ? orderNumber : "", userId, sessionId);
 
     return Mono.deferContextual(
             ctx -> {
@@ -154,7 +143,7 @@ public class ProductSearchController {
                         structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
                       });
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   private SortDirection parseSortDirection(String direction) {

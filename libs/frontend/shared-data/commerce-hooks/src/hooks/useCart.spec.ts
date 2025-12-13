@@ -115,7 +115,7 @@ describe('useAddToCart', () => {
 
     expect(result.current.data).toEqual(mockCart);
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/carts/cart-123/items'),
+      expect.stringContaining('/api/carts/cart-123/products'),
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ sku: 'SKU-001', quantity: 1 }),

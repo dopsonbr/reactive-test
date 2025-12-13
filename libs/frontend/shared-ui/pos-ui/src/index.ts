@@ -24,3 +24,10 @@ export type {
   MarkdownPermissionTier,
   MarkdownLimit,
 } from "./components/MarkdownDialog/MarkdownDialog";
+
+// Utility functions
+export {
+  formatCurrency,
+  formatMarkdown,
+  calculateLineItemTotal,
+} from "./utils/formatting";

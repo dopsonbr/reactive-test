@@ -1,12 +1,13 @@
 import * as React from "react";
 import { cn, Button, Badge } from "@reactive-platform/shared-ui-components";
 import { Minus, Plus, Trash2, Tag } from "lucide-react";
+import {
+  formatCurrency,
+  formatMarkdown,
+  type MarkdownInfo,
+} from "../../utils/formatting";
 
-export interface MarkdownInfo {
-  type: "PERCENTAGE" | "FIXED_AMOUNT" | "OVERRIDE_PRICE";
-  value: number;
-  reason: string;
-}
+export type { MarkdownInfo };
 
 export interface LineItem {
   sku: string;
@@ -25,24 +26,6 @@ export interface LineItemRowProps {
   canApplyMarkdown: boolean;
   isEditable?: boolean;
   className?: string;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-}
-
-function formatMarkdown(markdown: MarkdownInfo): string {
-  switch (markdown.type) {
-    case "PERCENTAGE":
-      return `-${markdown.value}%`;
-    case "FIXED_AMOUNT":
-      return `-${formatCurrency(markdown.value)}`;
-    case "OVERRIDE_PRICE":
-      return `Override: ${formatCurrency(markdown.value)}`;
-  }
 }
 
 export function LineItemRow({

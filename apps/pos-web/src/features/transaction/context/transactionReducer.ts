@@ -58,13 +58,13 @@ export const initialTransaction: Transaction = {
 };
 
 // Helper: Calculate line item total
-function calculateLineTotal(item: LineItem): number {
+export function calculateLineTotal(item: LineItem): number {
   const effectivePrice = item.unitPrice - item.discountPerItem;
   return effectivePrice * item.quantity;
 }
 
 // Helper: Calculate totals
-function calculateTotals(items: LineItem[], fulfillment: FulfillmentConfig | null): TotalsSummary {
+export function calculateTotals(items: LineItem[], fulfillment: FulfillmentConfig | null): TotalsSummary {
   const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
   const discountTotal = items.reduce(
     (sum, item) => sum + item.discountPerItem * item.quantity,
@@ -80,14 +80,14 @@ function calculateTotals(items: LineItem[], fulfillment: FulfillmentConfig | nul
 }
 
 // Helper: Calculate payment amounts
-function calculatePayments(payments: PaymentRecord[], grandTotal: number) {
+export function calculatePayments(payments: PaymentRecord[], grandTotal: number) {
   const amountPaid = payments.reduce((sum, p) => sum + p.amount, 0);
   const amountDue = Math.max(0, grandTotal - amountPaid);
   return { amountPaid, amountDue };
 }
 
 // Helper: Calculate loyalty points
-function calculatePoints(subtotal: number, customer: CustomerSummary | null): number {
+export function calculatePoints(subtotal: number, customer: CustomerSummary | null): number {
   if (!customer) return 0;
   // Base: 1 point per dollar, multiplied by loyalty tier multiplier
   return Math.floor(subtotal * customer.loyaltyMultiplier);

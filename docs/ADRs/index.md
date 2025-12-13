@@ -19,6 +19,8 @@ Authoritative log of platform-level decisions. Each ADR captures the context, th
 - [012 - Frontend-Backend Domain Model Sharing Strategy](./012_frontend_backend_model_sharing.md)
 - [013 - SQLite as Offline POS Data Store](./013_offline_data_store.md)
 - [014 - Go and Vanilla ESM for Offline POS Application](./014_offline_pos_technology_stack.md)
+- [015 - Async Event-Driven Order Creation](./015_async_event_driven_order_creation.md)
+- [016 - Ingress Gateway for Multi-UI Hosting and API Abstraction](./016_ingress_gateway_for_multi_ui_hosting_and_api_abstraction.md)
 
 ---
 

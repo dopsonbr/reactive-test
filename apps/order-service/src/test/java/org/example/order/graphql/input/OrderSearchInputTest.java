@@ -2,7 +2,7 @@ package org.example.order.graphql.input;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.example.order.model.OrderStatus;
+import org.example.model.order.OrderStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 

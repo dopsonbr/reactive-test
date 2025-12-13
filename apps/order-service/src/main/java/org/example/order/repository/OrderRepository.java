@@ -2,8 +2,8 @@ package org.example.order.repository;
 
 import java.time.Instant;
 import java.util.UUID;
-import org.example.order.model.Order;
-import org.example.order.model.OrderStatus;
+import org.example.model.order.Order;
+import org.example.model.order.OrderStatus;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -42,4 +42,14 @@ public interface OrderRepository {
 
   /** Check if order exists. */
   Mono<Boolean> exists(UUID orderId);
+
+  /**
+   * Insert order if it doesn't already exist (idempotent).
+   *
+   * <p>Uses INSERT ... ON CONFLICT DO NOTHING for idempotent inserts from event consumers.
+   *
+   * @param order the order to insert
+   * @return Mono<Boolean> true if inserted, false if already existed
+   */
+  Mono<Boolean> insertIfAbsent(Order order);
 }

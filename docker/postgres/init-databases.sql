@@ -40,6 +40,11 @@ CREATE DATABASE inventorydb;
 CREATE USER inventory_user WITH ENCRYPTED PASSWORD 'inventory_pass';
 GRANT ALL PRIVILEGES ON DATABASE inventorydb TO inventory_user;
 
+-- Order Service Database
+CREATE DATABASE orderdb;
+CREATE USER order_user WITH ENCRYPTED PASSWORD 'order_pass';
+GRANT ALL PRIVILEGES ON DATABASE orderdb TO order_user;
+
 -- Grant schema permissions
 \c cartdb
 GRANT ALL ON SCHEMA public TO cart_user;
@@ -64,3 +69,6 @@ GRANT ALL ON SCHEMA public TO price_user;
 
 \c inventorydb
 GRANT ALL ON SCHEMA public TO inventory_user;
+
+\c orderdb
+GRANT ALL ON SCHEMA public TO order_user;

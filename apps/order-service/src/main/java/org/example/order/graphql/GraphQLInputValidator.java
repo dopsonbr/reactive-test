@@ -3,9 +3,9 @@ package org.example.order.graphql;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.example.model.order.OrderStatus;
 import org.example.order.graphql.input.OrderSearchInput;
 import org.example.order.graphql.input.UpdateFulfillmentInput;
-import org.example.order.model.OrderStatus;
 import org.example.platform.error.ValidationException;
 import org.example.platform.error.ValidationException.ValidationError;
 import org.springframework.stereotype.Component;
@@ -104,8 +104,7 @@ public class GraphQLInputValidator {
     // At least one field should be provided
     if (input == null
         || (input.fulfillmentDate() == null
-            && input.trackingNumber() == null
-            && input.carrier() == null
+            && input.pickupLocation() == null
             && input.instructions() == null)) {
       errors.add(new ValidationError("input", "At least one field must be provided"));
     }

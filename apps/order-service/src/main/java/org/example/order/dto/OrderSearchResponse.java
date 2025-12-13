@@ -1,7 +1,7 @@
 package org.example.order.dto;
 
 import java.util.List;
-import org.example.order.model.Order;
+import org.example.model.order.Order;
 
 /** Response DTO for order search with pagination info. */
 public record OrderSearchResponse(

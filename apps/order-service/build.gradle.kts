@@ -11,8 +11,10 @@ dependencies {
     implementation(project(":libs:backend:platform:platform-error"))
     implementation(project(":libs:backend:platform:platform-webflux"))
     implementation(project(":libs:backend:platform:platform-security"))
+    implementation(project(":libs:backend:platform:platform-events"))
 
     // Shared model libraries
+    implementation(project(":libs:backend:shared-model:shared-model-order"))
     implementation(project(":libs:backend:shared-model:shared-model-discount"))
     implementation(project(":libs:backend:shared-model:shared-model-fulfillment"))
     implementation(project(":libs:backend:shared-model:shared-model-product"))
@@ -25,8 +27,17 @@ dependencies {
     // GraphQL
     implementation("org.springframework.boot:spring-boot-starter-graphql")
 
+    // Redis reactive for event consumption
+    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+
     // R2DBC PostgreSQL driver
     implementation("org.postgresql:r2dbc-postgresql")
+
+    // Flyway for database migrations (Spring Boot 4.0 starter includes flyway-core + autoconfiguration)
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
+    implementation("org.flywaydb:flyway-database-postgresql")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
+    runtimeOnly("org.postgresql:postgresql")
 
     // Prometheus metrics
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")

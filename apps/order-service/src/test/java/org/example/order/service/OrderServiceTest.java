@@ -8,10 +8,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.example.order.model.FulfillmentType;
-import org.example.order.model.Order;
-import org.example.order.model.OrderStatus;
-import org.example.order.model.PaymentStatus;
+import org.example.model.order.FulfillmentType;
+import org.example.model.order.Order;
+import org.example.model.order.OrderStatus;
+import org.example.model.order.PaymentStatus;
 import org.example.order.repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -83,12 +83,12 @@ class OrderServiceTest {
 
   @Test
   void updateStatus_validTransition_updatesOrder() {
-    Order updatedOrder = testOrder.withStatus(OrderStatus.CONFIRMED);
+    Order updatedOrder = OrderMutations.withStatus(testOrder, OrderStatus.PAID);
     when(orderRepository.findById(orderId)).thenReturn(Mono.just(testOrder));
     when(orderRepository.update(any())).thenReturn(Mono.just(updatedOrder));
 
-    StepVerifier.create(orderService.updateStatus(orderId, OrderStatus.CONFIRMED))
-        .assertNext(order -> assertThat(order.status()).isEqualTo(OrderStatus.CONFIRMED))
+    StepVerifier.create(orderService.updateStatus(orderId, OrderStatus.PAID))
+        .assertNext(order -> assertThat(order.status()).isEqualTo(OrderStatus.PAID))
         .verifyComplete();
   }
 
@@ -107,7 +107,7 @@ class OrderServiceTest {
 
   @Test
   void cancelOrder_validStatus_cancelsOrder() {
-    Order cancelledOrder = testOrder.withStatus(OrderStatus.CANCELLED);
+    Order cancelledOrder = OrderMutations.withStatus(testOrder, OrderStatus.CANCELLED);
     when(orderRepository.findById(orderId)).thenReturn(Mono.just(testOrder));
     when(orderRepository.update(any())).thenReturn(Mono.just(cancelledOrder));
 
@@ -141,7 +141,7 @@ class OrderServiceTest {
         .taxTotal(BigDecimal.valueOf(8.00))
         .fulfillmentCost(BigDecimal.valueOf(5.00))
         .grandTotal(BigDecimal.valueOf(113.00))
-        .paymentStatus(PaymentStatus.CAPTURED)
+        .paymentStatus(PaymentStatus.COMPLETED)
         .status(status)
         .lineItems(List.of())
         .appliedDiscounts(List.of())

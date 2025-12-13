@@ -2,10 +2,10 @@ package org.example.order.graphql;
 
 import java.time.Instant;
 import java.util.UUID;
+import org.example.model.order.FulfillmentDetails;
+import org.example.model.order.Order;
+import org.example.model.order.OrderStatus;
 import org.example.order.graphql.input.UpdateFulfillmentInput;
-import org.example.order.model.FulfillmentDetails;
-import org.example.order.model.Order;
-import org.example.order.model.OrderStatus;
 import org.example.order.service.OrderService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -56,16 +56,12 @@ public class OrderMutationController {
                                   ? Instant.parse(input.fulfillmentDate())
                                   : (current != null ? current.scheduledDate() : null),
                               current != null ? current.deliveryAddress() : null,
-                              current != null ? current.pickupLocation() : null,
+                              input.pickupLocation() != null
+                                  ? input.pickupLocation()
+                                  : (current != null ? current.pickupLocation() : null),
                               input.instructions() != null
                                   ? input.instructions()
-                                  : (current != null ? current.instructions() : null),
-                              input.trackingNumber() != null
-                                  ? input.trackingNumber()
-                                  : (current != null ? current.trackingNumber() : null),
-                              input.carrier() != null
-                                  ? input.carrier()
-                                  : (current != null ? current.carrier() : null));
+                                  : (current != null ? current.instructions() : null));
                       return orderService.updateFulfillment(UUID.fromString(id), updated);
                     }));
   }
@@ -105,9 +101,7 @@ public class OrderMutationController {
                               current != null ? current.scheduledDate() : null,
                               current != null ? current.deliveryAddress() : null,
                               current != null ? current.pickupLocation() : null,
-                              updatedInstructions,
-                              current != null ? current.trackingNumber() : null,
-                              current != null ? current.carrier() : null);
+                              updatedInstructions);
                       return orderService.updateFulfillment(UUID.fromString(id), updated);
                     }));
   }

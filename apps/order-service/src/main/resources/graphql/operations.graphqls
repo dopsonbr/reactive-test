@@ -43,7 +43,6 @@ input OrderSearchInput {
 
 input UpdateFulfillmentInput {
     fulfillmentDate: String
-    trackingNumber: String
-    carrier: String
+    pickupLocation: String
     instructions: String
 }

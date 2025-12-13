@@ -9,12 +9,13 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.example.model.order.FulfillmentDetails;
+import org.example.model.order.FulfillmentType;
+import org.example.model.order.Order;
+import org.example.model.order.OrderStatus;
+import org.example.model.order.PaymentStatus;
 import org.example.order.graphql.input.UpdateFulfillmentInput;
-import org.example.order.model.FulfillmentDetails;
-import org.example.order.model.FulfillmentType;
-import org.example.order.model.Order;
-import org.example.order.model.OrderStatus;
-import org.example.order.model.PaymentStatus;
+import org.example.order.service.OrderMutations;
 import org.example.order.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -49,13 +50,12 @@ class OrderMutationControllerTest {
     @Test
     void validTransition_updatesStatus() {
       String id = orderId.toString();
-      Order updated = testOrder.withStatus(OrderStatus.CONFIRMED);
-      when(validator.validateUpdateStatus(id, OrderStatus.CONFIRMED)).thenReturn(Mono.empty());
-      when(orderService.updateStatus(orderId, OrderStatus.CONFIRMED))
-          .thenReturn(Mono.just(updated));
+      Order updated = OrderMutations.withStatus(testOrder, OrderStatus.PAID);
+      when(validator.validateUpdateStatus(id, OrderStatus.PAID)).thenReturn(Mono.empty());
+      when(orderService.updateStatus(orderId, OrderStatus.PAID)).thenReturn(Mono.just(updated));
 
-      StepVerifier.create(controller.updateOrderStatus(id, OrderStatus.CONFIRMED))
-          .assertNext(order -> assertThat(order.status()).isEqualTo(OrderStatus.CONFIRMED))
+      StepVerifier.create(controller.updateOrderStatus(id, OrderStatus.PAID))
+          .assertNext(order -> assertThat(order.status()).isEqualTo(OrderStatus.PAID))
           .verifyComplete();
     }
 
@@ -63,12 +63,12 @@ class OrderMutationControllerTest {
     void validationFails_propagatesError() {
       String id = UUID.randomUUID().toString();
       RuntimeException error = new RuntimeException("Validation failed");
-      when(validator.validateUpdateStatus(id, OrderStatus.CONFIRMED)).thenReturn(Mono.error(error));
+      when(validator.validateUpdateStatus(id, OrderStatus.PAID)).thenReturn(Mono.error(error));
       // The .then() operator evaluates its argument eagerly, so we must mock updateStatus
-      when(orderService.updateStatus(UUID.fromString(id), OrderStatus.CONFIRMED))
+      when(orderService.updateStatus(UUID.fromString(id), OrderStatus.PAID))
           .thenReturn(Mono.empty());
 
-      StepVerifier.create(controller.updateOrderStatus(id, OrderStatus.CONFIRMED))
+      StepVerifier.create(controller.updateOrderStatus(id, OrderStatus.PAID))
           .expectError(RuntimeException.class)
           .verify();
     }
@@ -90,10 +90,10 @@ class OrderMutationControllerTest {
   class UpdateFulfillment {
 
     @Test
-    void withTrackingNumber_updatesFulfillment() {
+    void withPickupLocation_updatesFulfillment() {
       String id = orderId.toString();
-      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, "TRACK123", "FedEx", null);
-      Order updated = testOrder; // simplified - in reality would have updated fulfillment
+      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, "Store #123", null);
+      Order updated = testOrder;
 
       when(validator.validateUpdateFulfillment(id, input)).thenReturn(Mono.empty());
       when(orderService.findById(orderId)).thenReturn(Mono.just(testOrder));
@@ -108,8 +108,7 @@ class OrderMutationControllerTest {
     @Test
     void withFulfillmentDate_updatesFulfillment() {
       String id = orderId.toString();
-      UpdateFulfillmentInput input =
-          new UpdateFulfillmentInput("2024-12-15T10:00:00Z", null, null, null);
+      UpdateFulfillmentInput input = new UpdateFulfillmentInput("2024-12-15T10:00:00Z", null, null);
       Order updated = testOrder;
 
       when(validator.validateUpdateFulfillment(id, input)).thenReturn(Mono.empty());
@@ -125,7 +124,7 @@ class OrderMutationControllerTest {
     @Test
     void withInstructions_updatesFulfillment() {
       String id = orderId.toString();
-      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, null, null, "Leave at door");
+      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, null, "Leave at door");
       Order updated = testOrder;
 
       when(validator.validateUpdateFulfillment(id, input)).thenReturn(Mono.empty());
@@ -141,7 +140,7 @@ class OrderMutationControllerTest {
     @Test
     void validationFails_propagatesError() {
       String id = UUID.randomUUID().toString();
-      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, null, null, null);
+      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, null, null);
       RuntimeException error = new RuntimeException("Validation failed");
       when(validator.validateUpdateFulfillment(id, input)).thenReturn(Mono.error(error));
       // The .then() operator evaluates its argument eagerly, so we must mock findById
@@ -155,7 +154,7 @@ class OrderMutationControllerTest {
     @Test
     void orderNotFound_propagatesError() {
       String id = orderId.toString();
-      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, "TRACK123", null, null);
+      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, "Store #123", null);
       RuntimeException error = new RuntimeException("Not found");
 
       when(validator.validateUpdateFulfillment(id, input)).thenReturn(Mono.empty());
@@ -174,10 +173,8 @@ class OrderMutationControllerTest {
               FulfillmentType.DELIVERY,
               Instant.parse("2024-12-01T10:00:00Z"),
               null,
-              null,
-              "Original instructions",
-              "OLD-TRACK",
-              "UPS");
+              "Original pickup location",
+              "Original instructions");
       Order orderWithFulfillment =
           Order.builder()
               .id(orderId)
@@ -190,7 +187,7 @@ class OrderMutationControllerTest {
               .taxTotal(BigDecimal.valueOf(8))
               .fulfillmentCost(BigDecimal.valueOf(5))
               .grandTotal(BigDecimal.valueOf(113))
-              .paymentStatus(PaymentStatus.CAPTURED)
+              .paymentStatus(PaymentStatus.COMPLETED)
               .status(OrderStatus.CREATED)
               .lineItems(List.of())
               .appliedDiscounts(List.of())
@@ -199,8 +196,8 @@ class OrderMutationControllerTest {
               .updatedAt(Instant.now())
               .build();
 
-      // Only update tracking number, carrier should be preserved
-      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, "NEW-TRACK", null, null);
+      // Only update pickup location, instructions should be preserved
+      UpdateFulfillmentInput input = new UpdateFulfillmentInput(null, "New pickup location", null);
 
       when(validator.validateUpdateFulfillment(id, input)).thenReturn(Mono.empty());
       when(orderService.findById(orderId)).thenReturn(Mono.just(orderWithFulfillment));
@@ -220,7 +217,7 @@ class OrderMutationControllerTest {
     void validCancellation_cancelsOrder() {
       String id = orderId.toString();
       String reason = "Customer requested cancellation";
-      Order cancelled = testOrder.withStatus(OrderStatus.CANCELLED);
+      Order cancelled = OrderMutations.withStatus(testOrder, OrderStatus.CANCELLED);
 
       when(validator.validateCancelOrder(id, reason)).thenReturn(Mono.empty());
       when(orderService.cancelOrder(orderId, reason)).thenReturn(Mono.just(cancelled));
@@ -280,8 +277,7 @@ class OrderMutationControllerTest {
     void existingInstructions_appendsNote() {
       String id = orderId.toString();
       FulfillmentDetails existing =
-          new FulfillmentDetails(
-              FulfillmentType.DELIVERY, null, null, null, "Existing note", null, null);
+          new FulfillmentDetails(FulfillmentType.DELIVERY, null, null, null, "Existing note");
       Order orderWithInstructions =
           Order.builder()
               .id(orderId)
@@ -294,7 +290,7 @@ class OrderMutationControllerTest {
               .taxTotal(BigDecimal.valueOf(8))
               .fulfillmentCost(BigDecimal.valueOf(5))
               .grandTotal(BigDecimal.valueOf(113))
-              .paymentStatus(PaymentStatus.CAPTURED)
+              .paymentStatus(PaymentStatus.COMPLETED)
               .status(OrderStatus.CREATED)
               .lineItems(List.of())
               .appliedDiscounts(List.of())
@@ -342,7 +338,7 @@ class OrderMutationControllerTest {
         .taxTotal(BigDecimal.valueOf(8.00))
         .fulfillmentCost(BigDecimal.valueOf(5.00))
         .grandTotal(BigDecimal.valueOf(113.00))
-        .paymentStatus(PaymentStatus.CAPTURED)
+        .paymentStatus(PaymentStatus.COMPLETED)
         .status(status)
         .lineItems(List.of())
         .appliedDiscounts(List.of())

@@ -1,6 +1,6 @@
 package org.example.order.graphql.input;
 
-import org.example.order.model.OrderStatus;
+import org.example.model.order.OrderStatus;
 
 /** GraphQL input for order search. */
 public record OrderSearchInput(

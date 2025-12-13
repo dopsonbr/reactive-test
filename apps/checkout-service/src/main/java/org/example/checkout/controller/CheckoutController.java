@@ -11,6 +11,8 @@ import org.example.platform.logging.ResponseLogData;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
+import org.example.platform.webflux.context.RequestMetadataExtractor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,22 +53,24 @@ public class CheckoutController {
   @PreAuthorize("hasAuthority('SCOPE_checkout:write')")
   public Mono<CheckoutSummaryResponse> initiateCheckout(
       @RequestBody InitiateCheckoutRequest request,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Mono.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateInitiateCheckout(request, storeNumber, orderNumber, userId, sessionId)
-                  .then(checkoutService.initiateCheckout(request, storeNumber))
+                  .validateInitiateCheckout(
+                      request,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
+                  .then(checkoutService.initiateCheckout(request, metadata.storeNumber()))
                   .doOnSuccess(response -> logResponse(ctx, httpRequest, 200, response));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /**
@@ -79,22 +83,24 @@ public class CheckoutController {
   @PreAuthorize("hasAuthority('SCOPE_checkout:write')")
   public Mono<OrderResponse> completeCheckout(
       @RequestBody CompleteCheckoutRequest request,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Mono.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateCompleteCheckout(request, storeNumber, orderNumber, userId, sessionId)
-                  .then(checkoutService.completeCheckout(request, storeNumber))
+                  .validateCompleteCheckout(
+                      request,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
+                  .then(checkoutService.completeCheckout(request, metadata.storeNumber()))
                   .doOnSuccess(response -> logResponse(ctx, httpRequest, 201, response));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   // NOTE: Order query APIs (/orders, /orders/{orderId}) have been removed.

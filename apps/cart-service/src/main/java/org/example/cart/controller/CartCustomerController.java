@@ -8,6 +8,8 @@ import org.example.platform.logging.ResponseLogData;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
+import org.example.platform.webflux.context.RequestMetadataExtractor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,22 +46,23 @@ public class CartCustomerController {
   @PreAuthorize("hasAuthority('SCOPE_cart:read')")
   public Flux<Cart> findCartsByCustomerId(
       @PathVariable String customerId,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Flux.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
                   .validateFindCartsByCustomerId(
-                      customerId, storeNumber, orderNumber, userId, sessionId)
+                      customerId,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
                   .thenMany(cartService.findByCustomerId(customerId));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   private void logRequest(reactor.util.context.ContextView ctx, ServerHttpRequest request) {

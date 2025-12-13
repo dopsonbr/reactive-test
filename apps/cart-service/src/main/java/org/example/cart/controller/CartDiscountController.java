@@ -8,6 +8,8 @@ import org.example.cart.validation.CartRequestValidator;
 import org.example.model.discount.AppliedDiscount;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
+import org.example.platform.webflux.context.RequestMetadataExtractor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,17 +40,18 @@ public class CartDiscountController {
   @GetMapping
   @PreAuthorize("hasAuthority('SCOPE_cart:read')")
   public Mono<List<AppliedDiscount>> getDiscounts(
-      @PathVariable String cartId,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+      @PathVariable String cartId, @RequestHeader HttpHeaders headers) {
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return validator
-        .validateGetCart(cartId, storeNumber, orderNumber, userId, sessionId)
+        .validateGetCart(
+            cartId,
+            metadata.storeNumber(),
+            metadata.orderNumber(),
+            metadata.userId(),
+            metadata.sessionId())
         .then(cartService.getDiscounts(cartId))
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Apply a discount to the cart. */
@@ -58,16 +61,19 @@ public class CartDiscountController {
   public Mono<Cart> applyDiscount(
       @PathVariable String cartId,
       @RequestBody ApplyDiscountRequest request,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+      @RequestHeader HttpHeaders headers) {
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return validator
-        .validateApplyDiscount(cartId, request, storeNumber, orderNumber, userId, sessionId)
+        .validateApplyDiscount(
+            cartId,
+            request,
+            metadata.storeNumber(),
+            metadata.orderNumber(),
+            metadata.userId(),
+            metadata.sessionId())
         .then(cartService.applyDiscount(cartId, request.code()))
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Get a specific discount from the cart. */
@@ -76,16 +82,19 @@ public class CartDiscountController {
   public Mono<AppliedDiscount> getDiscount(
       @PathVariable String cartId,
       @PathVariable String discountId,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+      @RequestHeader HttpHeaders headers) {
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return validator
-        .validateDiscountAccess(cartId, discountId, storeNumber, orderNumber, userId, sessionId)
+        .validateDiscountAccess(
+            cartId,
+            discountId,
+            metadata.storeNumber(),
+            metadata.orderNumber(),
+            metadata.userId(),
+            metadata.sessionId())
         .then(cartService.getDiscount(cartId, discountId))
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Remove a discount from the cart. */
@@ -94,15 +103,18 @@ public class CartDiscountController {
   public Mono<Cart> removeDiscount(
       @PathVariable String cartId,
       @PathVariable String discountId,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+      @RequestHeader HttpHeaders headers) {
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return validator
-        .validateDiscountAccess(cartId, discountId, storeNumber, orderNumber, userId, sessionId)
+        .validateDiscountAccess(
+            cartId,
+            discountId,
+            metadata.storeNumber(),
+            metadata.orderNumber(),
+            metadata.userId(),
+            metadata.sessionId())
         .then(cartService.removeDiscount(cartId, discountId))
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 }

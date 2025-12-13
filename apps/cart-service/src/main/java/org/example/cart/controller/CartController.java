@@ -9,6 +9,8 @@ import org.example.platform.logging.ResponseLogData;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
+import org.example.platform.webflux.context.RequestMetadataExtractor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,22 +51,24 @@ public class CartController {
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Cart> createCart(
       @RequestBody CreateCartRequest request,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Mono.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateCreateCart(request, storeNumber, orderNumber, userId, sessionId)
+                  .validateCreateCart(
+                      request,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
                   .then(cartService.createCart(request.storeNumber(), request.customerId()))
                   .doOnSuccess(cart -> logResponse(ctx, httpRequest, 201, cart));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Get a cart by ID. */
@@ -72,22 +76,24 @@ public class CartController {
   @PreAuthorize("hasAuthority('SCOPE_cart:read')")
   public Mono<Cart> getCart(
       @PathVariable String cartId,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Mono.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateGetCart(cartId, storeNumber, orderNumber, userId, sessionId)
+                  .validateGetCart(
+                      cartId,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
                   .then(cartService.getCart(cartId))
                   .doOnSuccess(cart -> logResponse(ctx, httpRequest, 200, cart));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Find carts by store number. */
@@ -95,22 +101,23 @@ public class CartController {
   @PreAuthorize("hasAuthority('SCOPE_cart:read')")
   public Flux<Cart> findCarts(
       @RequestParam int storeNumber,
-      @RequestHeader("x-store-number") int headerStoreNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
-    RequestMetadata metadata =
-        new RequestMetadata(headerStoreNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Flux.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateFindCarts(storeNumber, headerStoreNumber, orderNumber, userId, sessionId)
+                  .validateFindCarts(
+                      storeNumber,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
                   .thenMany(cartService.findByStoreNumber(storeNumber));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   /** Delete a cart. */
@@ -119,22 +126,24 @@ public class CartController {
   @PreAuthorize("hasAuthority('SCOPE_cart:write')")
   public Mono<Void> deleteCart(
       @PathVariable String cartId,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       ServerHttpRequest httpRequest) {
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return Mono.deferContextual(
             ctx -> {
               logRequest(ctx, httpRequest);
               return validator
-                  .validateGetCart(cartId, storeNumber, orderNumber, userId, sessionId)
+                  .validateGetCart(
+                      cartId,
+                      metadata.storeNumber(),
+                      metadata.orderNumber(),
+                      metadata.userId(),
+                      metadata.sessionId())
                   .then(cartService.deleteCart(cartId))
                   .doOnSuccess(v -> logResponse(ctx, httpRequest, 204, null));
             })
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 
   private void logRequest(reactor.util.context.ContextView ctx, ServerHttpRequest request) {

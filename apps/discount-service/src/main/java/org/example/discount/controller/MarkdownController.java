@@ -9,6 +9,9 @@ import org.example.discount.validation.DiscountRequestValidator;
 import org.example.model.discount.Markdown;
 import org.example.model.discount.MarkdownLimit;
 import org.example.model.discount.MarkdownPermissionTier;
+import org.example.platform.webflux.context.ContextKeys;
+import org.example.platform.webflux.context.RequestMetadataExtractor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,17 +42,20 @@ public class MarkdownController {
    * Apply a markdown to a cart (employee only).
    *
    * @param request the markdown request
-   * @param userId the user ID from header
+   * @param headers the HTTP request headers
    * @return the applied markdown
    */
   @PostMapping
   public Mono<ResponseEntity<Markdown>> applyMarkdown(
-      @RequestBody ApplyMarkdownRequest request, @RequestHeader("x-userid") String userId) {
+      @RequestBody ApplyMarkdownRequest request, @RequestHeader HttpHeaders headers) {
+
+    String userId = RequestMetadataExtractor.fromHeaders(headers).userId();
 
     return validator
         .validateApplyMarkdown(request, userId)
         .then(markdownService.applyMarkdown(request, userId))
         .map(ResponseEntity::ok)
+        .contextWrite(ContextKeys.fromHeaders(headers))
         .onErrorResume(
             UnauthorizedMarkdownException.class,
             e -> Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build()));
@@ -85,17 +91,20 @@ public class MarkdownController {
    * Void/cancel a markdown (employee only).
    *
    * @param id the markdown ID
-   * @param userId the user ID from header
+   * @param headers the HTTP request headers
    * @return no content on success
    */
   @DeleteMapping("/{id}")
   public Mono<ResponseEntity<Void>> voidMarkdown(
-      @PathVariable String id, @RequestHeader("x-userid") String userId) {
+      @PathVariable String id, @RequestHeader HttpHeaders headers) {
+
+    String userId = RequestMetadataExtractor.fromHeaders(headers).userId();
 
     return validator
         .validateVoidMarkdown(id, userId)
         .then(markdownService.voidMarkdown(id, userId))
         .then(Mono.just(ResponseEntity.noContent().<Void>build()))
+        .contextWrite(ContextKeys.fromHeaders(headers))
         .onErrorResume(
             UnauthorizedMarkdownException.class,
             e -> Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build()));

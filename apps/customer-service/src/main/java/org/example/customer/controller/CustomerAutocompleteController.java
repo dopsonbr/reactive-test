@@ -4,6 +4,8 @@ import org.example.customer.controller.dto.CustomerSuggestion;
 import org.example.customer.service.CustomerService;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
+import org.example.platform.webflux.context.RequestMetadataExtractor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -38,22 +40,19 @@ public class CustomerAutocompleteController {
   public Flux<CustomerSuggestion> autocomplete(
       @RequestParam String q,
       @RequestParam(defaultValue = "10") int limit,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader("x-order-number") String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId) {
+      @RequestHeader HttpHeaders headers) {
 
     if (q == null || q.length() < 2) {
       return Flux.empty();
     }
 
     int effectiveLimit = Math.max(1, Math.min(limit, 20));
-    RequestMetadata metadata = new RequestMetadata(storeNumber, orderNumber, userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return customerService
-        .search(storeNumber, q)
+        .search(metadata.storeNumber(), q)
         .take(effectiveLimit)
         .map(CustomerSuggestion::fromCustomer)
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 }

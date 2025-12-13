@@ -6,8 +6,10 @@ import org.example.platform.logging.ResponseLogData;
 import org.example.platform.logging.StructuredLogger;
 import org.example.platform.webflux.context.ContextKeys;
 import org.example.platform.webflux.context.RequestMetadata;
+import org.example.platform.webflux.context.RequestMetadataExtractor;
 import org.example.product.service.ProductService;
 import org.example.product.validation.ProductRequestValidator;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -37,17 +39,18 @@ public class ProductController {
   @PreAuthorize("hasAuthority('SCOPE_product:read')")
   public Mono<Product> getProduct(
       @PathVariable long sku,
-      @RequestHeader("x-store-number") int storeNumber,
-      @RequestHeader(value = "x-order-number", required = false) String orderNumber,
-      @RequestHeader("x-userid") String userId,
-      @RequestHeader("x-sessionid") String sessionId,
+      @RequestHeader HttpHeaders headers,
       @AuthenticationPrincipal Jwt jwt,
       ServerHttpRequest request) {
-    RequestMetadata metadata =
-        new RequestMetadata(storeNumber, orderNumber != null ? orderNumber : "", userId, sessionId);
+    RequestMetadata metadata = RequestMetadataExtractor.fromHeaders(headers);
 
     return requestValidator
-        .validateProductRequest(sku, storeNumber, orderNumber, userId, sessionId)
+        .validateProductRequest(
+            sku,
+            metadata.storeNumber(),
+            metadata.orderNumber(),
+            metadata.userId(),
+            metadata.sessionId())
         .then(
             Mono.deferContextual(
                 ctx -> {
@@ -76,6 +79,6 @@ public class ProductController {
                             structuredLogger.logResponse(ctx, LOGGER_NAME, responseData);
                           });
                 }))
-        .contextWrite(ctx -> ctx.put(ContextKeys.METADATA, metadata));
+        .contextWrite(ContextKeys.fromHeaders(headers));
   }
 }

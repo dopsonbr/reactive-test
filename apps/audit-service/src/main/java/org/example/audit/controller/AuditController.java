@@ -1,6 +1,7 @@
 package org.example.audit.controller;
 
 import java.time.Instant;
+import java.util.UUID;
 import org.example.audit.domain.AuditRecord;
 import org.example.audit.domain.TimeRange;
 import org.example.audit.service.AuditService;
@@ -39,7 +40,8 @@ public class AuditController {
    * Creates an audit record directly via API.
    *
    * <p>Note: The primary ingestion mechanism is via Redis streams. This endpoint is provided for
-   * convenience and testing.
+   * convenience and testing. If eventId or createdAt are not provided, they will be generated
+   * server-side.
    */
   @PostMapping("/events")
   @ResponseStatus(HttpStatus.CREATED)
@@ -49,8 +51,17 @@ public class AuditController {
         .then(
             Mono.defer(
                 () -> {
+                  // Generate eventId if not provided
+                  if (record.getEventId() == null || record.getEventId().isBlank()) {
+                    record.setEventId(UUID.randomUUID().toString());
+                  }
+                  // Generate createdAt if not provided
+                  if (record.getCreatedAt() == null) {
+                    record.setCreatedAt(Instant.now());
+                  }
                   log.info(
-                      "Creating audit record via API: eventType={}, entityId={}",
+                      "Creating audit record via API: eventId={}, eventType={}, entityId={}",
+                      record.getEventId(),
                       record.eventType(),
                       record.entityId());
                   return auditService.save(record);

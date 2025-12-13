@@ -68,6 +68,37 @@ class AuditControllerTest {
   }
 
   @Test
+  void createEvent_generatesEventIdWhenNotProvided() {
+    AuditRecord recordWithoutId = new AuditRecord();
+    recordWithoutId.setEventType("CART_CREATED");
+    recordWithoutId.setEntityType("CART");
+    recordWithoutId.setEntityId("cart-456");
+    recordWithoutId.setStoreNumber(100);
+
+    // Mock save to return record with generated ID
+    when(auditService.save(any(AuditRecord.class)))
+        .thenAnswer(
+            invocation -> {
+              AuditRecord saved = invocation.getArgument(0);
+              return Mono.just(saved);
+            });
+
+    webTestClient
+        .post()
+        .uri("/audit/events")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(recordWithoutId)
+        .exchange()
+        .expectStatus()
+        .isCreated()
+        .expectBody()
+        .jsonPath("$.eventId")
+        .isNotEmpty()
+        .jsonPath("$.createdAt")
+        .isNotEmpty();
+  }
+
+  @Test
   void getEvent_returnsEvent() {
     AuditRecord record = createTestRecord();
     when(auditService.findByEventId("event-123")).thenReturn(Mono.just(record));

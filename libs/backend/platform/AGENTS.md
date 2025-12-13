@@ -91,8 +91,8 @@ Each library should have:
 
 ```bash
 # Test a specific library
-./gradlew :libs:platform:platform-logging:test
-./gradlew :libs:platform:platform-cache:test
+./gradlew :libs:backend:platform:platform-logging:test
+./gradlew :libs:backend:platform:platform-cache:test
 ```
 
 ## File Locations

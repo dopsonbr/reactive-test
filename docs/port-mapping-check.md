@@ -4,19 +4,19 @@ Utility script to detect host port collisions in `docker/docker-compose.yml` and
 
 ## Script
 
-- Location: `tools/check-service-ports.sh`
+- Location: `tools/check-service-ports.mjs`
 - Default compose file: `docker/docker-compose.yml`
 
 Usage:
 ```bash
 # Duplicate detection only
-./tools/check-service-ports.sh
+node tools/check-service-ports.mjs
 
 # With expected map for stricter validation
-./tools/check-service-ports.sh -e tools/service-ports.expected.json
+node tools/check-service-ports.mjs
 
 # Custom compose file
-./tools/check-service-ports.sh -c path/to/compose.yml
+node tools/check-service-ports.mjs
 ```
 
 ## Expected Map (optional)

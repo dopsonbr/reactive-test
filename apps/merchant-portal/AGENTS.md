@@ -142,7 +142,7 @@ export function useUpdateNewFeature() {
 server: {
   proxy: {
     '/api/new-feature': {
-      target: 'http://localhost:8094', // Backend service port
+      target: 'http://localhost:8091', // Backend service port (example: merchandise-service)
       changeOrigin: true,
       rewrite: (path) => path.replace(/^\/api/, ''),
     },

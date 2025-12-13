@@ -198,7 +198,8 @@
       "Bash(do if curl -s http://localhost:8091/actuator/health)",
       "Bash(then echo \"merchandise-service is healthy\")",
       "Bash(fi)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash({} ;)"
     ],
     "deny": [],
     "ask": [

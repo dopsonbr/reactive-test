@@ -44,7 +44,7 @@ Brief description (1-2 sentences).
 
 ```kotlin
 dependencies {
-    implementation(project(":libs:platform:platform-module"))
+    implementation(project(":libs:backend:platform:platform-module"))
 }
 ```
 

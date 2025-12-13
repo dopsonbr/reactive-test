@@ -102,7 +102,7 @@ Files requiring careful review before changes:
 
 - **MDC is not reactive-safe** - Use Reactor Context with `deferContextual()` or `contextWrite()`
 - **Resilience4j order matters** - Decorators: timeout → circuit breaker → retry → bulkhead
-- **Port conflicts** - Check `tools/check-service-ports.js` before adding services
+- **Port conflicts** - Check `node tools/check-service-ports.mjs` before adding services
 - **Breaking platform changes** - Require version bumps and migration notes
 
 ---
@@ -487,13 +487,13 @@ All actuator endpoints are exposed without authentication for maximum debugging 
 # Start service (default - no profile needed)
 ./gradlew :apps:product-service:bootRun
 
-# All endpoints accessible
-curl http://localhost:8080/actuator          # List all endpoints
-curl http://localhost:8080/actuator/env      # Environment variables
-curl http://localhost:8080/actuator/beans    # Spring beans
-curl http://localhost:8080/actuator/mappings # Request mappings
-curl http://localhost:8080/actuator/configprops # Configuration properties
-curl http://localhost:8080/actuator/loggers  # Logger levels
+# All endpoints accessible (use the service's port; e.g. product-service is 8090)
+curl http://localhost:8090/actuator              # List all endpoints
+curl http://localhost:8090/actuator/env          # Environment variables
+curl http://localhost:8090/actuator/beans        # Spring beans
+curl http://localhost:8090/actuator/mappings     # Request mappings
+curl http://localhost:8090/actuator/configprops  # Configuration properties
+curl http://localhost:8090/actuator/loggers      # Logger levels
 ```
 
 ### Prod Mode
@@ -504,11 +504,11 @@ Restricted to k8s-required endpoints only:
 # Start service with prod profile
 SPRING_PROFILES_ACTIVE=prod ./gradlew :apps:product-service:bootRun
 
-# Only these endpoints accessible
-curl http://localhost:8080/actuator/health     # Health check
-curl http://localhost:8080/actuator/info       # Application info
-curl http://localhost:8080/actuator/metrics    # Metrics
-curl http://localhost:8080/actuator/prometheus # Prometheus scrape endpoint
+# Only these endpoints accessible (use the service's port; e.g. product-service is 8090)
+curl http://localhost:8090/actuator/health       # Health check
+curl http://localhost:8090/actuator/info         # Application info
+curl http://localhost:8090/actuator/metrics      # Metrics
+curl http://localhost:8090/actuator/prometheus   # Prometheus scrape endpoint
 ```
 
 ### Docker Compose

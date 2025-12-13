@@ -18,7 +18,7 @@ plugins {
 }
 
 dependencies {
-    implementation(platform(project(":libs:platform:platform-bom")))
+    implementation(platform(project(":libs:backend:platform:platform-bom")))
     // Now versions are managed by the BOM
     implementation("io.github.resilience4j:resilience4j-spring-boot")
 }
@@ -32,7 +32,7 @@ plugins {
 }
 
 dependencies {
-    api(platform(project(":libs:platform:platform-bom")))
+    api(platform(project(":libs:backend:platform:platform-bom")))
 }
 ```
 

@@ -48,7 +48,10 @@ Controller → Service → Repository
 ## Building
 
 ```bash
-# Build all applications
+# Build all applications (Nx-first)
+pnpm nx run-many -t build --projects=product-service,cart-service
+
+# Gradle fallback
 ./gradlew :apps:product-service:build :apps:cart-service:build
 
 # Build bootable JARs
@@ -58,7 +61,11 @@ Controller → Service → Repository
 ## Running
 
 ```bash
-# Run locally
+# Run locally (Nx-first)
+pnpm nx run :apps:product-service:bootRun
+pnpm nx run :apps:cart-service:bootRun
+
+# Gradle fallback
 ./gradlew :apps:product-service:bootRun
 ./gradlew :apps:cart-service:bootRun
 
@@ -81,12 +88,12 @@ All applications expect these headers for context propagation:
 
 Applications follow platform standards documented in [docs/standards/](../docs/standards/):
 
-- [Architecture](../docs/standards/architecture.md) - Layered architecture
-- [Caching](../docs/standards/caching.md) - Cache-aside and fallback patterns
-- [Error Handling](../docs/standards/error-handling.md) - Consistent error responses
-- [Observability](../docs/standards/observability-logs.md) - Structured logging
-- [Resilience](../docs/standards/resiliency-circuit-breakers.md) - Circuit breakers, retries, timeouts
-- [Testing](../docs/standards/testing-integration.md) - Integration testing with Testcontainers
+- [Architecture](../docs/standards/backend/architecture.md) - Layered architecture
+- [Caching](../docs/standards/backend/caching.md) - Cache-aside and fallback patterns
+- [Error Handling](../docs/standards/backend/error-handling.md) - Consistent error responses
+- [Observability](../docs/standards/backend/observability-logs.md) - Structured logging
+- [Resilience](../docs/standards/backend/resiliency-circuit-breakers.md) - Circuit breakers, retries, timeouts
+- [Testing](../docs/standards/backend/testing-integration.md) - Integration testing with Testcontainers
 
 ## Creating a New Application
 
@@ -98,14 +105,14 @@ Applications follow platform standards documented in [docs/standards/](../docs/s
    }
 
    dependencies {
-       implementation(project(":libs:platform:platform-logging"))
-       implementation(project(":libs:platform:platform-resilience"))
-       implementation(project(":libs:platform:platform-cache"))
-       implementation(project(":libs:platform:platform-error"))
-       implementation(project(":libs:platform:platform-webflux"))
-       implementation(project(":libs:platform:platform-security"))
+       implementation(project(":libs:backend:platform:platform-logging"))
+       implementation(project(":libs:backend:platform:platform-resilience"))
+       implementation(project(":libs:backend:platform:platform-cache"))
+       implementation(project(":libs:backend:platform:platform-error"))
+       implementation(project(":libs:backend:platform:platform-webflux"))
+       implementation(project(":libs:backend:platform:platform-security"))
 
-       testImplementation(project(":libs:platform:platform-test"))
+       testImplementation(project(":libs:backend:platform:platform-test"))
    }
    ```
 3. Add to `settings.gradle.kts`: `include("apps:new-service")`

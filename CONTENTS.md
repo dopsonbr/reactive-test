@@ -16,14 +16,14 @@
 ## Standards and Architecture
 - `docs/standards/` - Engineering standards (architecture, observability, security, testing, frontend principles)
 - `docs/ADRs/` - Architectural decisions (e.g., frontend monorepo strategy)
-- `docs/archive/` - Archived plans/ADRs
+- `docs/plans/` - Implementation plans (active + completed)
 
 ## Plans
-- Active plans in repo root (e.g., `019_monorepo_prep.md`)
-- Archived plans in `docs/archive/`
+- Active plans in `docs/plans/active/`
+- Completed plans in `docs/plans/completed/`
 
 ## Tooling
-- `tools/check-service-ports.sh` - Port collision/expectation checker
+- `tools/check-service-ports.mjs` - Port collision/expectation checker
 - `docker/` - Compose stack for apps, infra, and observability
 
 ## Tests

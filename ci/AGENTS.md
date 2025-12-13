@@ -35,7 +35,7 @@ Files that require careful review before changes:
 
 - Do not add scripts that require interactive input (CI mode must be non-interactive)
 - Do not modify verify checks without team consensus
-- Node.js scripts require Node.js >= 18.0.0
+- Node.js scripts require Node.js 24.x (repo-enforced via `package.json` engines)
 - Architecture tests only run for product-service (cart-service lacks repository layer)
 - Docker e2e tests require the stack to be running first (`docker-up.sh`)
 - `docker-down.sh` removes volumes; data is not persisted between runs

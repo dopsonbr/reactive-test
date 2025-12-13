@@ -16,7 +16,7 @@ Shared test utilities for integration testing with Testcontainers, WireMock, and
 ### Add Dependency
 
 ```kotlin
-testImplementation(project(":libs:platform:platform-test"))
+testImplementation(project(":libs:backend:platform:platform-test"))
 ```
 
 ### Redis Testing

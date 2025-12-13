@@ -15,7 +15,7 @@ Files requiring careful review: `build.gradle.kts` (affects all modules)
 
 ### Add New Dependency to BOM
 
-1. Add version to `/Users/BXD5017/github/dopsonbr/reactive-test/gradle/libs.versions.toml`:
+1. Add version to `gradle/libs.versions.toml`:
    ```toml
    [versions]
    new-dep = "1.0.0"

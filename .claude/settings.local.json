@@ -199,7 +199,9 @@
       "Bash(then echo \"merchandise-service is healthy\")",
       "Bash(fi)",
       "Bash(tee:*)",
-      "Bash({} ;)"
+      "Bash({} ;)",
+      "mcp__nx-mcp__nx_workspace_path",
+      "Bash(pnpm test:*)"
     ],
     "deny": [],
     "ask": [

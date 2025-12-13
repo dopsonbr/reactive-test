@@ -1,41 +1,31 @@
 # Service Port Mapping Check
 
-Utility script to detect host port collisions in `docker/docker-compose.yml` and optionally validate service→port mappings against an expected table.
+Utility script to validate that canonical host ports in `tools/expected-ports.json` match the port mappings in `docker/docker-compose.yml`.
 
 ## Script
 
 - Location: `tools/check-service-ports.mjs`
 - Default compose file: `docker/docker-compose.yml`
+- Canonical ports file: `tools/expected-ports.json`
 
 Usage:
 ```bash
-# Duplicate detection only
-node tools/check-service-ports.mjs
-
-# With expected map for stricter validation
-node tools/check-service-ports.mjs
-
-# Custom compose file
+# Verify service ports match expected-ports.json
 node tools/check-service-ports.mjs
 ```
 
-## Expected Map (optional)
+## How It Works
 
-Create a JSON file where each service maps to either a host port (number) or an object with `host` and `container`:
-```json
-{
-  "product-service": { "host": 8090, "container": 8090 },
-  "cart-service":    { "host": 8081, "container": 8080 },
-  "customer-service":{ "host": 8083, "container": 8083 },
-  "discount-service":{ "host": 8085, "container": 8085 },
-  "fulfillment-service": { "host": 8086, "container": 8085 },
-  "audit-service":   { "host": 8086, "container": 8080 }
-}
-```
-Replace the values with the canonical table once decided. The file path is passed via `-e`.
+For each service listed in `tools/expected-ports.json`, the script:
 
-## Notes
+1. Looks up the service in `docker/docker-compose.yml`
+2. Reads the service's first `ports:` entry
+3. Compares the host port to the expected value
 
-- The script always fails on duplicate host ports, even if an expected map is provided.
-- Current compose state includes a known collision on host port 8085 (discount-service vs fulfillment-service); resolving the canonical map is tracked in `019_monorepo_prep.md`.
-- Add this check to CI/preflight once the canonical table is finalized to prevent regressions.
+If a service isn't present in the compose file, it is reported as `SKIP`.
+
+## Notes / Limitations
+
+- This script does not currently detect duplicate host ports; it only checks “matches expected”.
+- It assumes the first `ports:` mapping is the canonical host port for that service.
+- To add or change a canonical port: update `tools/expected-ports.json` and `docker/docker-compose.yml`, then re-run the script.
